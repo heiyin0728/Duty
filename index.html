@@ -100,6 +100,9 @@
     .pill-count {
       background: #fff; color: #0f172a; font-size: 11px; font-weight: 800; padding: 1px 6px; border-radius: 99px; margin-left: 4px;
     }
+    .pill-warn {
+      background: #fef3c7; color: #92400e; font-size: 10px; font-weight: 800; padding: 1px 5px; border-radius: 4px; margin-left: 4px;
+    }
     .tag-mini { font-size: 10px; background: rgba(0,0,0,0.25); padding: 1px 5px; border-radius: 4px; }
     .chip-list { padding: 6px; display: flex; flex-direction: column; gap: 4px; }
     .mid-grid { padding: 6px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
@@ -115,6 +118,7 @@
     }
     .code-badge.teal { background: #ccfbf1; border-color: #5eead4; color: #115e59; }
     .code-badge.cyan { background: #cffafe; border-color: #67e8f9; color: #155e75; }
+    .code-badge.warn { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
 
     /* 明細卡片 */
     .detail-item {
@@ -150,6 +154,7 @@
     .st-a { background: #f0fdfa; color: #115e59; }
     .st-p { background: #f0f9ff; color: #075985; }
     .st-n { background: #eef2ff; color: #3730a3; }
+    .st-single-warn { background: #fef3c7; color: #b45309; border: 1px dashed #f59e0b; }
 
     /* 雲端原圖卡片 */
     .cloud-img-card {
@@ -248,7 +253,7 @@
           <button onclick="shiftTodayDate(-1)" class="btn-sm">&lt;</button>
           <input type="date" id="today-date-picker" onchange="renderTodayView()" class="input-box" />
           <button onclick="shiftTodayDate(1)" class="btn-sm">&gt;</button>
-          <span id="today-weekday-badge" class="btn-sm" style="background:#f0fdfa;color:#115e59;border-color:#99f6e4;">星期二</span>
+          <span id="today-weekday-badge" class="btn-sm" style="background:#f0fdfa;color:#115e59;border-color:#99f6e4;">星期三</span>
           <span id="today-hk-holiday-badge" class="btn-sm hidden" style="background:#ffe4e6;color:#9f1239;border-color:#fecdd3;"></span>
         </div>
 
@@ -259,11 +264,15 @@
         </div>
       </div>
 
-      <!-- 本更返工 vs 下更返工 -->
+      <!-- 本更返工 vs 下更返工（早更 A：Aa,Ac,Ad,Ae 最少4人；午更 P：Pa,Pe,Ec,Ed 最少4人） -->
       <div class="grid-2">
         <div class="card">
           <div class="panel-head bg-teal">
-            <div>本更返工<span id="current-shift-count" class="pill-count">0人</span></div>
+            <div style="display:flex;align-items:center;flex-wrap:wrap;">
+              <span>本更返工</span>
+              <span id="current-shift-count" class="pill-count">0人</span>
+              <span id="current-shift-warn" class="pill-warn hidden"></span>
+            </div>
             <span class="tag-mini">上更</span>
           </div>
           <div id="current-shift-list" class="chip-list"></div>
@@ -271,7 +280,11 @@
 
         <div class="card">
           <div class="panel-head bg-slate">
-            <div>下更返工<span id="next-shift-count" class="pill-count">0人</span></div>
+            <div style="display:flex;align-items:center;flex-wrap:wrap;">
+              <span>下更返工</span>
+              <span id="next-shift-count" class="pill-count">0人</span>
+              <span id="next-shift-warn" class="pill-warn hidden"></span>
+            </div>
             <span class="tag-mini">下更</span>
           </div>
           <div id="next-shift-list" class="chip-list"></div>
@@ -465,14 +478,14 @@
   <div id="upload-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeUploadModal()">
     <div class="modal-box" onclick="event.stopPropagation()">
       <div class="modal-head">
-        <span>上載更期表圖片（AI格線辨析 ＋ 雲端儲存）</span>
+        <span>上載更期表圖片（雙字母崗位辨析 ＋ 雲端儲存）</span>
         <button onclick="closeUploadModal()" style="background:none;color:#fff;font-size:20px;">&times;</button>
       </div>
       <div class="modal-body">
         <label style="display:block;border:2px dashed #14b8a6;background:#f0fdfa;padding:14px;border-radius:10px;text-align:center;cursor:pointer;">
           <input type="file" id="multi-image-input" accept="image/*" multiple class="hidden" onchange="handleMultiImageSelect(event)" />
           <div style="color:#115e59;font-weight:700;">點擊一次選取多張更期表相片</div>
-          <div style="font-size:11px;color:#64748b;margin-top:2px;">自動校準 21 行跨週輪轉名單與空白分隔列，支援雲端儲存</div>
+          <div style="font-size:11px;color:#64748b;margin-top:2px;">強制識別雙字母崗位（Aa/Ac/Ad/Ae、Pa/Pe/Pu/Ec/Ed、Na/Ne）與 21 行輪轉</div>
         </label>
 
         <div id="selected-images-bar" class="hidden" style="display:flex;gap:6px;overflow-x:auto;"></div>
@@ -488,7 +501,7 @@
         <div id="ocr-preview-area" class="hidden">
           <div class="toolbar" style="margin-bottom:4px;">
             <span id="ocr-detected-date-label" class="btn-sm" style="background:#ccfbf1;color:#115e59;"></span>
-            <strong style="color:#059669;font-size:12px;">✓ 辨識完成</strong>
+            <strong style="color:#059669;font-size:12px;">✓ 雙字母崗位核對完成</strong>
           </div>
           <div class="table-wrap" style="max-height:190px;border:1px solid #cbd5e1;border-radius:6px;">
             <table class="roster-tbl">
@@ -791,6 +804,27 @@
       return formatLocalDate(d);
     }
 
+    // 標準化雙字母大小寫（如 NA -> Na, NE -> Ne, AA -> Aa），並偵測是否為違規單字母（除 O 外）
+    function sanitizeTwoLetterDutyCode(raw) {
+      let c = (raw || '').trim();
+      if (!c) return '';
+      const upper = c.toUpperCase();
+      if (upper === 'O') return 'O';
+      const standardTwoLetterMap = {
+        'AA': 'Aa', 'AC': 'Ac', 'AD': 'Ad', 'AE': 'Ae',
+        'PA': 'Pa', 'PE': 'Pe', 'PU': 'Pu', 'EC': 'Ec', 'ED': 'Ed',
+        'NA': 'Na', 'NE': 'Ne'
+      };
+      if (standardTwoLetterMap[upper]) return standardTwoLetterMap[upper];
+      return c;
+    }
+
+    // 判斷是否為「除 O 之外的單字母」（例如誤辨識的 A、P、E、N）
+    function isIncompleteSingleLetter(code) {
+      const c = (code || '').trim();
+      return /^[A-Za-z]$/.test(c) && c.toUpperCase() !== 'O';
+    }
+
     // 根據週一日期，精準算出該週第 1~21 行的正確人員與空白分隔列位置
     function getExpectedRosterForWeek(mondayStr) {
       const baseMon = parseLocalDate('2026-11-16');
@@ -808,8 +842,7 @@
       });
     }
 
-    // 【嚴格按同事姓名配對】查詢某位同事在指定日期（如上星期日或下星期一）的真實更期
-    // 絕不按行號兜底，確保不會出現 B 同事的上日變了 A 同事、下一變了 C 同事的情況
+    // 【嚴格按同事姓名配對】查詢某位同事在指定日期的真實更期
     function getDutyByStaffNameOnDate(dateStr, staffName) {
       const cleanName = (staffName || '').trim();
       if (!cleanName) return '';
@@ -819,7 +852,7 @@
       const weekObj = appState.weeks[monday];
       if (!weekObj || !Array.isArray(weekObj.rows)) return '';
       const found = weekObj.rows.find(r => (r.name || '').trim() === cleanName);
-      return found && Array.isArray(found.duties) ? (found.duties[dayIdx] || '') : '';
+      return found && Array.isArray(found.duties) ? sanitizeTwoLetterDutyCode(found.duties[dayIdx] || '') : '';
     }
 
     function closeAllModals() {
@@ -848,6 +881,12 @@
         if (saved) {
           const parsed = JSON.parse(saved);
           appState.weeks = parsed.weeks || JSON.parse(JSON.stringify(DEFAULT_WEEK_DATA));
+          // 自動將舊存資料中如 NA/NE 等雙字母統一大小寫
+          Object.values(appState.weeks).forEach(w => {
+            (w.rows || []).forEach(r => {
+              r.duties = (r.duties || []).map(d => sanitizeTwoLetterDutyCode(d));
+            });
+          });
           appState.currentWeekMonday = parsed.currentWeekMonday || Object.keys(appState.weeks)[0];
           appState.patternSample = parsed.patternSample || JSON.parse(JSON.stringify(IMAGE3_DEFAULT_PATTERN));
           appState.cloudImages = parsed.cloudImages || [];
@@ -1152,7 +1191,7 @@
       populateStaffCalculator();
     }
 
-    // ==================== 今日當值（嚴格從全體更表真實更期抽取） ====================
+    // ==================== 今日當值（嚴格從全體更表真實更期抽取 + 檢核早A / 午P 最少4人編制） ====================
     function shiftTodayDate(deltaDays) {
       const picker = document.getElementById('today-date-picker');
       if (!picker.value) return;
@@ -1180,7 +1219,7 @@
     }
 
     function normalizeDutyCode(code) {
-      const c = (code || '').trim();
+      const c = sanitizeTwoLetterDutyCode(code);
       if (c === '9-6') return '9/5';
       if (c === '11-8') return '11/8';
       return c;
@@ -1192,9 +1231,22 @@
       const leaveTokens = ['AL', 'SH', 'PH', 'WO', 'WO OWING', 'SL', 'CL', 'O', '替位'];
       return leaveTokens.some(tok => upper === tok || upper.startsWith(tok + '/') || upper.includes('OWING') || upper.includes('替位'));
     }
-    function isMorningACode(code) { return !isLeaveOrOffCode(code) && ['Aa', 'Ac', 'Ad', 'Ae'].includes((code || '').trim()); }
-    function isAfternoonPECode(code) { return !isLeaveOrOffCode(code) && ['Pa', 'Pe', 'Pu', 'Ec', 'Ed'].includes((code || '').trim()); }
-    function isNightNCode(code) { return !isLeaveOrOffCode(code) && ['Na', 'Ne'].includes((code || '').trim()); }
+
+    // 兼容雙字母 (Aa,Ac,Ad,Ae) 及舊存單字母 (A)
+    function isMorningACode(code) {
+      const c = sanitizeTwoLetterDutyCode(code);
+      return !isLeaveOrOffCode(c) && (['Aa', 'Ac', 'Ad', 'Ae'].includes(c) || c.toUpperCase() === 'A');
+    }
+    // 兼容雙字母 (Pa,Pe,Pu,Ec,Ed) 及舊存單字母 (P, E)
+    function isAfternoonPECode(code) {
+      const c = sanitizeTwoLetterDutyCode(code);
+      return !isLeaveOrOffCode(c) && (['Pa', 'Pe', 'Pu', 'Ec', 'Ed'].includes(c) || ['P', 'E'].includes(c.toUpperCase()));
+    }
+    // 兼容雙字母 (Na,Ne) 及舊存單字母 (N)
+    function isNightNCode(code) {
+      const c = sanitizeTwoLetterDutyCode(code);
+      return !isLeaveOrOffCode(c) && (['Na', 'Ne'].includes(c) || c.toUpperCase() === 'N');
+    }
     function isMidCode(code) {
       const c = (code || '').trim();
       return !isLeaveOrOffCode(c) && (c.startsWith('9-6') || c.startsWith('9/5') || c.startsWith('11-8') || c.startsWith('11/8'));
@@ -1227,10 +1279,14 @@
       const currentListEl = document.getElementById('current-shift-list');
       const nextListEl = document.getElementById('next-shift-list');
       const midListEl = document.getElementById('mid-shift-list');
+      const currentWarnEl = document.getElementById('current-shift-warn');
+      const nextWarnEl = document.getElementById('next-shift-warn');
 
       currentListEl.innerHTML = '';
       nextListEl.innerHTML = '';
       midListEl.innerHTML = '';
+      currentWarnEl.classList.add('hidden');
+      nextWarnEl.classList.add('hidden');
 
       if (!todayWeekObj && !nextWeekObj) {
         currentListEl.innerHTML = `<div style="text-align:center;color:#94a3b8;padding:8px;">全體更表尚未建立 ${mondayStr} 週次</div>`;
@@ -1268,11 +1324,16 @@
       let upCount = 0, downCount = 0, midCount = 0;
       let activeWorkingStaff = [];
       let allDayStaffPool = [];
+      let todayACodesPresent = new Set();
+      let todayPCodesPresent = new Set();
 
       staffRosterList.forEach(staff => {
         // 嚴格按同事姓名從「全體更表」抽取當日與翌日更期
         const todaySheetCode = getDutyByStaffNameOnDate(dateStr, staff.name);
         const tomorrowSheetCode = getDutyByStaffNameOnDate(nextDateStr, staff.name);
+
+        if (isMorningACode(todaySheetCode)) todayACodesPresent.add(todaySheetCode);
+        if (isAfternoonPECode(todaySheetCode)) todayPCodesPresent.add(todaySheetCode);
 
         if (isMorningACode(todaySheetCode) || isMidCode(todaySheetCode) || isAfternoonPECode(todaySheetCode)) {
           allDayStaffPool.push({ row: staff.row, name: staff.name, code: todaySheetCode, normCode: normalizeDutyCode(todaySheetCode), dayTag: '今日' });
@@ -1293,37 +1354,62 @@
         if (appState.selectedSlot === 'A') {
           if (isMorningACode(todaySheetCode)) {
             upCount++;
-            currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, todaySheetCode, 'teal');
+            const dispCode = isIncompleteSingleLetter(todaySheetCode) ? `${todaySheetCode}(待補位)` : todaySheetCode;
+            currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, dispCode, isIncompleteSingleLetter(todaySheetCode) ? 'warn' : 'teal');
             activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
           }
           if (isAfternoonPECode(todaySheetCode)) {
             downCount++;
-            nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, todaySheetCode, '');
+            const dispCode = isIncompleteSingleLetter(todaySheetCode) ? `${todaySheetCode}(待補位)` : todaySheetCode;
+            nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, dispCode, isIncompleteSingleLetter(todaySheetCode) ? 'warn' : '');
             activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
           }
         } else if (appState.selectedSlot === 'P') {
           if (isAfternoonPECode(todaySheetCode)) {
             upCount++;
-            currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, todaySheetCode, 'teal');
+            const dispCode = isIncompleteSingleLetter(todaySheetCode) ? `${todaySheetCode}(待補位)` : todaySheetCode;
+            currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, dispCode, isIncompleteSingleLetter(todaySheetCode) ? 'warn' : 'teal');
             activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
           }
           if (isNightNCode(tomorrowSheetCode)) {
             downCount++;
-            nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode + '(今晚N)', '');
+            nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode + '(今晚N)', isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : '');
             activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: '今晚N(22:30返工)' });
           }
         } else if (appState.selectedSlot === 'N') {
           if (isNightNCode(tomorrowSheetCode)) {
             upCount++;
-            currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode + '(今晚N)', 'teal');
+            currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode + '(今晚N)', isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : 'teal');
             activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: '今晚N(22:30返工)' });
           }
           if (isMorningACode(tomorrowSheetCode)) {
             downCount++;
-            nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode + '(明早A)', '');
+            nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode + '(明早A)', isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : '');
           }
         }
       });
+
+      // 檢查 A 更（最少 4 個崗位：Aa, Ac, Ad, Ae）與 P 更（最少 4 個崗位：Pa, Pe, Ec, Ed）是否齊人
+      const reqASlots = ['Aa', 'Ac', 'Ad', 'Ae'];
+      const missingASlots = reqASlots.filter(s => !todayACodesPresent.has(s));
+      const reqPSlots = ['Pa', 'Pe', 'Ec', 'Ed'];
+      const missingPSlots = reqPSlots.filter(s => !todayPCodesPresent.has(s));
+
+      if (appState.selectedSlot === 'A') {
+        if (upCount < 4 || missingASlots.length) {
+          currentWarnEl.textContent = missingASlots.length ? `欠 ${missingASlots.join('/')}` : `不足4人`;
+          currentWarnEl.classList.remove('hidden');
+        }
+        if (downCount < 4 || missingPSlots.length) {
+          nextWarnEl.textContent = missingPSlots.length ? `欠 ${missingPSlots.join('/')}` : `不足4人`;
+          nextWarnEl.classList.remove('hidden');
+        }
+      } else if (appState.selectedSlot === 'P') {
+        if (upCount < 4 || missingPSlots.length) {
+          currentWarnEl.textContent = missingPSlots.length ? `欠 ${missingPSlots.join('/')}` : `不足4人`;
+          currentWarnEl.classList.remove('hidden');
+        }
+      }
 
       document.getElementById('current-shift-count').textContent = `${upCount}人`;
       document.getElementById('next-shift-count').textContent = `${downCount}人`;
@@ -1367,10 +1453,15 @@
 
       container.innerHTML = filtered.map(person => {
         const norm = normalizeDutyCode(person.code);
-        const spec = DUTY_SPEC_MAP[norm] || {
-          work: '依更表', workStart: '07:00', mealStart: '13:00',
-          mealText: '依崗位', takeOverFromCodes: [], handoverToCodes: []
-        };
+        const fallbackSpec = isMorningACode(norm)
+          ? { work: '0700-1548 (待補崗位)', workStart: '07:00', mealStart: '12:00', mealText: '請於全體更表補回雙字母(如Aa/Ac/Ad/Ae)', takeOverFromCodes: [], handoverToCodes: [] }
+          : isAfternoonPECode(norm)
+          ? { work: '1345-2303 (待補崗位)', workStart: '13:45', mealStart: '19:00', mealText: '請於全體更表補回雙字母(如Pa/Pe/Ec/Ed)', takeOverFromCodes: [], handoverToCodes: [] }
+          : isNightNCode(norm)
+          ? { work: '2230-0718 (待補崗位)', workStart: '22:30', mealStart: '01:30', mealText: '請於全體更表補回雙字母(Na或Ne)', takeOverFromCodes: [], handoverToCodes: [] }
+          : { work: '依更表', workStart: '07:00', mealStart: '13:00', mealText: '依崗位', takeOverFromCodes: [], handoverToCodes: [] };
+
+        const spec = DUTY_SPEC_MAP[norm] || fallbackSpec;
 
         const takeOverNames = (spec.takeOverFromCodes || []).map(targetCode => {
           const matched = allDayStaffPool.find(p => {
@@ -1398,16 +1489,17 @@
         const sameWork = list.filter(o => o.name !== person.name && (DUTY_SPEC_MAP[normalizeDutyCode(o.code)]?.work === spec.work)).map(o => `${o.name}(${o.code})`);
         const sameMeal = list.filter(o => o.name !== person.name && (DUTY_SPEC_MAP[normalizeDutyCode(o.code)]?.mealStart === spec.mealStart)).map(o => `${o.name}(${o.code})`);
 
-        // 未來 7 日更期亦嚴格按同事姓名從「全體更表」讀取（未匯入之週次顯示 -）
+        // 未來 7 日更期嚴格按同事姓名從「全體更表」讀取
         let next7Html = '';
         for (let offset = 1; offset <= 7; offset++) {
           const fDate = addDaysToDateStr(dateStr, offset);
           const fCode = getDutyByStaffNameOnDate(fDate, person.name);
           const isOff = fCode ? isLeaveOrOffCode(fCode) : false;
+          const isWarn = isIncompleteSingleLetter(fCode);
           next7Html += `
-            <div class="next7-pill" style="${isOff ? 'background:#fff1f2;border-color:#fecdd3;' : ''}">
+            <div class="next7-pill" style="${isWarn ? 'background:#fef3c7;border-color:#f59e0b;' : (isOff ? 'background:#fff1f2;border-color:#fecdd3;' : '')}">
               <div style="font-size:9px;color:#64748b;">${fDate.slice(5)}</div>
-              <div class="duty-font" style="font-size:11px;color:${isOff ? '#be123c' : '#115e59'};">${fCode || '-'}</div>
+              <div class="duty-font" style="font-size:11px;color:${isWarn ? '#b45309' : (isOff ? '#be123c' : '#115e59')};">${fCode || '-'}</div>
             </div>
           `;
         }
@@ -1417,7 +1509,7 @@
             <div class="detail-top">
               <div>
                 <strong style="font-size:13px;">${person.name}</strong>
-                <span class="duty-font code-badge teal" style="margin-left:4px;">${person.code}</span>
+                <span class="duty-font code-badge ${isIncompleteSingleLetter(person.code) ? 'warn' : 'teal'}" style="margin-left:4px;">${person.code}</span>
                 <span style="font-size:11px;color:#334155;font-weight:700;margin-left:4px;">${spec.work}</span>
               </div>
               <div class="flex-row">
@@ -1587,7 +1679,8 @@
           <td class="col-edge" title="${staffName ? staffName + ' 上星期日 (' + prevSunStr + ')' : ''}"><span class="duty-font cell-pill ${getDutyBadgeClass(prevSunDuty)}">${prevSunDuty || '-'}</span></td>
         `;
         r.duties.forEach((duty, dIdx) => {
-          html += `<td class="col-day" onclick="editRosterCell(${rIdx}, ${dIdx})"><span class="duty-font cell-pill ${getDutyBadgeClass(duty)}">${duty || ''}</span></td>`;
+          const cleanD = sanitizeTwoLetterDutyCode(duty);
+          html += `<td class="col-day" onclick="editRosterCell(${rIdx}, ${dIdx})"><span class="duty-font cell-pill ${getDutyBadgeClass(cleanD)}">${cleanD || ''}</span></td>`;
         });
         html += `<td class="col-edge" title="${staffName ? staffName + ' 下星期一 (' + nextMonStr + ')' : ''}"><span class="duty-font cell-pill ${getDutyBadgeClass(nextMonDuty)}">${nextMonDuty || '-'}</span></td>`;
         tr.innerHTML = html;
@@ -1598,6 +1691,7 @@
     function getDutyBadgeClass(code) {
       const c = (code || '').trim();
       if (!c) return '';
+      if (isIncompleteSingleLetter(c)) return 'st-single-warn';
       if (isLeaveOrOffCode(c)) {
         if (c.toUpperCase().includes('SH') || c.includes('替位')) return 'st-sh';
         if (c.toUpperCase().includes('AL') || c.toUpperCase().includes('PH')) return 'st-al';
@@ -1688,9 +1782,9 @@
 
     function editRosterCell(rIdx, dIdx) {
       const weekObj = appState.weeks[appState.currentWeekMonday];
-      const next = prompt(`修改第 ${rIdx + 1} 行 (${weekObj.rows[rIdx].name || '空白列'}) 更期：`, weekObj.rows[rIdx].duties[dIdx] || '');
+      const next = prompt(`修改第 ${rIdx + 1} 行 (${weekObj.rows[rIdx].name || '空白列'}) 更期（除 O 外請填雙字母如 Aa, Ac, Ad, Ae, Pa, Pe, Ec, Ed, Na, Ne）：`, weekObj.rows[rIdx].duties[dIdx] || '');
       if (next !== null) {
-        weekObj.rows[rIdx].duties[dIdx] = next.trim();
+        weekObj.rows[rIdx].duties[dIdx] = sanitizeTwoLetterDutyCode(next.trim());
         learnFromVerifiedWeek(weekObj.rows);
         saveState();
         renderRosterTable();
@@ -1992,7 +2086,7 @@
       `;
     }
 
-    // ==================== AI 圖片辨析（透過 Vercel /api/ocr 後端 + 21 行輪轉精準校準） ====================
+    // ==================== AI 圖片辨析（強制雙字母規則 + 單字母自動二次重讀與排除法推斷） ====================
     let pendingUploadFiles = [];
     let verifiedImportPayloads = [];
     const UNIQUE_SHIFT_CODES = new Set(['Aa', 'Ac', 'Ad', 'Ae', '9-6', '9/5', 'Pa', 'Pe', 'Pu', 'Ec', 'Ed', 'Na', 'Ne']);
@@ -2005,20 +2099,49 @@
       return JSON.parse(cleaned);
     }
 
-    function detectDuplicateShiftsInColumns(rows) {
+    // 偵測「除 O 之外的單字母（例如 A, P, E, N）」以及同欄重複
+    function detectValidationIssuesInRows(rows) {
       const dayNames = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
-      const duplicates = [];
+      const issues = [];
       for (let dIdx = 0; dIdx < 7; dIdx++) {
         const seen = {};
         rows.forEach(r => {
-          const code = (r.duties?.[dIdx] || '').trim();
+          const code = sanitizeTwoLetterDutyCode(r.duties?.[dIdx] || '');
+          if (!code) return;
+          if (isIncompleteSingleLetter(code)) {
+            issues.push(`${dayNames[dIdx]}第${r.row}行(${r.name})只有單字母「${code}」，缺少第二個崗位小寫字母`);
+          }
           if (UNIQUE_SHIFT_CODES.has(code)) {
-            if (seen[code]) duplicates.push(`${dayNames[dIdx]}重複「${code}」`);
+            if (seen[code]) issues.push(`${dayNames[dIdx]}重複「${code}」`);
             else seen[code] = r.row;
           }
         });
       }
-      return duplicates;
+      return issues;
+    }
+
+    // 若二次 AI 重讀後仍有單字母（如 A / P / E / N），利用同日「最少4人編制排除法」自動補齊缺少的雙字母崗位
+    function inferRemainingSingleLettersByColumn(rows) {
+      for (let dIdx = 0; dIdx < 7; dIdx++) {
+        const present = new Set(rows.map(r => sanitizeTwoLetterDutyCode(r.duties?.[dIdx] || '')));
+        const missingA = ['Aa', 'Ac', 'Ad', 'Ae'].filter(c => !present.has(c));
+        const missingP = ['Pa', 'Pe', 'Ec', 'Ed'].filter(c => !present.has(c));
+        const missingE = ['Ec', 'Ed'].filter(c => !present.has(c));
+        const missingN = ['Na', 'Ne'].filter(c => !present.has(c));
+
+        rows.forEach(r => {
+          const code = sanitizeTwoLetterDutyCode(r.duties?.[dIdx] || '');
+          if (code.toUpperCase() === 'A' && missingA.length > 0) {
+            r.duties[dIdx] = missingA.shift();
+          } else if (code.toUpperCase() === 'P' && missingP.length > 0) {
+            r.duties[dIdx] = missingP.shift();
+          } else if (code.toUpperCase() === 'E' && missingE.length > 0) {
+            r.duties[dIdx] = missingE.shift();
+          } else if (code.toUpperCase() === 'N' && missingN.length > 0) {
+            r.duties[dIdx] = missingN.shift();
+          }
+        });
+      }
     }
 
     function openUploadModal() { document.getElementById('upload-modal').classList.remove('hidden'); }
@@ -2065,8 +2188,8 @@
         for (let i = 0; i < pendingUploadFiles.length; i++) {
           const file = pendingUploadFiles[i];
           document.getElementById('ocr-step-title').textContent = `分析第 ${i + 1} / ${pendingUploadFiles.length} 張相片...`;
-          appendOcrLog('優化相片解像度（高清晰模式）...');
-          const base64Data = await resizeImageToBase64(file, 2000, 0.90);
+          appendOcrLog('優化相片解像度（高清晰雙字母識別模式）...');
+          const base64Data = await resizeImageToBase64(file, 2200, 0.92);
           const thumbBase64 = await resizeImageToBase64(file, 800, 0.70);
 
           document.getElementById('ocr-attempt-badge').textContent = '格線提取中';
@@ -2078,10 +2201,10 @@
           const cleanMonday = getMondayOfDate(extractedJson.monday);
           extractedJson.monday = cleanMonday;
 
-          // 使用 21 行跨週輪轉公式自動校正姓名與空白分隔列位置
+          // 使用 21 行跨週輪轉公式自動校正姓名與空白分隔列位置，並正規化雙字母大小寫
           const expectedRoster = getExpectedRosterForWeek(cleanMonday);
           const emptyRowObj = expectedRoster.find(x => !x.name);
-          appendOcrLog(`識別週一：${cleanMonday}（本週空白分隔列為第 ${emptyRowObj ? emptyRowObj.row : '-'} 行）`);
+          appendOcrLog(`識別週一：${cleanMonday}（空白分隔列為第 ${emptyRowObj ? emptyRowObj.row : '-'} 行）`);
 
           extractedJson.rows = expectedRoster.map(exp => {
             if (!exp.name) {
@@ -2092,27 +2215,31 @@
               matched = extractedJson.rows.find(r => (r.name || '').trim() === exp.name);
             }
             const cleanDuties = matched && Array.isArray(matched.duties)
-              ? matched.duties.slice(0, 7).map(d => (d || '').trim())
+              ? matched.duties.slice(0, 7).map(d => sanitizeTwoLetterDutyCode(d))
               : ['', '', '', '', '', '', ''];
             return { row: exp.row, name: exp.name, duties: cleanDuties };
           });
 
-          const colDupWarnings = detectDuplicateShiftsInColumns(extractedJson.rows);
-          if (colDupWarnings.length) {
-            appendOcrLog(`發現同欄重複（${colDupWarnings.join('、')}），進行二次糾錯...`);
-            const fixRes = await callGeminiSelfVerifyAndFix(apiKey, base64Data, extractedJson, colDupWarnings);
+          // 嚴格檢查：除 O 之外，所有字母更期必須有兩個字母（如 Aa, Ac, Ad, Ae, Pa, Pe, Ec, Ed, Na, Ne），不可只得 A / P / E / N
+          const validationIssues = detectValidationIssuesInRows(extractedJson.rows);
+          if (validationIssues.length) {
+            appendOcrLog(`偵測到未完整崗位/重複（共 ${validationIssues.length} 項），啟動 AI 放大細看第二個小寫字母...`);
+            document.getElementById('ocr-attempt-badge').textContent = '二次精修雙字母';
+            const fixRes = await callGeminiSelfVerifyAndFix(apiKey, base64Data, extractedJson, validationIssues);
             if (fixRes.correctedData && fixRes.correctedData.rows) {
               extractedJson.rows = expectedRoster.map(exp => {
                 if (!exp.name) return { row: exp.row, name: '', duties: ['', '', '', '', '', '', ''] };
                 const m = fixRes.correctedData.rows.find(r => Number(r.row) === exp.row);
-                return { row: exp.row, name: exp.name, duties: m ? m.duties.slice(0, 7) : ['', '', '', '', '', '', ''] };
+                return { row: exp.row, name: exp.name, duties: m ? m.duties.slice(0, 7).map(d => sanitizeTwoLetterDutyCode(d)) : ['', '', '', '', '', '', ''] };
               });
             }
+            // 若仍有個別格子模糊成單字母，按當日缺額崗位（Aa/Ac/Ad/Ae 或 Pa/Pe/Ec/Ed 或 Na/Ne）自動補全
+            inferRemainingSingleLettersByColumn(extractedJson.rows);
           }
 
           extractedJson._cloudImageBase64 = thumbBase64;
           verifiedImportPayloads.push(extractedJson);
-          appendOcrLog(`✓ 第 ${i + 1} 張相片完成！`);
+          appendOcrLog(`✓ 第 ${i + 1} 張相片雙字母崗位校準完成！`);
         }
 
         if (verifiedImportPayloads.length > 0) {
@@ -2134,9 +2261,16 @@
       const knownNamesStr = MASTER_21_ROTATION.filter(x => x.name).map(x => `${x.name}(${x.id})`).join('、');
       const prompt = `請嚴格依照圖片中的黑色表格格線提取更期表（共 21 行，注意每星期全員含空白行會整體向下輪移 1 行），對照員工姓名與 Staff ID（${knownNamesStr}）：
 1. monday 填寫表格頂部「星期一」日期（YYYY-MM-DD）。跳過「職級」「公眾假期」欄，只取「星期一」至「星期日」7 欄。
-2. 【姓名與空白列規則】整張表（第 1–21 行）每位同事只會出現一次，絕對不可重複！其中有 1 行為全空白分隔列（如 11/16 在第15行、11/23 在第16行、11/30 在第17行），該空行必須輸出 "name":"","duties":["","","","","","",""]，不可把下方人員往上移位！
-3. 同一直欄（同一日）內專屬更期（Aa, Ac, Ad, Ae, 9-6, 9/5, Pa, Pe, Pu, Ec, Ed, Na, Ne）不可重複。
-4. 忽略右上角小字上標（如 U, D, C, E, T, RAT, (1) 等），區分 9-6 與 11-8，保留假期寫法（AL, SH, PH, WO, WO OWING, SL, CL, O）。
+2. 【最重要規則：除 O 之外，所有字母更期必須有兩個字母！】
+   - 絕對不可只輸出單字母 "A"、"P"、"E" 或 "N"！每格更期大寫字母後面一定跟著一個代表崗位的小寫字母：
+     * 早更（每日最少 4 人）：Aa, Ac, Ad, Ae
+     * 午更（每日最少 4 人）：Pa, Pe, Pu, Ec, Ed
+     * 夜更（每日 2 人）：Na, Ne（注意第二個字母是小寫 a 或 e，不要寫成 NA 或 NE）
+     * 中更：9-6（或 9/5）、11-8（或 11/8）
+     * 假期：O（單字母休假）、WO、WO OWING、AL、SH、PH、SL、CL
+   - 請仔細看清每個大寫字母旁邊緊貼的小寫字母（a, c, d, e, u），完整輸出雙字母代碼！
+3. 【姓名與空白列規則】整張表（第 1–21 行）每位同事只會出現一次，其中 1 行為全空白分隔列，該空行必須輸出 "name":"","duties":["","","","","","",""]。
+4. 忽略右上角小字上標（如 U, D, C, E, T, RAT, (1) 等）。
 只輸出純 JSON：{"monday":"2026-11-23","rows":[{"row":1,"name":"黃雅倩","duties":["Ac","Ec","Pu","O","WO","Ad","Ae"]}]}`;
 
       appendOcrLog('透過 Vercel 雲端節點連線 Google AI...');
@@ -2157,8 +2291,12 @@
       return safeExtractJsonFromText(data.text);
     }
 
-    async function callGeminiSelfVerifyAndFix(apiKey, base64Data, currentJson, duplicateWarnings) {
-      const prompt = `核對並修正重複更期（${duplicateWarnings.join('、')}）與原圖格線。待核對 JSON：${JSON.stringify(currentJson)}。只輸出純 JSON：{"correctionCount":0,"correctedData":{"monday":"...","rows":[...]}}`;
+    async function callGeminiSelfVerifyAndFix(apiKey, base64Data, currentJson, issuesList) {
+      const prompt = `【緊急修正】以下格子的更期辨識不完整（除 O 之外，所有字母更期必須有兩個字母，例如 Aa, Ac, Ad, Ae, Pa, Pe, Pu, Ec, Ed, Na, Ne，且每日早更 Aa/Ac/Ad/Ae 最少 4 人、午更 Pa/Pe/Ec/Ed 最少 4 人、夜更 Na/Ne 2 人）：
+問題清單：${issuesList.join('；')}
+請重新放大查看原圖對應格子的第二個小寫字母（a, c, d, e, u），修正所有單字母與重複項目。
+待修正 JSON：${JSON.stringify(currentJson)}
+只輸出純 JSON：{"correctionCount":0,"correctedData":{"monday":"...","rows":[...]}}`;
       try {
         const res = await fetch('/api/ocr', {
           method: 'POST',
@@ -2192,7 +2330,7 @@
           return {
             row: exp.row,
             name: exp.name,
-            duties: exp.name && found ? (found.duties || []).slice(0, 7) : ['', '', '', '', '', '', '']
+            duties: exp.name && found ? (found.duties || []).slice(0, 7).map(d => sanitizeTwoLetterDutyCode(d)) : ['', '', '', '', '', '', '']
           };
         });
         appState.weeks[monday] = { monday, rows: normalizedRows };
