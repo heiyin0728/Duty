@@ -454,7 +454,7 @@
         <label style="display:block;border:2px dashed #14b8a6;background:#f0fdfa;padding:14px;border-radius:10px;text-align:center;cursor:pointer;">
           <input type="file" id="multi-image-input" accept="image/*" multiple class="hidden" onchange="handleMultiImageSelect(event)" />
           <div style="color:#115e59;font-weight:700;">點擊一次選取多張更期表相片</div>
-          <div style="font-size:11px;color:#64748b;margin-top:2px;">免 VPN 直連 Vercel 雲端節點，自動格線辨識與儲存</div>
+          <div style="font-size:11px;color:#64748b;margin-top:2px;">自動校準 21 行跨週輪轉名單與空白分隔列，支援雲端儲存</div>
         </label>
 
         <div id="selected-images-bar" class="hidden" style="display:flex;gap:6px;overflow-x:auto;"></div>
@@ -496,7 +496,7 @@
         <button onclick="closeAddWeekModal()" style="background:none;color:#fff;font-size:20px;">&times;</button>
       </div>
       <div class="modal-body">
-        <label style="font-weight:700;">選擇新週次內的任何一日（自動對齊該週星期一）</label>
+        <label style="font-weight:700;">選擇新週次內的任何一日（自動對齊該週星期一並套用該週輪轉名單）</label>
         <input type="date" id="new-week-date-input" class="input-box" style="width:100%;padding:6px;" />
       </div>
       <div class="modal-foot">
@@ -603,6 +603,31 @@
     const CLOUD_CONFIG_KEY = 'qeh_aed_cloud_cfg_v6';
     const CLOUD_SHADOW_DB = 'qeh_aed_cloud_storage_v6';
 
+    // 基準週（2026-11-16）的 21 行標準輪轉序列（每週全員連同空白分隔列整體向下輪移 1 行）
+    const MASTER_21_ROTATION = [
+      { id: '175542', name: '黃詩琪' },
+      { id: '162684', name: '李嘉琪' },
+      { id: '208233', name: '梅潔瑜' },
+      { id: '247527', name: '陳曦彥' },
+      { id: '158841', name: '關鉦' },
+      { id: '259714', name: '吳愷欣' },
+      { id: '171295', name: '吳媛' },
+      { id: '301579', name: '吳珈翹' },
+      { id: '159659', name: '黃愛萍' },
+      { id: '164819', name: '王曉雯' },
+      { id: '263461', name: '丘飛鵬' },
+      { id: '242627', name: '謝玉連' },
+      { id: '272902', name: '朱翠君' },
+      { id: '157242', name: '張麗' },
+      { id: '',       name: '' },        // 空白分隔列（11/16 在第 15 行，11/23 在第 16 行，11/30 在第 17 行）
+      { id: '177981', name: '侯嘉敏' },
+      { id: '166859', name: '馮玉琼' },
+      { id: '276239', name: '馮嘉錂' },
+      { id: '257094', name: '蘇靖珊' },
+      { id: '213820', name: '葉曉彤' },
+      { id: '302592', name: '黃雅倩' }
+    ];
+
     const HK_STATUTORY_HOLIDAYS = {
       '2026-01-01': '元旦', '2026-02-17': '農曆年初一', '2026-02-18': '農曆年初二', '2026-02-19': '農曆年初三',
       '2026-04-03': '耶穌受難節', '2026-04-04': '耶穌受難節翌日', '2026-04-05': '清明節', '2026-04-06': '清明節翌日',
@@ -662,36 +687,32 @@
         monday: '2026-11-16',
         rows: [
           { row: 1,  name: '黃詩琪', duties: ['9-6', 'Ec', 'Ec', '11-8', 'WO', 'O', 'Aa'] },
-          { row: 2,  name: '李嘉琪', duties: ['Na', 'WO', 'WO', 'WO', 'WO', 'WO', 'O'] },
+          { row: 2,  name: '李嘉琪', duties: ['Na', 'WO OWING', 'WO OWING', 'WO OWING', 'WO OWING', 'WO', 'O'] },
           { row: 3,  name: '梅潔瑜', duties: ['Aa', 'Ne', 'O', 'Ae', 'Na', 'Ac', 'WO'] },
           { row: 4,  name: '陳曦彥', duties: ['Ad', 'Aa', 'Ne', 'WO', 'Aa', 'Pa', 'O'] },
           { row: 5,  name: '關鉦',   duties: ['11-8', 'WO', 'Aa', 'Ne', 'O', 'Ec', 'Pe'] },
           { row: 6,  name: '吳愷欣', duties: ['Ed', 'Pe', '9-6', 'Aa', 'Ne', 'WO', 'O'] },
-          { row: 7,  name: '吳媛',   duties: ['Ae', 'Na', 'O', 'Pa', 'WO', 'Ne', 'Pe'] },
+          { row: 7,  name: '吳媛',   duties: ['Ae', 'Na', 'O', 'Pa', 'WO', 'Ne', 'Pa'] },
           { row: 8,  name: '吳珈翹', duties: ['AL', 'AL', 'AL', 'AL', 'AL', 'WO', 'O'] },
-          { row: 9,  name: '黃愛萍', duties: ['O', 'Pa', '11-8', 'Ad', 'Pe', 'WO', 'Ed'] },
+          { row: 9,  name: '黃愛萍', duties: ['O', 'Pa', '11-8', 'Ad', 'Pu', 'WO', 'Ed'] },
           { row: 10, name: '王曉雯', duties: ['AL', 'AL', 'AL', 'AL', 'AL', 'WO', 'O'] },
           { row: 11, name: '丘飛鵬', duties: ['Pa', 'Ed', 'Pe', 'O', 'Ec', '11-8', 'WO'] },
-          { row: 12, name: '謝玉連', duties: ['AL', 'Aa', 'Na', '9-6', 'O', 'Ae', 'Na'] },
+          { row: 12, name: '謝玉連', duties: ['AL', 'Ae', 'Na', '9-6', 'O', 'Ae', 'Na'] },
           { row: 13, name: '朱翠君', duties: ['WO', '11-8', 'Ae', 'Na', 'O', 'Ad', 'Ec'] },
           { row: 14, name: '張麗',   duties: ['Pe', 'Pu', 'WO', 'O', 'Pa', 'Pe', 'Ac'] },
           { row: 15, name: '',       duties: ['', '', '', '', '', '', ''] },
           { row: 16, name: '侯嘉敏', duties: ['O', 'Ad', 'Ed', 'Ed', 'Ed', 'Ed', 'WO'] },
-          { row: 17, name: '馮玉琼', duties: ['O', 'Ac', 'Ac', 'Pe', 'Ad', 'WO', 'Aa'] },
+          { row: 17, name: '馮玉琼', duties: ['O', 'Ac', 'Ac', 'Pu', 'Ad', 'WO', 'Aa'] },
           { row: 18, name: '馮嘉錂', duties: ['O', '9-6', 'Pa', 'Ec', '11-8', 'WO', 'Ad'] },
-          { row: 19, name: '蘇靖珊', duties: ['Ec', 'WO', 'O', 'SH', 'Ae', 'Aa', 'Ne'] },
-          { row: 20, name: '葉曉彤', duties: ['Ac', 'WO', 'SH', 'Ae', 'Aa', 'Na', 'O'] },
+          { row: 19, name: '蘇靖珊', duties: ['Ec', 'WO', 'SH', 'SH', 'Ac', 'Aa', 'Ne'] },
+          { row: 20, name: '葉曉彤', duties: ['Ac', 'WO', 'SH', 'Ac', 'Ae', 'Na', 'O'] },
           { row: 21, name: '黃雅倩', duties: ['Ne', 'O', 'Ad', 'Pe', 'Pa', 'WO', '11-8'] }
         ]
       }
     };
 
     const DEFAULT_DICTIONARY = {
-      names: [
-        '黃詩琪', '李嘉琪', '梅潔瑜', '陳曦彥', '關鉦', '吳愷欣', '吳媛', '吳珈翹',
-        '黃愛萍', '王曉雯', '丘飛鵬', '謝玉連', '朱翠君', '張麗', '侯嘉敏', '馮玉琼',
-        '馮嘉錂', '蘇靖珊', '葉曉彤', '黃雅倩'
-      ],
+      names: MASTER_21_ROTATION.filter(x => x.name).map(x => x.name),
       leaveCodes: ['AL', 'SH', 'PH', 'WO', 'WO OWING', 'SL', 'CL', 'O', '替位']
     };
 
@@ -734,14 +755,33 @@
       return formatLocalDate(d);
     }
 
+    // 根據週一日期，精準算出該週第 1~21 行的正確人員與空白分隔列位置
+    function getExpectedRosterForWeek(mondayStr) {
+      const baseMon = parseLocalDate('2026-11-16');
+      const targetMon = parseLocalDate(getMondayOfDate(mondayStr));
+      const weeksDiff = Math.round((targetMon - baseMon) / (7 * 24 * 60 * 60 * 1000));
+      const len = MASTER_21_ROTATION.length; // 21 行循環
+
+      return Array.from({ length: len }, (_, idx) => {
+        const srcIdx = ((idx - weeksDiff) % len + len) % len;
+        return {
+          row: idx + 1,
+          id: MASTER_21_ROTATION[srcIdx].id,
+          name: MASTER_21_ROTATION[srcIdx].name
+        };
+      });
+    }
+
+    // 跨週查詢某人在某日的更期（優先以姓名匹配，確保週日到週一輪轉行號時依然精準接軌）
     function getDutyOnDateForRow(dateStr, rowNum, staffName) {
       const monday = getMondayOfDate(dateStr);
       const d = parseLocalDate(dateStr);
       const dayIdx = (d.getDay() + 6) % 7;
       const weekObj = appState.weeks[monday];
       if (!weekObj || !weekObj.rows) return '';
-      let found = weekObj.rows.find(r => r.row === rowNum);
-      if ((!found || !found.name) && staffName) found = weekObj.rows.find(r => r.name === staffName);
+      let found = null;
+      if (staffName) found = weekObj.rows.find(r => r.name === staffName);
+      if (!found) found = weekObj.rows.find(r => r.row === rowNum);
       return found ? (found.duties[dayIdx] || '') : '';
     }
 
@@ -1356,9 +1396,10 @@
         appState.currentWeekMonday = remaining[0];
       } else {
         const fallbackMon = getMondayOfDate(getTodayLocalStr());
+        const expected = getExpectedRosterForWeek(fallbackMon);
         appState.weeks[fallbackMon] = {
           monday: fallbackMon,
-          rows: DEFAULT_WEEK_DATA['2026-11-16'].rows.map(r => ({ row: r.row, name: r.name, duties: ['', '', '', '', '', '', ''] }))
+          rows: expected.map(r => ({ row: r.row, name: r.name, duties: ['', '', '', '', '', '', ''] }))
         };
         appState.currentWeekMonday = fallbackMon;
       }
@@ -1430,8 +1471,8 @@
       if (!picked) { alert('請先選擇日期'); return; }
       const monday = getMondayOfDate(picked);
       if (!appState.weeks[monday]) {
-        const baseRows = appState.weeks[appState.currentWeekMonday]?.rows || DEFAULT_WEEK_DATA['2026-11-16'].rows;
-        appState.weeks[monday] = { monday, rows: baseRows.map(r => ({ row: r.row, name: r.name, duties: ['', '', '', '', '', '', ''] })) };
+        const expected = getExpectedRosterForWeek(monday);
+        appState.weeks[monday] = { monday, rows: expected.map(r => ({ row: r.row, name: r.name, duties: ['', '', '', '', '', '', ''] })) };
       }
       appState.currentWeekMonday = monday;
       closeAddWeekModal();
@@ -1460,6 +1501,7 @@
       tbody.innerHTML = '';
       weekObj.rows.forEach((r, rIdx) => {
         const tr = document.createElement('tr');
+        if (!r.name) tr.style.background = '#f8fafc';
         const prevSunDuty = getDutyOnDateForRow(prevSunStr, r.row, r.name);
         const nextMonDuty = getDutyOnDateForRow(nextMonStr, r.row, r.name);
 
@@ -1508,7 +1550,7 @@
 
     function editRosterCell(rIdx, dIdx) {
       const weekObj = appState.weeks[appState.currentWeekMonday];
-      const next = prompt(`修改第 ${rIdx + 1} 行 (${weekObj.rows[rIdx].name}) 更期：`, weekObj.rows[rIdx].duties[dIdx] || '');
+      const next = prompt(`修改第 ${rIdx + 1} 行 (${weekObj.rows[rIdx].name || '空白列'}) 更期：`, weekObj.rows[rIdx].duties[dIdx] || '');
       if (next !== null) {
         weekObj.rows[rIdx].duties[dIdx] = next.trim();
         learnFromVerifiedWeek(weekObj.rows);
@@ -1812,7 +1854,7 @@
       `;
     }
 
-    // ==================== AI 圖片辨析（透過 Vercel /api/ocr 後端轉發至 Google AI） ====================
+    // ==================== AI 圖片辨析（透過 Vercel /api/ocr 後端 + 21 行輪轉精準校準） ====================
     let pendingUploadFiles = [];
     let verifiedImportPayloads = [];
     const UNIQUE_SHIFT_CODES = new Set(['Aa', 'Ac', 'Ad', 'Ae', '9-6', '9/5', 'Pa', 'Pe', 'Pu', 'Ec', 'Ed', 'Na', 'Ne']);
@@ -1885,22 +1927,49 @@
         for (let i = 0; i < pendingUploadFiles.length; i++) {
           const file = pendingUploadFiles[i];
           document.getElementById('ocr-step-title').textContent = `分析第 ${i + 1} / ${pendingUploadFiles.length} 張相片...`;
-          appendOcrLog('優化相片解像度...');
-          const base64Data = await resizeImageToBase64(file, 1500, 0.85);
-          const thumbBase64 = await resizeImageToBase64(file, 800, 0.7);
+          appendOcrLog('優化相片解像度（高清晰模式）...');
+          const base64Data = await resizeImageToBase64(file, 2000, 0.90);
+          const thumbBase64 = await resizeImageToBase64(file, 800, 0.70);
 
           document.getElementById('ocr-attempt-badge').textContent = '格線提取中';
           let extractedJson = await callGeminiGridExtractWithFallback(apiKey, base64Data);
           if (!extractedJson || !Array.isArray(extractedJson.rows) || !extractedJson.rows.length) {
             throw new Error(`第 ${i + 1} 張相片未能識別表格。`);
           }
-          appendOcrLog(`識別週一日期：${extractedJson.monday}（共 ${extractedJson.rows.length} 行）`);
+
+          const cleanMonday = getMondayOfDate(extractedJson.monday);
+          extractedJson.monday = cleanMonday;
+
+          // 使用 21 行跨週輪轉公式自動校正姓名與空白分隔列位置
+          const expectedRoster = getExpectedRosterForWeek(cleanMonday);
+          const emptyRowObj = expectedRoster.find(x => !x.name);
+          appendOcrLog(`識別週一：${cleanMonday}（本週空白分隔列為第 ${emptyRowObj ? emptyRowObj.row : '-'} 行）`);
+
+          extractedJson.rows = expectedRoster.map(exp => {
+            if (!exp.name) {
+              return { row: exp.row, name: '', duties: ['', '', '', '', '', '', ''] };
+            }
+            let matched = extractedJson.rows.find(r => Number(r.row) === exp.row && (r.duties || []).some(d => d && d.trim()));
+            if (!matched) {
+              matched = extractedJson.rows.find(r => (r.name || '').trim() === exp.name);
+            }
+            const cleanDuties = matched && Array.isArray(matched.duties)
+              ? matched.duties.slice(0, 7).map(d => (d || '').trim())
+              : ['', '', '', '', '', '', ''];
+            return { row: exp.row, name: exp.name, duties: cleanDuties };
+          });
 
           const colDupWarnings = detectDuplicateShiftsInColumns(extractedJson.rows);
           if (colDupWarnings.length) {
             appendOcrLog(`發現同欄重複（${colDupWarnings.join('、')}），進行二次糾錯...`);
             const fixRes = await callGeminiSelfVerifyAndFix(apiKey, base64Data, extractedJson, colDupWarnings);
-            if (fixRes.correctedData && fixRes.correctedData.rows) extractedJson = fixRes.correctedData;
+            if (fixRes.correctedData && fixRes.correctedData.rows) {
+              extractedJson.rows = expectedRoster.map(exp => {
+                if (!exp.name) return { row: exp.row, name: '', duties: ['', '', '', '', '', '', ''] };
+                const m = fixRes.correctedData.rows.find(r => Number(r.row) === exp.row);
+                return { row: exp.row, name: exp.name, duties: m ? m.duties.slice(0, 7) : ['', '', '', '', '', '', ''] };
+              });
+            }
           }
 
           extractedJson._cloudImageBase64 = thumbBase64;
@@ -1924,12 +1993,13 @@
     }
 
     async function callGeminiGridExtractWithFallback(apiKey, base64Data) {
-      const knownNamesStr = appState.dictionary.names.join('、');
-      const prompt = `請嚴格依照圖片中的黑色表格格線提取更期表，比對標準姓名庫（${knownNamesStr}）：
+      const knownNamesStr = MASTER_21_ROTATION.filter(x => x.name).map(x => `${x.name}(${x.id})`).join('、');
+      const prompt = `請嚴格依照圖片中的黑色表格格線提取更期表（共 21 行，注意每星期全員含空白行會整體向下輪移 1 行），對照員工姓名與 Staff ID（${knownNamesStr}）：
 1. monday 填寫表格頂部「星期一」日期（YYYY-MM-DD）。跳過「職級」「公眾假期」欄，只取「星期一」至「星期日」7 欄。
-2. 同一直欄（同一日）內專屬更期（Aa, Ac, Ad, Ae, 9-6, 9/5, Pa, Pe, Pu, Ec, Ed, Na, Ne）不可重複。
-3. 區分 9-6/9/5 與 11-8/11/8，保留假期寫法（AL, SH, PH, WO, WO OWING, SL, CL, O）。
-只輸出純 JSON：{"monday":"2026-11-16","rows":[{"row":1,"name":"黃詩琪","duties":["9-6","Ec","Ec","11-8","WO","O","Aa"]}]}`;
+2. 【姓名與空白列規則】整張表（第 1–21 行）每位同事只會出現一次，絕對不可重複！其中有 1 行為全空白分隔列（如 11/16 在第15行、11/23 在第16行、11/30 在第17行），該空行必須輸出 "name":"","duties":["","","","","","",""]，不可把下方人員往上移位！
+3. 同一直欄（同一日）內專屬更期（Aa, Ac, Ad, Ae, 9-6, 9/5, Pa, Pe, Pu, Ec, Ed, Na, Ne）不可重複。
+4. 忽略右上角小字上標（如 U, D, C, E, T, RAT, (1) 等），區分 9-6 與 11-8，保留假期寫法（AL, SH, PH, WO, WO OWING, SL, CL, O）。
+只輸出純 JSON：{"monday":"2026-11-23","rows":[{"row":1,"name":"黃雅倩","duties":["Ac","Ec","Pu","O","WO","Ad","Ae"]}]}`;
 
       appendOcrLog('透過 Vercel 雲端節點連線 Google AI...');
       const res = await fetch('/api/ocr', {
@@ -1971,16 +2041,21 @@
 
     function renderOcrPreviewTable(weekPayload) {
       document.getElementById('ocr-preview-tbody').innerHTML = (weekPayload.rows || []).map(r => `
-        <tr><td>${r.row}</td><td><strong>${r.name || ''}</strong></td>${(r.duties || []).map(d => `<td class="duty-font">${d}</td>`).join('')}</tr>
+        <tr style="${!r.name ? 'background:#f8fafc;' : ''}"><td>${r.row}</td><td><strong>${r.name || '-'}</strong></td>${(r.duties || []).map(d => `<td class="duty-font">${d}</td>`).join('')}</tr>
       `).join('');
     }
 
     function confirmImportAllWeeks() {
       verifiedImportPayloads.forEach(payload => {
         const monday = getMondayOfDate(payload.monday);
-        const normalizedRows = Array.from({ length: 21 }, (_, idx) => {
-          const found = (payload.rows || []).find(item => Number(item.row) === idx + 1);
-          return found ? { row: idx + 1, name: found.name || '', duties: (found.duties || []).slice(0, 7) } : { row: idx + 1, name: '', duties: ['', '', '', '', '', '', ''] };
+        const expectedRoster = getExpectedRosterForWeek(monday);
+        const normalizedRows = expectedRoster.map(exp => {
+          const found = (payload.rows || []).find(item => Number(item.row) === exp.row);
+          return {
+            row: exp.row,
+            name: exp.name,
+            duties: exp.name && found ? (found.duties || []).slice(0, 7) : ['', '', '', '', '', '', '']
+          };
         });
         appState.weeks[monday] = { monday, rows: normalizedRows };
         appState.currentWeekMonday = monday;
