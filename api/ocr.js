@@ -17,7 +17,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: '缺少圖片資料或 API Key' });
     }
 
-    const models = ['gemini-3.8-flash', 'gemini-2.5-flash'];
+    const models = ['gemini-3.8-flash'];
     let lastErr = '';
 
     for (const model of models) {
