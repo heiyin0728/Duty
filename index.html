@@ -1,0 +1,2196 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>QEH AED更期系統</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang HK", "Microsoft JhengHei", Arial, sans-serif;
+      background-color: #f1f5f9;
+      color: #1e293b;
+      font-size: 13px;
+      line-height: 1.4;
+      padding-bottom: 32px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .duty-font {
+      font-family: Arial, "Helvetica Neue", Helvetica, "PingFang HK", sans-serif;
+      font-weight: 700;
+    }
+    .hidden { display: none !important; }
+    button, select, input { font-family: inherit; }
+    button, a.btn-link { cursor: pointer; border: none; outline: none; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+
+    /* 頂部橫幅 */
+    header { background: #115e59; color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.14); }
+    .header-top {
+      max-width: 960px; margin: 0 auto; padding: 8px 12px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-title { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; }
+    .dot-live { width: 8px; height: 8px; border-radius: 50%; background: #34d399; display: inline-block; }
+    .badge-cloud {
+      font-size: 10px; background: rgba(19,78,74,0.9); color: #6ee7b7;
+      padding: 2px 6px; border-radius: 4px; border: 1px solid #0f766e;
+    }
+    .header-actions { display: flex; align-items: center; gap: 6px; }
+    .btn-icon {
+      background: rgba(19,78,74,0.9); color: #ccfbf1; padding: 5px 8px;
+      border-radius: 8px; font-size: 12px; font-weight: 700; gap: 4px;
+    }
+
+    /* 導航列 */
+    nav { background: rgba(19,78,74,0.78); padding: 4px 8px; }
+    .nav-grid {
+      max-width: 960px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+    }
+    .nav-btn {
+      background: transparent; color: #ccfbf1; padding: 6px 4px; border-radius: 6px;
+      font-size: 12px; font-weight: 600; text-align: center;
+    }
+    .nav-btn.active { background: #0f766e; color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+
+    /* 主容器與卡片 */
+    main { max-width: 960px; margin: 0 auto; padding: 8px; display: flex; flex-direction: column; gap: 10px; }
+    .card {
+      background: #fff; border-radius: 12px; border: 1px solid #cbd5e1;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04); overflow: hidden;
+    }
+    .card-pad { padding: 10px; }
+    .toolbar {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px;
+    }
+    .flex-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+
+    /* 按鈕與輸入框 */
+    .btn-sm, a.btn-sm {
+      padding: 5px 9px; border-radius: 6px; font-size: 12px; font-weight: 700;
+      background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1;
+    }
+    .btn-teal { background: #0f766e !important; color: #fff !important; border-color: #0f766e !important; }
+    .btn-emerald { background: #059669 !important; color: #fff !important; border-color: #059669 !important; }
+    .btn-blue { background: #0284c7 !important; color: #fff !important; border-color: #0284c7 !important; }
+    .btn-indigo { background: #4f46e5 !important; color: #fff !important; border-color: #4f46e5 !important; }
+    .btn-amber { background: #d97706 !important; color: #fff !important; border-color: #d97706 !important; }
+    .btn-rose { background: #fff1f2 !important; color: #be123c !important; border-color: #fda4af !important; }
+    .btn-rose-armed { background: #e11d48 !important; color: #fff !important; border-color: #be123c !important; }
+    .input-box {
+      border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 6px; font-size: 12px;
+      font-weight: 600; color: #1e293b; background: #fff;
+    }
+
+    /* 三更切換器 */
+    .slot-group { display: flex; background: #f1f5f9; padding: 2px; border-radius: 8px; border: 1px solid #e2e8f0; }
+    .slot-btn { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; color: #475569; background: transparent; }
+    .slot-btn.active { background: #0f766e; color: #fff; }
+
+    /* 雙欄卡片 */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .grid-3-sm { display: grid; grid-template-columns: 1fr; gap: 6px; }
+    @media (min-width: 640px) { .grid-3-sm { grid-template-columns: repeat(3, 1fr); } }
+
+    .panel-head {
+      padding: 6px 10px; color: #fff; display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700;
+    }
+    .bg-teal { background: #0f766e; }
+    .bg-slate { background: #334155; }
+    .bg-cyan { background: #0e7490; }
+    .pill-count {
+      background: #fff; color: #0f172a; font-size: 11px; font-weight: 800; padding: 1px 6px; border-radius: 99px; margin-left: 4px;
+    }
+    .tag-mini { font-size: 10px; background: rgba(0,0,0,0.25); padding: 1px 5px; border-radius: 4px; }
+    .chip-list { padding: 6px; display: flex; flex-direction: column; gap: 4px; }
+    .mid-grid { padding: 6px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+    @media (min-width: 640px) { .mid-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    .person-chip {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 5px 8px; cursor: pointer;
+    }
+    .person-chip.hl { background: #fef3c7; border-color: #f59e0b; }
+    .code-badge {
+      font-size: 11px; padding: 1px 6px; border-radius: 4px; border: 1px solid #cbd5e1; background: #e2e8f0; color: #0f172a;
+    }
+    .code-badge.teal { background: #ccfbf1; border-color: #5eead4; color: #115e59; }
+    .code-badge.cyan { background: #cffafe; border-color: #67e8f9; color: #155e75; }
+
+    /* 明細卡片 */
+    .detail-item {
+      border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px; background: #f8fafc;
+      display: flex; flex-direction: column; gap: 5px;
+    }
+    .detail-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px; }
+    .detail-subgrid { display: grid; grid-template-columns: 1fr; gap: 4px; font-size: 11px; }
+    @media (min-width: 640px) { .detail-subgrid { grid-template-columns: 1fr 1fr; } }
+    .sub-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 6px; }
+    .next7-strip {
+      display: flex; gap: 4px; overflow-x: auto; padding-top: 3px;
+    }
+    .next7-pill {
+      flex-shrink: 0; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 5px; text-align: center; background: #f8fafc; min-width: 38px;
+    }
+
+    /* 全體更表 */
+    .table-wrap { overflow-x: auto; width: 100%; }
+    table.roster-tbl { width: 100%; border-collapse: collapse; text-align: center; font-size: 11px; table-layout: fixed; }
+    table.roster-tbl th, table.roster-tbl td { border: 1px solid #cbd5e1; padding: 3px 1px; }
+    table.roster-tbl th { background: #f1f5f9; color: #334155; font-weight: 700; }
+    .sticky-col-1 { position: sticky; left: 0; background: #fff; z-index: 2; width: 22px; color: #94a3b8; font-size: 10px; }
+    .sticky-col-2 { position: sticky; left: 22px; background: #fff; z-index: 2; width: 52px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+    th.sticky-col-1, th.sticky-col-2 { background: #f1f5f9; z-index: 3; }
+    .col-edge { background: #fffbeb !important; width: 36px; }
+    .col-day { width: 36px; cursor: pointer; }
+    .cell-pill { display: inline-block; width: 100%; padding: 2px 0; border-radius: 4px; }
+    .st-leave { background: #f1f5f9; color: #64748b; }
+    .st-al { background: #ffe4e6; color: #9f1239; }
+    .st-sh { background: #fef3c7; color: #92400e; }
+    .st-mid { background: #cffafe; color: #155e75; }
+    .st-a { background: #f0fdfa; color: #115e59; }
+    .st-p { background: #f0f9ff; color: #075985; }
+    .st-n { background: #eef2ff; color: #3730a3; }
+
+    /* 預測與日曆 */
+    .predict-top-grid { display: grid; grid-template-columns: 1fr; gap: 8px; background: #f0fdfa; padding: 8px; border-radius: 10px; border: 1px solid #99f6e4; }
+    @media (min-width: 640px) { .predict-top-grid { grid-template-columns: 1fr 1fr; } }
+    .cal-box { background: #fff; border: 1px solid #5eead4; border-radius: 8px; padding: 6px; touch-action: pan-y; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; font-size: 11px; }
+    .cal-cell { padding: 3px 1px; border-radius: 4px; cursor: pointer; border: 1px solid transparent; background: #f8fafc; }
+    .cal-cell.sel { background: #0f766e; color: #fff; font-weight: 700; }
+    .cal-cell.hol { background: #fff1f2; color: #be123c; border-color: #fecdd3; font-weight: 700; }
+    .result-banner {
+      background: #0f172a; color: #fff; border-radius: 10px; padding: 10px 12px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+    }
+    .result-code { background: #0d9488; color: #fff; font-size: 18px; font-weight: 800; padding: 6px 14px; border-radius: 10px; }
+    .grid-14 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+    .day14-card { border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 6px; padding: 4px 2px; }
+    .day14-card.hol { border-color: #fda4af; background: #fff1f2; }
+    .stats-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center; }
+    .stat-box { border: 1px solid #e2e8f0; background: #f8fafc; border-radius: 6px; padding: 6px 2px; }
+
+    /* 彈窗 */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(15,23,42,0.75); z-index: 50;
+      display: flex; align-items: center; justify-content: center; padding: 12px;
+    }
+    .modal-box {
+      background: #fff; width: 100%; max-width: 560px; border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25); overflow: hidden; max-height: 90vh; display: flex; flex-direction: column;
+    }
+    .modal-head {
+      background: #115e59; color: #fff; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; font-weight: 700;
+    }
+    .modal-body { padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .modal-foot { background: #f1f5f9; padding: 8px 12px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 6px; }
+    .alarm-banner {
+      background: #f59e0b; color: #0f172a; padding: 8px 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .badge-tag { display: inline-flex; align-items: center; gap: 3px; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; margin: 2px; }
+  </style>
+</head>
+<body>
+
+  <!-- 頂部橫幅 -->
+  <header>
+    <div class="header-top">
+      <div class="header-title">
+        <span class="dot-live"></span>
+        <span>QEH AED更期系統</span>
+        <span id="cloud-sync-badge" class="badge-cloud">☁ 雲端已存</span>
+      </div>
+      <div class="header-actions">
+        <button onclick="openAlarmModal()" class="btn-icon" title="鬧鐘設定">
+          <span>⏰</span>
+          <span id="active-alarm-count">0</span>
+        </button>
+        <button onclick="openSettingsModal()" class="btn-icon" title="雲端與備份設定">⚙ 設定</button>
+      </div>
+    </div>
+    <nav>
+      <div class="nav-grid">
+        <button id="nav-today" onclick="switchTab('today')" class="nav-btn active">今日當值</button>
+        <button id="nav-roster" onclick="switchTab('roster')" class="nav-btn">全體更表與規則</button>
+        <button id="nav-predict" onclick="switchTab('predict')" class="nav-btn">AI預測與假期計算</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- 響鈴觸發橫幅 -->
+  <div id="alarm-ringing-banner" class="alarm-banner hidden">
+    <span id="alarm-ringing-text">⏰ 鬧鐘提醒！</span>
+    <button onclick="stopAlarmSound()" class="btn-sm" style="background:#0f172a;color:#fff;">關閉鬧鐘</button>
+  </div>
+
+  <main>
+    <!-- ==================== 分頁 1：今日當值與交接 ==================== -->
+    <section id="view-today" style="display:flex;flex-direction:column;gap:8px;">
+      <div class="card card-pad toolbar">
+        <div class="flex-row">
+          <button onclick="shiftTodayDate(-1)" class="btn-sm">&lt;</button>
+          <input type="date" id="today-date-picker" onchange="renderTodayView()" class="input-box" />
+          <button onclick="shiftTodayDate(1)" class="btn-sm">&gt;</button>
+          <span id="today-weekday-badge" class="btn-sm" style="background:#f0fdfa;color:#115e59;border-color:#99f6e4;">星期二</span>
+          <span id="today-hk-holiday-badge" class="btn-sm hidden" style="background:#ffe4e6;color:#9f1239;border-color:#fecdd3;"></span>
+        </div>
+
+        <div class="slot-group">
+          <button onclick="setShiftSlot('A')" id="slot-A" class="slot-btn active">早更 A</button>
+          <button onclick="setShiftSlot('P')" id="slot-P" class="slot-btn">午更 P</button>
+          <button onclick="setShiftSlot('N')" id="slot-N" class="slot-btn">夜更 N</button>
+        </div>
+      </div>
+
+      <!-- 本更返工 vs 下更返工 -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="panel-head bg-teal">
+            <div>本更返工<span id="current-shift-count" class="pill-count">0人</span></div>
+            <span class="tag-mini">上更</span>
+          </div>
+          <div id="current-shift-list" class="chip-list"></div>
+        </div>
+
+        <div class="card">
+          <div class="panel-head bg-slate">
+            <div>下更返工<span id="next-shift-count" class="pill-count">0人</span></div>
+            <span class="tag-mini">下更</span>
+          </div>
+          <div id="next-shift-list" class="chip-list"></div>
+        </div>
+      </div>
+
+      <!-- 中更卡片 -->
+      <div class="card">
+        <div class="panel-head bg-cyan">
+          <div>中更（9/5 / 11/8）<span id="mid-shift-count" class="pill-count">0人</span></div>
+          <span class="tag-mini">中更</span>
+        </div>
+        <div id="mid-shift-list" class="mid-grid"></div>
+      </div>
+
+      <!-- 當日返放工、食飯、交接、未來7日更期與鬧鐘 -->
+      <div class="card card-pad" style="display:flex;flex-direction:column;gap:8px;">
+        <div class="toolbar" style="border-bottom:1px solid #f1f5f9;padding-bottom:6px;">
+          <strong style="color:#115e59;font-size:13px;">當日返放工、食飯、交接與未來 7 日更期</strong>
+          <button onclick="openAlarmModal()" class="btn-sm" style="background:#fef3c7;color:#92400e;border-color:#fcd34d;">⏰ 守護寶式鬧鐘設定</button>
+        </div>
+        <div id="duty-schedule-detail-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+    </section>
+
+    <!-- ==================== 分頁 2：全體更表與規則 ==================== -->
+    <section id="view-roster" class="hidden" style="display:flex;flex-direction:column;gap:8px;">
+      <div class="card card-pad toolbar">
+        <div class="flex-row">
+          <select id="week-selector" onchange="selectWeek(this.value)" class="input-box"></select>
+          <button onclick="openAddWeekModal()" class="btn-sm">+ 新增週次</button>
+          <button id="btn-delete-week" onclick="handleDeleteWeekClick()" class="btn-sm btn-rose">刪除本週</button>
+        </div>
+        <div class="flex-row">
+          <!-- 第8點：調更按鈕 -->
+          <a href="https://docs.google.com/spreadsheets/d/17wae7UwtU93GSEDcq-tZ1Uptj3mL2hEaxYcKSTvePD4/edit?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="btn-sm btn-blue">調更</a>
+          <button onclick="openUploadModal()" class="btn-sm btn-emerald">⬆ 上載更表 (AI辨析)</button>
+        </div>
+      </div>
+
+      <!-- 第9點：支援左右滑動切換週次 -->
+      <div id="roster-swipe-container" class="card table-wrap">
+        <table class="roster-tbl">
+          <thead>
+            <tr>
+              <th class="sticky-col-1">#</th>
+              <th class="sticky-col-2">姓名</th>
+              <th id="th-prev-sun" class="col-edge">上日</th>
+              <th id="th-day-0" class="col-day">一</th>
+              <th id="th-day-1" class="col-day">二</th>
+              <th id="th-day-2" class="col-day">三</th>
+              <th id="th-day-3" class="col-day">四</th>
+              <th id="th-day-4" class="col-day">五</th>
+              <th id="th-day-5" class="col-day">六</th>
+              <th id="th-day-6" class="col-day" style="color:#be123c;">日</th>
+              <th id="th-next-mon" class="col-edge">下一</th>
+            </tr>
+          </thead>
+          <tbody id="roster-table-body"></tbody>
+        </table>
+      </div>
+
+      <!-- 雲端已存原圖預覽 -->
+      <div id="cloud-images-panel" class="card card-pad hidden">
+        <div class="toolbar" style="margin-bottom:6px;">
+          <strong style="color:#115e59;font-size:12px;">雲端已存更期表原圖</strong>
+          <span id="cloud-images-count" style="font-size:11px;color:#64748b;">0 張</span>
+        </div>
+        <div id="cloud-images-strip" style="display:flex;gap:8px;overflow-x:auto;"></div>
+      </div>
+
+      <!-- 三更、食飯與交接規則對照 -->
+      <div class="card card-pad">
+        <div style="font-weight:700;color:#115e59;margin-bottom:6px;">各更返放工、食飯與交接規則總覽</div>
+        <div class="grid-2" style="font-size:11px;">
+          <div class="sub-box" style="background:#f0fdfa;border-color:#99f6e4;">
+            <strong style="color:#115e59;">早更 (A更)：</strong><br>
+            • Aa: 0700-1503 | 食飯 1000-1030 | 返工接 Na<br>
+            • Ac: 0700-1548 | 食飯 1200-1300 (11/8接手) | 返工接 Ne, 收工交 Ec<br>
+            • Ad: 0700-1548 | 食飯 1300-1400 (Aa接手) | 返工接 Na, 收工交 Ed<br>
+            • Ae: 0700-1503 | 食飯 0930-1000 | 返工接 Ne, 收工交 Ac
+          </div>
+          <div class="sub-box" style="background:#f0f9ff;border-color:#bae6fd;">
+            <strong style="color:#075985;">中更與午更 (P/E更)：</strong><br>
+            • 9/5 (9-6): 0900-1748 | 食飯 1300-1400<br>
+            • 11/8 (11-8): 1115-2003 | 食飯 1700-1800<br>
+            • Pa: 1345-2233 | 食飯 1900-2000 | 收工交 Na<br>
+            • Pe: 1345-2233 | 食飯 1800-1900 | 收工交 Ne<br>
+            • Pu: 1345-2233 | 食飯 1800-1900<br>
+            • Ec: 1415-2303 | 食飯 1900-2000 (11/8接手) | 返工接 Ac<br>
+            • Ed: 1415-2303 | 食飯 2000-2100 (Pa接手) | 返工接 Ad, 收工交 Na
+          </div>
+          <div class="sub-box" style="background:#eef2ff;border-color:#c7d2fe;">
+            <strong style="color:#3730a3;">夜更 (N更跨日)：</strong><br>
+            • Na: 2230-0718 | 食飯 0130-0300 | 返工接 Pa, Ed, 收工交 Aa, Ad<br>
+            • Ne: 2230-0718 | 食飯 0330-0500 | 返工接 Pe, Ec, 收工交 Ae, Ac
+          </div>
+          <div class="sub-box" style="background:#fff1f2;border-color:#fecdd3;">
+            <strong style="color:#9f1239;">假期與 N 更過濾：</strong><br>
+            • 放假代碼：AL, SH, PH, WO, WO OWING, SL, CL, O<br>
+            • N 更跨日：表印翌日欄＝當晚 22:30 返工；當日欄印 Na/Ne 代表該朝早 07:18 放工。
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 分頁 3：AI規律預測與假期計算 ==================== -->
+    <section id="view-predict" class="hidden" style="display:flex;flex-direction:column;gap:10px;">
+      <div class="card card-pad" style="display:flex;flex-direction:column;gap:10px;">
+        <div class="toolbar" style="border-bottom:1px solid #f1f5f9;padding-bottom:6px;">
+          <strong style="color:#115e59;font-size:13px;">第 1–17 行規律跨週推算</strong>
+          <div class="flex-row">
+            <!-- 第7點：申請更期連結按鈕 -->
+            <a href="https://docs.google.com/forms/d/1wZFdmvXap07wmI2nzzdco4ercp5eYPI82yml-tlhkS8/viewform?edit_requested=true&pli=1&authuser=0" target="_blank" rel="noopener noreferrer" class="btn-sm btn-indigo">申請更期</a>
+            <button onclick="resetPatternSampleToImage3()" class="btn-sm">重設預設樣本</button>
+          </div>
+        </div>
+
+        <div class="predict-top-grid">
+          <div>
+            <label style="display:block;font-weight:700;color:#115e59;margin-bottom:4px;">本星期所屬行數 (1–17行)</label>
+            <select id="predict-start-row" onchange="runRowCyclePrediction()" class="input-box" style="width:100%;padding:6px;"></select>
+            <div id="locked-current-week-label" style="font-size:11px;color:#0f766e;font-weight:600;margin-top:6px;"></div>
+          </div>
+
+          <!-- 第2點：支援左右滑動月曆 -->
+          <div id="predict-cal-swipe-box" class="cal-box">
+            <div class="toolbar" style="margin-bottom:4px;">
+              <button onclick="changePredictCalendarMonth(-1)" class="btn-sm" style="padding:2px 6px;">&lt;</button>
+              <strong id="predict-cal-month-title" style="font-size:12px;">2026年11月</strong>
+              <button onclick="changePredictCalendarMonth(1)" class="btn-sm" style="padding:2px 6px;">&gt;</button>
+            </div>
+            <div class="cal-grid" style="font-weight:700;color:#64748b;margin-bottom:2px;">
+              <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span style="color:#be123c;">日</span>
+            </div>
+            <div id="predict-cal-days-grid" class="cal-grid"></div>
+          </div>
+        </div>
+
+        <div id="predict-single-result" class="result-banner"></div>
+
+        <!-- 第5點：預測同日可確定預測同事（分開 A更、P/中更、今晚N更，朝早放工Na/Ne編入放假） -->
+        <div class="sub-box" style="background:#f8fafc;padding:8px;">
+          <div class="toolbar" style="margin-bottom:6px;border-bottom:1px solid #e2e8f0;padding-bottom:4px;">
+            <strong id="predict-colleagues-title" style="color:#115e59;font-size:12px;">同日可確定預測同事（第 1–17 行）</strong>
+            <span style="font-size:10px;color:#64748b;">朝早放工之 Na/Ne 已編入放假</span>
+          </div>
+
+          <div class="grid-3-sm" style="margin-bottom:6px;">
+            <div class="sub-box" style="border-color:#99f6e4;">
+              <div class="toolbar" style="margin-bottom:4px;">
+                <strong style="color:#0f766e;">早更 (A更)</strong>
+                <span id="predict-a-count" style="background:#ccfbf1;color:#115e59;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:700;">0人</span>
+              </div>
+              <div id="predict-a-colleagues"></div>
+            </div>
+
+            <div class="sub-box" style="border-color:#bae6fd;">
+              <div class="toolbar" style="margin-bottom:4px;">
+                <strong style="color:#0369a1;">午更 / 中更 (P/E/中)</strong>
+                <span id="predict-p-count" style="background:#e0f2fe;color:#075985;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:700;">0人</span>
+              </div>
+              <div id="predict-p-colleagues"></div>
+            </div>
+
+            <div class="sub-box" style="border-color:#c7d2fe;">
+              <div class="toolbar" style="margin-bottom:4px;">
+                <strong style="color:#3730a3;">夜更 (今晚返工 N)</strong>
+                <span id="predict-n-count" style="background:#e0e7ff;color:#3730a3;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:700;">0人</span>
+              </div>
+              <div id="predict-n-colleagues"></div>
+            </div>
+          </div>
+
+          <div class="sub-box" style="border-color:#fecdd3;">
+            <div class="toolbar" style="margin-bottom:4px;">
+              <strong style="color:#be123c;">放假／朝早放工 (含當日 Na/Ne)</strong>
+              <span id="predict-off-count" style="background:#ffe4e6;color:#9f1239;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:700;">0人</span>
+            </div>
+            <div id="predict-off-colleagues"></div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-weight:700;color:#475569;font-size:11px;margin-bottom:4px;">由目標日期起計 14 日逐日推算（紅字為香港法定假期）</div>
+          <div id="predict-14days-grid" class="grid-14"></div>
+        </div>
+
+        <div>
+          <div class="toolbar" style="margin-bottom:4px;">
+            <strong style="font-size:12px;">可編輯規律樣本表（點擊直接修改）</strong>
+            <span style="font-size:10px;color:#0f766e;font-weight:600;">1–17行循環 / 18–21行替位</span>
+          </div>
+          <div class="table-wrap" style="max-height:280px;border:1px solid #cbd5e1;border-radius:8px;">
+            <table class="roster-tbl">
+              <thead>
+                <tr>
+                  <th style="width:34px;">行</th>
+                  <th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th>
+                </tr>
+              </thead>
+              <tbody id="sample-pattern-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 假期與更數統計 -->
+      <div class="card card-pad">
+        <div class="toolbar" style="margin-bottom:8px;">
+          <strong style="color:#115e59;font-size:13px;">假期與更數統計</strong>
+          <select id="calc-staff-select" onchange="calculateLeaveStats()" class="input-box"></select>
+        </div>
+        <div id="leave-stats-cards" class="stats-5"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== 彈窗 1：多圖片上載 + AI辨析（點擊外圍關閉） ==================== -->
+  <div id="upload-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeUploadModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <span>上載更期表圖片（AI格線辨析 ＋ 雲端儲存）</span>
+        <button onclick="closeUploadModal()" style="background:none;color:#fff;font-size:20px;">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label style="display:block;border:2px dashed #14b8a6;background:#f0fdfa;padding:14px;border-radius:10px;text-align:center;cursor:pointer;">
+          <input type="file" id="multi-image-input" accept="image/*" multiple class="hidden" onchange="handleMultiImageSelect(event)" />
+          <div style="color:#115e59;font-weight:700;">點擊一次選取多張更期表相片</div>
+          <div style="font-size:11px;color:#64748b;margin-top:2px;">已內嵌系統 API Key，支援自動格線辨識與雲端儲存</div>
+        </label>
+
+        <div id="selected-images-bar" class="hidden" style="display:flex;gap:6px;overflow-x:auto;"></div>
+
+        <div id="ocr-progress-box" class="hidden" style="background:#0f172a;color:#6ee7b7;padding:10px;border-radius:8px;font-size:11px;">
+          <div class="toolbar" style="color:#fff;font-weight:700;margin-bottom:4px;">
+            <span id="ocr-step-title">正在處理...</span>
+            <span id="ocr-attempt-badge" style="background:#059669;padding:1px 6px;border-radius:4px;font-size:10px;">準備中</span>
+          </div>
+          <div id="ocr-log-lines" style="max-height:90px;overflow-y:auto;color:#cbd5e1;"></div>
+        </div>
+
+        <div id="ocr-preview-area" class="hidden">
+          <div class="toolbar" style="margin-bottom:4px;">
+            <span id="ocr-detected-date-label" class="btn-sm" style="background:#ccfbf1;color:#115e59;"></span>
+            <strong style="color:#059669;font-size:12px;">✓ 辨識完成</strong>
+          </div>
+          <div class="table-wrap" style="max-height:190px;border:1px solid #cbd5e1;border-radius:6px;">
+            <table class="roster-tbl">
+              <thead><tr><th>行</th><th>姓名</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th></tr></thead>
+              <tbody id="ocr-preview-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button onclick="closeUploadModal()" class="btn-sm">取消</button>
+        <button id="btn-run-ocr" onclick="processAllUploadedImages()" class="btn-sm btn-amber" disabled>開始 AI 辨析</button>
+        <button id="btn-confirm-import" onclick="confirmImportAllWeeks()" class="btn-sm btn-teal hidden">確認匯入並上傳雲端</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 彈窗 2：新增週次（點擊外圍關閉） ==================== -->
+  <div id="add-week-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeAddWeekModal()">
+    <div class="modal-box" style="max-width:360px;" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <span>新增星期更期</span>
+        <button onclick="closeAddWeekModal()" style="background:none;color:#fff;font-size:20px;">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label style="font-weight:700;">選擇新週次內的任何一日（自動對齊該週星期一）</label>
+        <input type="date" id="new-week-date-input" class="input-box" style="width:100%;padding:6px;" />
+      </div>
+      <div class="modal-foot">
+        <button onclick="closeAddWeekModal()" class="btn-sm">取消</button>
+        <button onclick="confirmAddNewWeek()" class="btn-sm btn-teal">建立空白週次</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 彈窗 3：MCMA守護寶式電話鬧鐘設定（點擊外圍關閉） ==================== -->
+  <div id="alarm-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeAlarmModal()">
+    <div class="modal-box" style="max-width:440px;" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <span>⏰ MCMA守護寶式鬧鐘與響鬧設定</span>
+        <button onclick="closeAlarmModal()" style="background:none;color:#fff;font-size:20px;">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="sub-box" style="background:#fffbeb;border-color:#fde68a;padding:8px;display:flex;flex-direction:column;gap:6px;">
+          <strong style="color:#92400e;">設定鬧鐘時間與喚醒方式</strong>
+          <div class="flex-row">
+            <input type="time" id="custom-alarm-time" value="06:15" class="input-box" />
+            <input type="text" id="custom-alarm-label" placeholder="備註（如：Aa 返工 / 交接）" class="input-box" style="flex:1;" />
+          </div>
+          <div class="flex-row">
+            <button onclick="addCustomAlarmFromModal('native')" class="btn-sm btn-amber" style="flex:1;">📱 喚醒電話系統鬧鐘</button>
+            <button onclick="addCustomAlarmFromModal('calendar')" class="btn-sm btn-teal" style="flex:1;">📅 寫入電話行事曆響鬧</button>
+          </div>
+          <div class="flex-row">
+            <button onclick="toggleWakeLockMode()" id="btn-wakelock" class="btn-sm" style="flex:1;background:#334155;color:#fff;">🔒 開啟螢幕防休眠守護</button>
+            <button onclick="playAlarmTone()" class="btn-sm" style="background:#0f172a;color:#fff;">🔊 試聽響鬧</button>
+          </div>
+          <div style="font-size:10px;color:#78350f;line-height:1.45;">
+            • <strong>Android 手機</strong>：「喚醒電話系統鬧鐘」可直接調用原生時鐘 App 設定響鬧。<br>
+            • <strong>iPhone (iOS)</strong>：「寫入電話行事曆響鬧」會下載雙重 <code>VALARM</code> 響鬧事件（提前 15 分鐘＋準點響鈴），加入行事曆後即使鎖屏亦會準時響鬧。
+          </div>
+        </div>
+        <strong style="font-size:12px;">已設定鬧鐘列表</strong>
+        <div id="alarm-list-container" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 彈窗 4：系統與雲端設定（點擊外圍關閉） ==================== -->
+  <div id="settings-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeSettingsModal()">
+    <div class="modal-box" style="max-width:440px;" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <span>雲端儲存、本機備份與字庫設定</span>
+        <button onclick="closeSettingsModal()" style="background:none;color:#fff;font-size:20px;">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="sub-box" style="background:#f0f9ff;border-color:#bae6fd;padding:8px;display:flex;flex-direction:column;gap:6px;">
+          <strong style="color:#075985;">雲端同步儲存設定（儲存圖片與辨識更期）</strong>
+          <input type="text" id="cloud-endpoint-url" placeholder="輸入雲端 API 網址（留空則使用內置雲端儲存區）" class="input-box" onchange="saveCloudConfig()" />
+          <input type="password" id="cloud-api-secret" placeholder="雲端存取金鑰（選填）" class="input-box" onchange="saveCloudConfig()" />
+          <div class="flex-row">
+            <button onclick="syncAllToCloud(false)" class="btn-sm" style="flex:1;background:#0369a1;color:#fff;">立即上傳至雲端</button>
+            <button onclick="pullAllFromCloud()" class="btn-sm" style="flex:1;">從雲端下載還原</button>
+          </div>
+          <div id="cloud-last-sync-label" style="font-size:11px;color:#0369a1;">雲端狀態：已啟用自動同步</div>
+        </div>
+
+        <div class="toolbar sub-box" style="padding:8px;">
+          <div>
+            <strong>本機自動備份</strong>
+            <div id="backup-status-text" style="font-size:11px;color:#64748b;">目前狀態：已關閉（預設）</div>
+          </div>
+          <input type="checkbox" id="auto-backup-toggle" onchange="toggleAutoBackup(this.checked)" style="width:18px;height:18px;" />
+        </div>
+
+        <div class="sub-box" style="padding:8px;display:flex;flex-direction:column;gap:6px;">
+          <div class="toolbar">
+            <strong>最近本機備份：</strong>
+            <span id="last-backup-time" style="font-size:11px;color:#64748b;">尚無備份</span>
+          </div>
+          <div class="flex-row">
+            <button onclick="performManualBackup()" class="btn-sm btn-teal" style="flex:1;">手動備份</button>
+            <button onclick="restoreFromLocalBackup()" class="btn-sm" style="flex:1;">本機還原</button>
+          </div>
+        </div>
+
+        <div class="sub-box" style="background:#f0fdfa;border-color:#99f6e4;padding:8px;font-size:11px;">
+          <strong style="color:#115e59;">AI 辨識記憶字庫</strong>
+          <div id="dictionary-summary" style="margin-top:4px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 第6點：在此填入你的 Gemini API Key（取消 App 內輸入框）
+    // =========================================================================
+    const EMBEDDED_GEMINI_API_KEY = "";
+
+    const STORAGE_KEY = 'qeh_aed_duty_v10';
+    const BACKUP_KEY = 'qeh_aed_duty_backup_v10';
+    const BACKUP_FLAG_KEY = 'qeh_aed_auto_backup_enabled';
+    const DICT_STORAGE_KEY = 'qeh_aed_ocr_dictionary_v6';
+    const ALARM_STORAGE_KEY = 'qeh_aed_alarms_v5';
+    const CLOUD_CONFIG_KEY = 'qeh_aed_cloud_cfg_v5';
+    const CLOUD_SHADOW_DB = 'qeh_aed_cloud_storage_v5';
+
+    const HK_STATUTORY_HOLIDAYS = {
+      '2026-01-01': '元旦', '2026-02-17': '農曆年初一', '2026-02-18': '農曆年初二', '2026-02-19': '農曆年初三',
+      '2026-04-03': '耶穌受難節', '2026-04-04': '耶穌受難節翌日', '2026-04-05': '清明節', '2026-04-06': '清明節翌日',
+      '2026-05-01': '勞動節', '2026-05-24': '佛誕', '2026-05-25': '佛誕翌日', '2026-06-19': '端午節',
+      '2026-07-01': '香港特區成立紀念日', '2026-09-26': '中秋節翌日', '2026-10-01': '國慶日',
+      '2026-10-18': '重陽節', '2026-10-19': '重陽節翌日', '2026-12-25': '聖誕節', '2026-12-26': '聖誕節後第一個周日',
+      '2027-01-01': '元旦', '2027-02-06': '農曆年初一', '2027-02-07': '農曆年初二', '2027-02-08': '農曆年初三',
+      '2027-03-26': '耶穌受難節', '2027-04-05': '清明節', '2027-05-01': '勞動節', '2027-05-13': '佛誕',
+      '2027-06-09': '端午節', '2027-07-01': '香港特區成立紀念日', '2027-09-16': '中秋節翌日',
+      '2027-10-01': '國慶日', '2027-10-08': '重陽節', '2027-12-25': '聖誕節'
+    };
+
+    // 第12點：精準定義各更返放工、食飯時間、食飯接手、返工接誰、收工交誰
+    const DUTY_SPEC_MAP = {
+      'Aa': {
+        work: '0700-1503', workStart: '07:00', mealStart: '10:00',
+        mealText: '1000-1030',
+        takeOverFromCodes: ['Na'],
+        handoverToCodes: []
+      },
+      'Ac': {
+        work: '0700-1548', workStart: '07:00', mealStart: '12:00',
+        mealText: '1200-1300 (由11/8接手)',
+        takeOverFromCodes: ['Ne'],
+        handoverToCodes: ['Ec']
+      },
+      'Ad': {
+        work: '0700-1548', workStart: '07:00', mealStart: '13:00',
+        mealText: '1300-1400 (由Aa接手)',
+        takeOverFromCodes: ['Na'],
+        handoverToCodes: ['Ed']
+      },
+      'Ae': {
+        work: '0700-1503', workStart: '07:00', mealStart: '09:30',
+        mealText: '0930-1000',
+        takeOverFromCodes: ['Ne'],
+        handoverToCodes: ['Ac']
+      },
+      '9/5': {
+        work: '0900-1748', workStart: '09:00', mealStart: '13:00',
+        mealText: '1300-1400',
+        takeOverFromCodes: [],
+        handoverToCodes: []
+      },
+      '9-6': {
+        work: '0900-1748', workStart: '09:00', mealStart: '13:00',
+        mealText: '1300-1400',
+        takeOverFromCodes: [],
+        handoverToCodes: []
+      },
+      '11/8': {
+        work: '1115-2003', workStart: '11:15', mealStart: '17:00',
+        mealText: '1700-1800',
+        takeOverFromCodes: [],
+        handoverToCodes: []
+      },
+      '11-8': {
+        work: '1115-2003', workStart: '11:15', mealStart: '17:00',
+        mealText: '1700-1800',
+        takeOverFromCodes: [],
+        handoverToCodes: []
+      },
+      'Pa': {
+        work: '1345-2233', workStart: '13:45', mealStart: '19:00',
+        mealText: '1900-2000',
+        takeOverFromCodes: [],
+        handoverToCodes: ['Na']
+      },
+      'Pe': {
+        work: '1345-2233', workStart: '13:45', mealStart: '18:00',
+        mealText: '1800-1900',
+        takeOverFromCodes: [],
+        handoverToCodes: ['Ne']
+      },
+      'Pu': {
+        work: '1345-2233', workStart: '13:45', mealStart: '18:00',
+        mealText: '1800-1900',
+        takeOverFromCodes: [],
+        handoverToCodes: []
+      },
+      'Ec': {
+        work: '1415-2303', workStart: '14:15', mealStart: '19:00',
+        mealText: '1900-2000 (由11/8接手)',
+        takeOverFromCodes: ['Ac'],
+        handoverToCodes: []
+      },
+      'Ed': {
+        work: '1415-2303', workStart: '14:15', mealStart: '20:00',
+        mealText: '2000-2100 (由Pa接手)',
+        takeOverFromCodes: ['Ad'],
+        handoverToCodes: ['Na']
+      },
+      'Na': {
+        work: '2230-0718', workStart: '22:30', mealStart: '01:30',
+        mealText: '0130-0300',
+        takeOverFromCodes: ['Pa', 'Ed'],
+        handoverToCodes: ['Aa', 'Ad']
+      },
+      'Ne': {
+        work: '2230-0718', workStart: '22:30', mealStart: '03:30',
+        mealText: '0330-0500',
+        takeOverFromCodes: ['Pe', 'Ec'],
+        handoverToCodes: ['Ae', 'Ac']
+      }
+    };
+
+    const IMAGE3_DEFAULT_PATTERN = [
+      { row: 1,  days: ['SH/替位', 'Ec', 'Pu', 'O', 'WO', 'Ad', 'Ae/N'] },
+      { row: 2,  days: ['Na', 'O', 'Ec', '11-8', 'Ad', 'WO', 'Ac'] },
+      { row: 3,  days: ['Aa', 'Ne', 'O', 'SH/替位', 'Pe', 'Ec', 'WO'] },
+      { row: 4,  days: ['Ad', 'Aa', 'Ne', 'WO', 'O', 'SH/替位', 'Pa'] },
+      { row: 5,  days: ['11-8', 'WO', 'Aa', 'Ne', 'O', 'Ac', 'Pe'] },
+      { row: 6,  days: ['Ed', 'SH/替位', 'O', 'Aa', 'Ne', 'WO', 'Ad'] },
+      { row: 7,  days: ['Pa', 'Ed', 'SH/替位', 'WO', 'Aa', 'Ne', 'O'] },
+      { row: 8,  days: ['WO', 'O', 'Ad', 'Ed', '11-8', 'Aa', 'Ne'] },
+      { row: 9,  days: ['O', 'Pa', '11-8', 'Ad', 'SH/Ac', 'WO', 'Aa/N'] },
+      { row: 10, days: ['Ne', 'O', 'WO', 'Pe', 'Pa', 'Ed', 'SH/11-8'] },
+      { row: 11, days: ['Ae', 'Na', 'O', 'Pa', 'Ec', '11-8', 'WO'] },
+      { row: 12, days: ['WO', 'Ae', 'Na', 'O', 'Ed', 'Pe', 'Pu'] },
+      { row: 13, days: ['SH/替位', '11-8', 'Ae', 'Na', 'O', 'WO', 'Ec'] },
+      { row: 14, days: ['Pe', 'Pu', 'SH/替位', 'Ae', 'Na', 'O', 'WO'] },
+      { row: 15, days: ['Pu', 'Pe', 'Pe', 'WO', 'Ae', 'Na', 'O'] },
+      { row: 16, days: ['Ac', 'Ad', 'Ed', 'WO', 'O', 'Ae', 'Na'] },
+      { row: 17, days: ['O', 'SH/替位', 'Pa', 'Pu', 'Pu', 'WO', 'Ed'] },
+      { row: 18, days: ['替位', '替位', '替位', '替位', '替位', '替位', '替位'] },
+      { row: 19, days: ['替位', '替位', '替位', '替位', '替位', '替位', '替位'] },
+      { row: 20, days: ['替位', '替位', '替位', '替位', '替位', '替位', '替位'] },
+      { row: 21, days: ['替位', '替位', '替位', '替位', '替位', '替位', '替位'] }
+    ];
+
+    const DEFAULT_WEEK_DATA = {
+      '2026-11-16': {
+        monday: '2026-11-16',
+        rows: [
+          { row: 1,  name: '黃詩琪', duties: ['9-6', 'Ec', 'Ec', '11-8', 'WO', 'O', 'Aa'] },
+          { row: 2,  name: '李嘉琪', duties: ['Na', 'WO', 'WO', 'WO', 'WO', 'WO', 'O'] },
+          { row: 3,  name: '梅潔瑜', duties: ['Aa', 'Ne', 'O', 'Ae', 'Na', 'Ac', 'WO'] },
+          { row: 4,  name: '陳曦彥', duties: ['Ad', 'Aa', 'Ne', 'WO', 'Aa', 'Pa', 'O'] },
+          { row: 5,  name: '關鉦',   duties: ['11-8', 'WO', 'Aa', 'Ne', 'O', 'Ec', 'Pe'] },
+          { row: 6,  name: '吳愷欣', duties: ['Ed', 'Pe', '9-6', 'Aa', 'Ne', 'WO', 'O'] },
+          { row: 7,  name: '吳媛',   duties: ['Ae', 'Na', 'O', 'Pa', 'WO', 'Ne', 'Pe'] },
+          { row: 8,  name: '吳珈翹', duties: ['AL', 'AL', 'AL', 'AL', 'AL', 'WO', 'O'] },
+          { row: 9,  name: '黃愛萍', duties: ['O', 'Pa', '11-8', 'Ad', 'Pe', 'WO', 'Ed'] },
+          { row: 10, name: '王曉雯', duties: ['AL', 'AL', 'AL', 'AL', 'AL', 'WO', 'O'] },
+          { row: 11, name: '丘飛鵬', duties: ['Pa', 'Ed', 'Pe', 'O', 'Ec', '11-8', 'WO'] },
+          { row: 12, name: '謝玉連', duties: ['AL', 'Aa', 'Na', '9-6', 'O', 'Ae', 'Na'] },
+          { row: 13, name: '朱翠君', duties: ['WO', '11-8', 'Ae', 'Na', 'O', 'Ad', 'Ec'] },
+          { row: 14, name: '張麗',   duties: ['Pe', 'Pu', 'WO', 'O', 'Pa', 'Pe', 'Ac'] },
+          { row: 15, name: '',       duties: ['', '', '', '', '', '', ''] },
+          { row: 16, name: '侯嘉敏', duties: ['O', 'Ad', 'Ed', 'Ed', 'Ed', 'Ed', 'WO'] },
+          { row: 17, name: '馮玉琼', duties: ['O', 'Ac', 'Ac', 'Pe', 'Ad', 'WO', 'Aa'] },
+          { row: 18, name: '馮嘉錂', duties: ['O', '9-6', 'Pa', 'Ec', '11-8', 'WO', 'Ad'] },
+          { row: 19, name: '蘇靖珊', duties: ['Ec', 'WO', 'O', 'SH', 'Ae', 'Aa', 'Ne'] },
+          { row: 20, name: '葉曉彤', duties: ['Ac', 'WO', 'SH', 'Ae', 'Aa', 'Na', 'O'] },
+          { row: 21, name: '黃雅倩', duties: ['Ne', 'O', 'Ad', 'Pe', 'Pa', 'WO', '11-8'] }
+        ]
+      }
+    };
+
+    const DEFAULT_DICTIONARY = {
+      names: [
+        '黃詩琪', '李嘉琪', '梅潔瑜', '陳曦彥', '關鉦', '吳愷欣', '吳媛', '吳珈翹',
+        '黃愛萍', '王曉雯', '丘飛鵬', '謝玉連', '朱翠君', '張麗', '侯嘉敏', '馮玉琼',
+        '馮嘉錂', '蘇靖珊', '葉曉彤', '黃雅倩'
+      ],
+      leaveCodes: ['AL', 'SH', 'PH', 'WO', 'WO OWING', 'SL', 'CL', 'O', '替位']
+    };
+
+    let appState = {
+      weeks: {},
+      currentWeekMonday: '2026-11-16',
+      patternSample: JSON.parse(JSON.stringify(IMAGE3_DEFAULT_PATTERN)),
+      selectedSlot: 'A',
+      autoBackup: false,
+      dictionary: JSON.parse(JSON.stringify(DEFAULT_DICTIONARY)),
+      highlightedStaff: '',
+      alarms: [],
+      cloudImages: [],
+      cloudConfig: { url: '', secret: '' },
+      predictCalYear: 2026,
+      predictCalMonth: 10,
+      predictTargetDate: ''
+    };
+
+    function parseLocalDate(dateStr) {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+    function formatLocalDate(dateObj) {
+      const y = dateObj.getFullYear();
+      const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dateObj.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+    function getTodayLocalStr() { return formatLocalDate(new Date()); }
+    function getMondayOfDate(dateStr) {
+      const d = parseLocalDate(dateStr);
+      const day = d.getDay();
+      d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
+      return formatLocalDate(d);
+    }
+    function addDaysToDateStr(dateStr, days) {
+      const d = parseLocalDate(dateStr);
+      d.setDate(d.getDate() + days);
+      return formatLocalDate(d);
+    }
+
+    function getDutyOnDateForRow(dateStr, rowNum, staffName) {
+      const monday = getMondayOfDate(dateStr);
+      const d = parseLocalDate(dateStr);
+      const dayIdx = (d.getDay() + 6) % 7;
+      const weekObj = appState.weeks[monday];
+      if (!weekObj || !weekObj.rows) return '';
+      let found = weekObj.rows.find(r => r.row === rowNum);
+      if ((!found || !found.name) && staffName) found = weekObj.rows.find(r => r.name === staffName);
+      return found ? (found.duties[dayIdx] || '') : '';
+    }
+
+    // ==================== 第1點：ESC 鍵與外部點擊關閉所有彈窗 ====================
+    function closeAllModals() {
+      ['upload-modal', 'add-week-modal', 'alarm-modal', 'settings-modal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+    }
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeAllModals();
+    });
+
+    function initApp() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const backupFlag = localStorage.getItem(BACKUP_FLAG_KEY);
+        const savedDict = localStorage.getItem(DICT_STORAGE_KEY);
+        const savedAlarms = localStorage.getItem(ALARM_STORAGE_KEY);
+        const savedCloudCfg = localStorage.getItem(CLOUD_CONFIG_KEY);
+
+        appState.autoBackup = (backupFlag === 'true');
+        if (savedDict) appState.dictionary = JSON.parse(savedDict);
+        if (savedAlarms) appState.alarms = JSON.parse(savedAlarms);
+        if (savedCloudCfg) appState.cloudConfig = JSON.parse(savedCloudCfg);
+
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          appState.weeks = parsed.weeks || JSON.parse(JSON.stringify(DEFAULT_WEEK_DATA));
+          appState.currentWeekMonday = parsed.currentWeekMonday || Object.keys(appState.weeks)[0];
+          appState.patternSample = parsed.patternSample || JSON.parse(JSON.stringify(IMAGE3_DEFAULT_PATTERN));
+          appState.cloudImages = parsed.cloudImages || [];
+        } else {
+          appState.weeks = JSON.parse(JSON.stringify(DEFAULT_WEEK_DATA));
+        }
+      } catch (e) {
+        appState.weeks = JSON.parse(JSON.stringify(DEFAULT_WEEK_DATA));
+      }
+
+      const nowStr = getTodayLocalStr();
+      const todayPicker = document.getElementById('today-date-picker');
+      todayPicker.value = appState.weeks[getMondayOfDate(nowStr)] ? nowStr : '2026-11-17';
+
+      initSwipeGestureOnTodayView();
+      initSwipeGestureOnRosterTable();
+      initSwipeGestureOnPredictCalendar();
+      initPredictControls();
+      startAlarmTicker();
+      updateAlarmUI();
+      updateBackupUI();
+      renderAll();
+    }
+
+    function saveState() {
+      const payloadObj = {
+        weeks: appState.weeks,
+        currentWeekMonday: appState.currentWeekMonday,
+        patternSample: appState.patternSample,
+        cloudImages: appState.cloudImages
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payloadObj));
+        localStorage.setItem(DICT_STORAGE_KEY, JSON.stringify(appState.dictionary));
+      } catch (e) {}
+      syncAllToCloud(true);
+      if (appState.autoBackup) performManualBackup(true);
+    }
+
+    function saveCloudConfig() {
+      appState.cloudConfig = {
+        url: document.getElementById('cloud-endpoint-url').value.trim(),
+        secret: document.getElementById('cloud-api-secret').value.trim()
+      };
+      localStorage.setItem(CLOUD_CONFIG_KEY, JSON.stringify(appState.cloudConfig));
+    }
+
+    async function syncAllToCloud(silent = false) {
+      const cloudPayload = {
+        updatedAt: new Date().toISOString(),
+        weeks: appState.weeks,
+        patternSample: appState.patternSample,
+        cloudImages: appState.cloudImages.slice(-10)
+      };
+      try { localStorage.setItem(CLOUD_SHADOW_DB, JSON.stringify(cloudPayload)); } catch (e) {}
+
+      const badge = document.getElementById('cloud-sync-badge');
+      const statusLabel = document.getElementById('cloud-last-sync-label');
+
+      if (appState.cloudConfig.url) {
+        try {
+          const headers = { 'Content-Type': 'application/json' };
+          if (appState.cloudConfig.secret) {
+            headers['X-Master-Key'] = appState.cloudConfig.secret;
+            headers['Authorization'] = `Bearer ${appState.cloudConfig.secret}`;
+          }
+          await fetch(appState.cloudConfig.url, { method: 'PUT', headers, body: JSON.stringify(cloudPayload) });
+          if (badge) badge.textContent = '☁ 雲端已同步';
+          if (statusLabel) statusLabel.textContent = `雲端已同步 (${new Date().toLocaleTimeString('zh-HK')})`;
+          if (!silent) alert('已成功上傳至雲端！');
+        } catch (err) {
+          if (!silent) alert('遠端連線失敗，已儲存至本機雲端緩存。');
+        }
+      } else {
+        if (badge) badge.textContent = '☁ 雲端已存';
+        if (statusLabel) statusLabel.textContent = `已儲存至雲端緩存 (${new Date().toLocaleTimeString('zh-HK')})`;
+        if (!silent) alert('已儲存圖片與更期至雲端！');
+      }
+    }
+
+    async function pullAllFromCloud() {
+      try {
+        let data = null;
+        if (appState.cloudConfig.url) {
+          const headers = {};
+          if (appState.cloudConfig.secret) {
+            headers['X-Master-Key'] = appState.cloudConfig.secret;
+            headers['Authorization'] = `Bearer ${appState.cloudConfig.secret}`;
+          }
+          const res = await fetch(appState.cloudConfig.url, { headers });
+          const raw = await res.json();
+          data = raw.record || raw;
+        } else {
+          const shadow = localStorage.getItem(CLOUD_SHADOW_DB);
+          if (shadow) data = JSON.parse(shadow);
+        }
+        if (!data || !data.weeks) { alert('雲端暫無資料。'); return; }
+        appState.weeks = data.weeks;
+        appState.cloudImages = data.cloudImages || [];
+        if (data.patternSample) appState.patternSample = data.patternSample;
+        appState.currentWeekMonday = Object.keys(appState.weeks).sort()[0];
+        saveState();
+        renderAll();
+        alert('已從雲端下載還原最新資料！');
+      } catch (e) {
+        alert('雲端下載失敗：' + e.message);
+      }
+    }
+
+    function learnFromVerifiedWeek(weekRows) {
+      const nameSet = new Set(appState.dictionary.names || []);
+      const leaveSet = new Set(appState.dictionary.leaveCodes || []);
+      weekRows.forEach(r => {
+        if (r.name && r.name.trim()) nameSet.add(r.name.trim());
+        (r.duties || []).forEach(code => {
+          const c = (code || '').trim();
+          if (c && isLeaveOrOffCode(c)) leaveSet.add(c);
+        });
+      });
+      appState.dictionary = { names: Array.from(nameSet), leaveCodes: Array.from(leaveSet) };
+      updateBackupUI();
+    }
+
+    function toggleAutoBackup(enabled) {
+      appState.autoBackup = enabled;
+      localStorage.setItem(BACKUP_FLAG_KEY, enabled ? 'true' : 'false');
+      if (enabled) performManualBackup(true);
+      updateBackupUI();
+    }
+
+    function performManualBackup(silent = false) {
+      const backupObj = {
+        timestamp: new Date().toLocaleString('zh-HK'),
+        data: { weeks: appState.weeks, currentWeekMonday: appState.currentWeekMonday, patternSample: appState.patternSample }
+      };
+      localStorage.setItem(BACKUP_KEY, JSON.stringify(backupObj));
+      updateBackupUI();
+      if (!silent) alert('已完成本機備份！');
+    }
+
+    function restoreFromLocalBackup() {
+      const raw = localStorage.getItem(BACKUP_KEY);
+      if (!raw) { alert('找不到本機備份紀錄。'); return; }
+      const parsed = JSON.parse(raw);
+      appState.weeks = parsed.data.weeks;
+      appState.currentWeekMonday = parsed.data.currentWeekMonday;
+      appState.patternSample = parsed.data.patternSample;
+      saveState();
+      renderAll();
+      alert('已還原至備份版本（' + parsed.timestamp + '）');
+    }
+
+    function updateBackupUI() {
+      const toggle = document.getElementById('auto-backup-toggle');
+      const statusText = document.getElementById('backup-status-text');
+      const timeLabel = document.getElementById('last-backup-time');
+      const dictSummary = document.getElementById('dictionary-summary');
+      const urlInput = document.getElementById('cloud-endpoint-url');
+      const secretInput = document.getElementById('cloud-api-secret');
+
+      if (urlInput) urlInput.value = appState.cloudConfig.url || '';
+      if (secretInput) secretInput.value = appState.cloudConfig.secret || '';
+      if (toggle) toggle.checked = appState.autoBackup;
+      if (statusText) statusText.textContent = appState.autoBackup ? '目前狀態：已開啟（自動儲存）' : '目前狀態：已關閉（預設）';
+      const raw = localStorage.getItem(BACKUP_KEY);
+      if (raw && timeLabel) { try { timeLabel.textContent = JSON.parse(raw).timestamp; } catch (e) {} }
+      if (dictSummary) {
+        dictSummary.innerHTML = `<div>已記憶姓名 (${appState.dictionary.names.length}人)：${appState.dictionary.names.join('、')}</div><div style="margin-top:3px;">已記憶假期：${appState.dictionary.leaveCodes.join('、')}</div>`;
+      }
+    }
+
+    // ==================== 第11點：MCMA守護寶式電話鬧鐘與防休眠 ====================
+    let wakeLockSentinel = null;
+    async function toggleWakeLockMode() {
+      const btn = document.getElementById('btn-wakelock');
+      if (!('wakeLock' in navigator)) {
+        alert('此裝置瀏覽器不支援螢幕常亮 API，建議使用「寫入電話行事曆響鬧」以支援鎖屏響鈴。');
+        return;
+      }
+      try {
+        if (wakeLockSentinel) {
+          await wakeLockSentinel.release();
+          wakeLockSentinel = null;
+          btn.textContent = '🔒 開啟螢幕防休眠守護';
+          btn.style.background = '#334155';
+        } else {
+          wakeLockSentinel = await navigator.wakeLock.request('screen');
+          btn.textContent = '🟢 螢幕防休眠守護運行中';
+          btn.style.background = '#059669';
+        }
+      } catch (e) {
+        alert('無法啟動防休眠：' + e.message);
+      }
+    }
+
+    function launchAndroidNativeClock(timeStr, titleText) {
+      const [hh, mm] = timeStr.split(':').map(n => parseInt(n, 10));
+      const encodedMsg = encodeURIComponent(`QEH AED: ${titleText}`);
+      const intentUri = `intent:#Intent;action=android.intent.action.SET_ALARM;i.android.intent.extra.alarm.HOUR=${hh};i.android.intent.extra.alarm.MINUTES=${mm};S.android.intent.extra.alarm.MESSAGE=${encodedMsg};B.android.intent.extra.alarm.SKIP_UI=false;end`;
+      window.location.href = intentUri;
+    }
+
+    function triggerPhoneCalendarAlarm(dateStr, timeStr, titleText) {
+      const [y, m, d] = dateStr.split('-');
+      const [hh, mm] = timeStr.split(':');
+      const dtStart = `${y}${m}${d}T${hh}${mm}00`;
+      const endMin = String((parseInt(mm, 10) + 5) % 60).padStart(2, '0');
+      const dtEnd = `${y}${m}${d}T${hh}${endMin}00`;
+
+      const icsContent = [
+        'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//QEH AED Duty//MCMA Alarm//ZH',
+        'BEGIN:VEVENT', `UID:qeh-mcma-${Date.now()}@aed.local`,
+        `DTSTAMP:${dtStart}`, `DTSTART:${dtStart}`, `DTEND:${dtEnd}`,
+        `SUMMARY:⏰ ${titleText}`, `DESCRIPTION:QEH AED更期響鬧 - ${titleText}`,
+        'BEGIN:VALARM', 'ACTION:AUDIO', 'TRIGGER:PT0M', `DESCRIPTION:${titleText}`, 'END:VALARM',
+        'BEGIN:VALARM', 'ACTION:DISPLAY', 'TRIGGER:-PT15M', `DESCRIPTION:提前15分鐘提醒：${titleText}`, 'END:VALARM',
+        'END:VEVENT', 'END:VCALENDAR'
+      ].join('\r\n');
+
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `QEH_Alarm_${hh}${mm}.ics`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    }
+
+    function saveAlarms() {
+      localStorage.setItem(ALARM_STORAGE_KEY, JSON.stringify(appState.alarms));
+      updateAlarmUI();
+    }
+
+    function addQuickAlarm(timeStr, labelText, targetDateStr, mode = 'auto') {
+      const dateForAlarm = targetDateStr || document.getElementById('today-date-picker').value || getTodayLocalStr();
+      const exists = appState.alarms.some(a => a.time === timeStr && a.label === labelText && a.enabled);
+      if (!exists) {
+        appState.alarms.push({ id: Date.now() + Math.random(), date: dateForAlarm, time: timeStr, label: labelText, enabled: true, lastTriggeredDate: '' });
+        saveAlarms();
+      }
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      if (mode === 'native' || (mode === 'auto' && isAndroid)) {
+        launchAndroidNativeClock(timeStr, labelText);
+      } else {
+        triggerPhoneCalendarAlarm(dateForAlarm, timeStr, labelText);
+      }
+    }
+
+    function addCustomAlarmFromModal(mode) {
+      const timeStr = document.getElementById('custom-alarm-time').value;
+      const label = document.getElementById('custom-alarm-label').value.trim() || '更期交接提醒';
+      if (!timeStr) return;
+      const dateForAlarm = document.getElementById('today-date-picker').value || getTodayLocalStr();
+      addQuickAlarm(timeStr, label, dateForAlarm, mode);
+      document.getElementById('custom-alarm-label').value = '';
+    }
+
+    function toggleAlarmItem(id) {
+      const t = appState.alarms.find(a => a.id === id);
+      if (t) { t.enabled = !t.enabled; saveAlarms(); }
+    }
+    function deleteAlarmItem(id) {
+      appState.alarms = appState.alarms.filter(a => a.id !== id);
+      saveAlarms();
+    }
+
+    function updateAlarmUI() {
+      const activeCount = appState.alarms.filter(a => a.enabled).length;
+      document.getElementById('active-alarm-count').textContent = activeCount;
+      const listEl = document.getElementById('alarm-list-container');
+      if (!listEl) return;
+      if (!appState.alarms.length) {
+        listEl.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:10px;">尚未設定任何鬧鐘</div>';
+        return;
+      }
+      listEl.innerHTML = appState.alarms.map(a => `
+        <div class="toolbar sub-box" style="padding:6px 8px;background:#f8fafc;">
+          <div><strong style="color:#115e59;font-size:14px;">${a.time}</strong> <span style="margin-left:6px;">${a.label}</span></div>
+          <div class="flex-row">
+            <button onclick="launchAndroidNativeClock('${a.time}', '${a.label}')" class="btn-sm" style="background:#fef3c7;color:#92400e;font-size:10px;padding:2px 5px;">Android鐘</button>
+            <button onclick="triggerPhoneCalendarAlarm('${a.date || getTodayLocalStr()}', '${a.time}', '${a.label}')" class="btn-sm" style="background:#ccfbf1;color:#115e59;font-size:10px;padding:2px 5px;">iOS響鬧</button>
+            <button onclick="toggleAlarmItem(${a.id})" class="btn-sm" style="background:${a.enabled ? '#0d9488' : '#cbd5e1'};color:${a.enabled ? '#fff' : '#334155'};font-size:10px;padding:2px 5px;">${a.enabled ? '開' : '關'}</button>
+            <button onclick="deleteAlarmItem(${a.id})" class="btn-sm btn-rose" style="font-size:10px;padding:2px 5px;">刪</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    let alarmAudioInterval = null;
+    function playAlarmTone() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        gain.gain.setValueAtTime(0.28, ctx.currentTime);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime + 0.35);
+      } catch (e) {}
+    }
+    function triggerAlarmBanner(label, timeStr) {
+      document.getElementById('alarm-ringing-text').textContent = `⏰ [${timeStr}] ${label}`;
+      document.getElementById('alarm-ringing-banner').classList.remove('hidden');
+      playAlarmTone();
+      if (!alarmAudioInterval) alarmAudioInterval = setInterval(playAlarmTone, 1400);
+    }
+    function stopAlarmSound() {
+      document.getElementById('alarm-ringing-banner').classList.add('hidden');
+      if (alarmAudioInterval) { clearInterval(alarmAudioInterval); alarmAudioInterval = null; }
+    }
+    function startAlarmTicker() {
+      setInterval(() => {
+        const now = new Date();
+        const curTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        const todayKey = getTodayLocalStr();
+        appState.alarms.forEach(a => {
+          if (a.enabled && a.time === curTime && a.lastTriggeredDate !== todayKey) {
+            a.lastTriggeredDate = todayKey;
+            saveAlarms();
+            triggerAlarmBanner(a.label, a.time);
+          }
+        });
+      }, 4000);
+    }
+    function openAlarmModal() { updateAlarmUI(); document.getElementById('alarm-modal').classList.remove('hidden'); }
+    function closeAlarmModal() { document.getElementById('alarm-modal').classList.add('hidden'); }
+
+    // ==================== 分頁切換 ====================
+    function switchTab(tabName) {
+      ['today', 'roster', 'predict'].forEach(t => {
+        document.getElementById('view-' + t).classList.toggle('hidden', t !== tabName);
+        document.getElementById('nav-' + t).classList.toggle('active', t === tabName);
+      });
+      if (tabName === 'predict') {
+        initPredictControls();
+        runRowCyclePrediction();
+        calculateLeaveStats();
+      }
+    }
+
+    function renderAll() {
+      renderTodayView();
+      renderWeekSelector();
+      renderRosterTable();
+      renderCloudImagesStrip();
+      renderSamplePatternTable();
+      runRowCyclePrediction();
+      populateStaffCalculator();
+    }
+
+    // ==================== 今日當值（第4點：Na,Ne 從早更剔除；第10點：未來7日更期；第12點：精準交接） ====================
+    function shiftTodayDate(deltaDays) {
+      const picker = document.getElementById('today-date-picker');
+      if (!picker.value) return;
+      picker.value = addDaysToDateStr(picker.value, deltaDays);
+      renderTodayView();
+    }
+
+    function initSwipeGestureOnTodayView() {
+      const el = document.getElementById('view-today');
+      let startX = 0, startY = 0;
+      el.addEventListener('touchstart', e => { if (e.touches.length === 1) { startX = e.touches[0].clientX; startY = e.touches[0].clientY; } }, { passive: true });
+      el.addEventListener('touchend', e => {
+        if (!startX) return;
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+        startX = 0;
+        if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.4) shiftTodayDate(dx < 0 ? 1 : -1);
+      }, { passive: true });
+    }
+
+    function setShiftSlot(slot) {
+      appState.selectedSlot = slot;
+      ['A', 'P', 'N'].forEach(s => document.getElementById('slot-' + s).classList.toggle('active', s === slot));
+      renderTodayView();
+    }
+
+    function normalizeDutyCode(code) {
+      const c = (code || '').trim();
+      if (c === '9-6') return '9/5';
+      if (c === '11-8') return '11/8';
+      return c;
+    }
+
+    function isLeaveOrOffCode(code) {
+      const upper = (code || '').trim().toUpperCase();
+      if (!upper) return true;
+      const leaveTokens = ['AL', 'SH', 'PH', 'WO', 'WO OWING', 'SL', 'CL', 'O', '替位'];
+      return leaveTokens.some(tok => upper === tok || upper.startsWith(tok + '/') || upper.includes('OWING') || upper.includes('替位'));
+    }
+    function isMorningACode(code) { return !isLeaveOrOffCode(code) && ['Aa', 'Ac', 'Ad', 'Ae'].includes((code || '').trim()); }
+    function isAfternoonPECode(code) { return !isLeaveOrOffCode(code) && ['Pa', 'Pe', 'Pu', 'Ec', 'Ed'].includes((code || '').trim()); }
+    function isNightNCode(code) { return !isLeaveOrOffCode(code) && ['Na', 'Ne'].includes((code || '').trim()); }
+    function isMidCode(code) {
+      const c = (code || '').trim();
+      return !isLeaveOrOffCode(c) && (c.startsWith('9-6') || c.startsWith('9/5') || c.startsWith('11-8') || c.startsWith('11/8'));
+    }
+
+    function renderTodayView() {
+      const dateStr = document.getElementById('today-date-picker').value;
+      if (!dateStr) return;
+
+      const d = parseLocalDate(dateStr);
+      const dayNames = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+      document.getElementById('today-weekday-badge').textContent = dayNames[d.getDay()];
+
+      const holBadge = document.getElementById('today-hk-holiday-badge');
+      if (HK_STATUTORY_HOLIDAYS[dateStr]) {
+        holBadge.textContent = `🇭🇰 ${HK_STATUTORY_HOLIDAYS[dateStr]}`;
+        holBadge.classList.remove('hidden');
+      } else {
+        holBadge.classList.add('hidden');
+      }
+
+      const nextDateStr = addDaysToDateStr(dateStr, 1);
+      const mondayStr = getMondayOfDate(dateStr);
+      const weekObj = appState.weeks[mondayStr] || appState.weeks[appState.currentWeekMonday];
+
+      const currentListEl = document.getElementById('current-shift-list');
+      const nextListEl = document.getElementById('next-shift-list');
+      const midListEl = document.getElementById('mid-shift-list');
+
+      currentListEl.innerHTML = '';
+      nextListEl.innerHTML = '';
+      midListEl.innerHTML = '';
+
+      let upCount = 0, downCount = 0, midCount = 0;
+      let activeWorkingStaff = [];
+      let allDayStaffPool = []; // 用於配對整日各更交接同事姓名
+
+      if (weekObj && weekObj.rows) {
+        weekObj.rows.forEach(r => {
+          if (!r.name) return;
+          const todaySheetCode = getDutyOnDateForRow(dateStr, r.row, r.name);
+          const tomorrowSheetCode = getDutyOnDateForRow(nextDateStr, r.row, r.name);
+
+          // 收集今日實際在崗人員池（用於精準配對交接姓名）
+          if (isMorningACode(todaySheetCode) || isMidCode(todaySheetCode) || isAfternoonPECode(todaySheetCode)) {
+            allDayStaffPool.push({ row: r.row, name: r.name, code: todaySheetCode, normCode: normalizeDutyCode(todaySheetCode), dayTag: '今日' });
+          }
+          if (isNightNCode(todaySheetCode)) {
+            // 今日欄印 Na/Ne，代表該朝早 07:18 放工交接俾早更
+            allDayStaffPool.push({ row: r.row, name: r.name, code: todaySheetCode, normCode: normalizeDutyCode(todaySheetCode), dayTag: '昨夜N(07:18放工)' });
+          }
+          if (isNightNCode(tomorrowSheetCode)) {
+            // 明日欄印 Na/Ne，代表今晚 22:30 返工接午更
+            allDayStaffPool.push({ row: r.row, name: r.name, code: tomorrowSheetCode, normCode: normalizeDutyCode(tomorrowSheetCode), dayTag: '今晚N(22:30返工)' });
+          }
+
+          if (isMidCode(todaySheetCode)) {
+            midCount++;
+            midListEl.innerHTML += createDutyPersonChip(r.row, r.name, todaySheetCode, 'cyan');
+            activeWorkingStaff.push({ row: r.row, name: r.name, code: todaySheetCode, dayTag: '今日' });
+          }
+
+          // 第4點：將 Na, Ne 在早更剔除（早更只列 Aa, Ac, Ad, Ae）
+          if (appState.selectedSlot === 'A') {
+            if (isMorningACode(todaySheetCode)) {
+              upCount++;
+              currentListEl.innerHTML += createDutyPersonChip(r.row, r.name, todaySheetCode, 'teal');
+              activeWorkingStaff.push({ row: r.row, name: r.name, code: todaySheetCode, dayTag: '今日' });
+            }
+            if (isAfternoonPECode(todaySheetCode)) {
+              downCount++;
+              nextListEl.innerHTML += createDutyPersonChip(r.row, r.name, todaySheetCode, '');
+              activeWorkingStaff.push({ row: r.row, name: r.name, code: todaySheetCode, dayTag: '今日' });
+            }
+          } else if (appState.selectedSlot === 'P') {
+            if (isAfternoonPECode(todaySheetCode)) {
+              upCount++;
+              currentListEl.innerHTML += createDutyPersonChip(r.row, r.name, todaySheetCode, 'teal');
+              activeWorkingStaff.push({ row: r.row, name: r.name, code: todaySheetCode, dayTag: '今日' });
+            }
+            if (isNightNCode(tomorrowSheetCode)) {
+              downCount++;
+              nextListEl.innerHTML += createDutyPersonChip(r.row, r.name, tomorrowSheetCode + '(今晚N)', '');
+              activeWorkingStaff.push({ row: r.row, name: r.name, code: tomorrowSheetCode, dayTag: '今晚N(22:30返工)' });
+            }
+          } else if (appState.selectedSlot === 'N') {
+            if (isNightNCode(tomorrowSheetCode)) {
+              upCount++;
+              currentListEl.innerHTML += createDutyPersonChip(r.row, r.name, tomorrowSheetCode + '(今晚N)', 'teal');
+              activeWorkingStaff.push({ row: r.row, name: r.name, code: tomorrowSheetCode, dayTag: '今晚N(22:30返工)' });
+            }
+            if (isMorningACode(tomorrowSheetCode)) {
+              downCount++;
+              nextListEl.innerHTML += createDutyPersonChip(r.row, r.name, tomorrowSheetCode + '(明早A)', '');
+            }
+          }
+        });
+      }
+
+      document.getElementById('current-shift-count').textContent = `${upCount}人`;
+      document.getElementById('next-shift-count').textContent = `${downCount}人`;
+      document.getElementById('mid-shift-count').textContent = `${midCount}人`;
+
+      if (!currentListEl.innerHTML) currentListEl.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:8px;">無上更人員</div>';
+      if (!nextListEl.innerHTML) nextListEl.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:8px;">無下更人員</div>';
+      if (!midListEl.innerHTML) midListEl.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#94a3b8;padding:6px;">無中更人員</div>';
+
+      renderDutyScheduleDetails(activeWorkingStaff, allDayStaffPool, dateStr);
+    }
+
+    function createDutyPersonChip(rowNum, name, code, theme) {
+      const isHighlighted = appState.highlightedStaff === name;
+      return `
+        <div onclick="highlightStaff('${name}')" class="person-chip ${isHighlighted ? 'hl' : ''}">
+          <div><span style="font-size:10px;color:#94a3b8;margin-right:4px;">${rowNum}</span><strong>${name}</strong></div>
+          <span class="duty-font code-badge ${theme}">${code}</span>
+        </div>
+      `;
+    }
+
+    function highlightStaff(name) {
+      appState.highlightedStaff = (appState.highlightedStaff === name) ? '' : name;
+      renderTodayView();
+    }
+
+    // 第10點＋第12點：明細卡片（含精準互相交接同事 ＋ 未來 7 日更期）
+    function renderDutyScheduleDetails(staffList, allDayStaffPool, dateStr) {
+      const container = document.getElementById('duty-schedule-detail-list');
+      if (!staffList.length) {
+        container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:8px;">暫無當值更期明細</div>';
+        return;
+      }
+      const uniqueMap = new Map();
+      staffList.forEach(item => {
+        const key = `${item.name}_${item.code}_${item.dayTag}`;
+        if (!uniqueMap.has(key)) uniqueMap.set(key, item);
+      });
+      const list = Array.from(uniqueMap.values());
+      const filtered = appState.highlightedStaff ? list.filter(x => x.name === appState.highlightedStaff) : list;
+
+      container.innerHTML = filtered.map(person => {
+        const norm = normalizeDutyCode(person.code);
+        const spec = DUTY_SPEC_MAP[norm] || {
+          work: '依更表', workStart: '07:00', mealStart: '13:00',
+          mealText: '依崗位', takeOverFromCodes: [], handoverToCodes: []
+        };
+
+        // 返工接邊個同事（依指定規則配對當日同事姓名）
+        const takeOverNames = (spec.takeOverFromCodes || []).map(targetCode => {
+          const matched = allDayStaffPool.find(p => {
+            if (p.normCode !== targetCode) return false;
+            if (isMorningACode(person.code) && isNightNCode(targetCode)) return p.dayTag === '昨夜N(07:18放工)';
+            return true;
+          });
+          return matched ? `${matched.name}(${targetCode})` : targetCode;
+        });
+
+        // 收工交邊個同事（依指定規則配對當日同事姓名）
+        const handoverNames = (spec.handoverToCodes || []).map(targetCode => {
+          const matched = allDayStaffPool.find(p => {
+            if (p.normCode !== targetCode) return false;
+            if (isAfternoonPECode(person.code) && isNightNCode(targetCode)) return p.dayTag === '今晚N(22:30返工)';
+            return true;
+          });
+          return matched ? `${matched.name}(${targetCode})` : targetCode;
+        });
+
+        let handoverDescParts = [];
+        if (takeOverNames.length) handoverDescParts.push(`返工接 ${takeOverNames.join('、')}`);
+        if (handoverNames.length) handoverDescParts.push(`收工交 ${handoverNames.join('、')}`);
+        const handoverFullText = handoverDescParts.length ? handoverDescParts.join(' ｜ ') : '按更交接';
+
+        // 一齊返放工與一齊食飯
+        const sameWork = list.filter(o => o.name !== person.name && (DUTY_SPEC_MAP[normalizeDutyCode(o.code)]?.work === spec.work)).map(o => `${o.name}(${o.code})`);
+        const sameMeal = list.filter(o => o.name !== person.name && (DUTY_SPEC_MAP[normalizeDutyCode(o.code)]?.mealStart === spec.mealStart)).map(o => `${o.name}(${o.code})`);
+
+        // 第10點：該同事未來 7 日更期（優先讀取已匯入更表，若無則用 1-17 行規律推算）
+        let next7Html = '';
+        const baseMon = getMondayOfDate(getTodayLocalStr());
+        for (let offset = 1; offset <= 7; offset++) {
+          const fDate = addDaysToDateStr(dateStr, offset);
+          let fCode = getDutyOnDateForRow(fDate, person.row, person.name);
+          let isPred = false;
+          if (!fCode && person.row >= 1 && person.row <= 17) {
+            const pred = calculatePredictedDutyForDate(person.row, baseMon, fDate);
+            fCode = pred.dutyCode || '-';
+            isPred = true;
+          }
+          const isOff = isLeaveOrOffCode(fCode);
+          next7Html += `
+            <div class="next7-pill" style="${isOff ? 'background:#fff1f2;border-color:#fecdd3;' : ''}">
+              <div style="font-size:9px;color:#64748b;">${fDate.slice(5)}</div>
+              <div class="duty-font" style="font-size:11px;color:${isOff ? '#be123c' : '#115e59'};">${fCode || '-'}</div>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="detail-item">
+            <div class="detail-top">
+              <div>
+                <strong style="font-size:13px;">${person.name}</strong>
+                <span class="duty-font code-badge teal" style="margin-left:4px;">${person.code}</span>
+                <span style="font-size:11px;color:#334155;font-weight:700;margin-left:4px;">${spec.work}</span>
+              </div>
+              <div class="flex-row">
+                <button onclick="addQuickAlarm('${spec.workStart}', '${person.name} ${person.code} 返工', '${dateStr}')" class="btn-sm btn-teal" style="font-size:10px;padding:2px 6px;">⏰ 返工(${spec.workStart})</button>
+                <button onclick="addQuickAlarm('${spec.mealStart}', '${person.name} ${person.code} 食飯', '${dateStr}')" class="btn-sm btn-amber" style="font-size:10px;padding:2px 6px;">⏰ 食飯(${spec.mealStart})</button>
+              </div>
+            </div>
+            <div style="font-size:11px;">
+              <strong>食飯：</strong>${spec.mealText} ｜ <strong style="color:#115e59;">交接：</strong><span style="font-weight:700;color:#0f172a;">${handoverFullText}</span>
+            </div>
+            <div class="detail-subgrid">
+              <div class="sub-box"><strong style="color:#155e75;">一齊食飯：</strong>${sameMeal.length ? sameMeal.join('、') : '單獨時段'}</div>
+              <div class="sub-box"><strong style="color:#3730a3;">一齊返放工：</strong>${sameWork.length ? sameWork.join('、') : '無同鐘點'}</div>
+            </div>
+            <div class="sub-box" style="background:#f0fdfa;border-color:#ccfbf1;">
+              <div style="font-size:10px;font-weight:700;color:#115e59;margin-bottom:2px;">未來 7 日更期：</div>
+              <div class="next7-strip">${next7Html}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==================== 刪除本週（雙擊確認）與全體更表左右滑動 ====================
+    let deleteConfirmTimer = null;
+    let isDeleteArmed = false;
+
+    function handleDeleteWeekClick() {
+      const btn = document.getElementById('btn-delete-week');
+      const target = appState.currentWeekMonday;
+      if (!target || !appState.weeks[target]) return;
+
+      if (!isDeleteArmed) {
+        isDeleteArmed = true;
+        btn.textContent = `再按確認刪除 (${target.slice(5)})`;
+        btn.classList.remove('btn-rose');
+        btn.classList.add('btn-rose-armed');
+        clearTimeout(deleteConfirmTimer);
+        deleteConfirmTimer = setTimeout(resetDeleteWeekButton, 3500);
+        return;
+      }
+
+      clearTimeout(deleteConfirmTimer);
+      resetDeleteWeekButton();
+      delete appState.weeks[target];
+
+      const remaining = Object.keys(appState.weeks).sort();
+      if (remaining.length > 0) {
+        appState.currentWeekMonday = remaining[0];
+      } else {
+        const fallbackMon = getMondayOfDate(getTodayLocalStr());
+        appState.weeks[fallbackMon] = {
+          monday: fallbackMon,
+          rows: DEFAULT_WEEK_DATA['2026-11-16'].rows.map(r => ({ row: r.row, name: r.name, duties: ['', '', '', '', '', '', ''] }))
+        };
+        appState.currentWeekMonday = fallbackMon;
+      }
+      saveState();
+      renderAll();
+    }
+
+    function resetDeleteWeekButton() {
+      isDeleteArmed = false;
+      const btn = document.getElementById('btn-delete-week');
+      if (btn) {
+        btn.textContent = '刪除本週';
+        btn.classList.remove('btn-rose-armed');
+        btn.classList.add('btn-rose');
+      }
+    }
+
+    // 第9點：全體更表支援左右滑動切換週次
+    function initSwipeGestureOnRosterTable() {
+      const el = document.getElementById('roster-swipe-container');
+      let startX = 0, startY = 0;
+      el.addEventListener('touchstart', e => {
+        if (e.touches.length === 1) { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }
+      }, { passive: true });
+      el.addEventListener('touchend', e => {
+        if (!startX) return;
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+        startX = 0;
+        if (Math.abs(dx) > 85 && Math.abs(dx) > Math.abs(dy) * 1.6) {
+          const sortedWeeks = Object.keys(appState.weeks).sort();
+          const idx = sortedWeeks.indexOf(appState.currentWeekMonday);
+          if (dx < 0 && idx < sortedWeeks.length - 1) {
+            selectWeek(sortedWeeks[idx + 1]);
+            renderWeekSelector();
+          } else if (dx > 0 && idx > 0) {
+            selectWeek(sortedWeeks[idx - 1]);
+            renderWeekSelector();
+          }
+        }
+      }, { passive: true });
+    }
+
+    function renderWeekSelector() {
+      const sel = document.getElementById('week-selector');
+      sel.innerHTML = '';
+      Object.keys(appState.weeks).sort().forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = `${m} 至 ${addDaysToDateStr(m, 6)}`;
+        if (m === appState.currentWeekMonday) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+
+    function selectWeek(mondayStr) {
+      appState.currentWeekMonday = mondayStr;
+      resetDeleteWeekButton();
+      renderRosterTable();
+    }
+
+    function openAddWeekModal() {
+      document.getElementById('new-week-date-input').value = addDaysToDateStr(appState.currentWeekMonday || getTodayLocalStr(), 7);
+      document.getElementById('add-week-modal').classList.remove('hidden');
+    }
+    function closeAddWeekModal() { document.getElementById('add-week-modal').classList.add('hidden'); }
+
+    function confirmAddNewWeek() {
+      const picked = document.getElementById('new-week-date-input').value;
+      if (!picked) { alert('請先選擇日期'); return; }
+      const monday = getMondayOfDate(picked);
+      if (!appState.weeks[monday]) {
+        const baseRows = appState.weeks[appState.currentWeekMonday]?.rows || DEFAULT_WEEK_DATA['2026-11-16'].rows;
+        appState.weeks[monday] = { monday, rows: baseRows.map(r => ({ row: r.row, name: r.name, duties: ['', '', '', '', '', '', ''] })) };
+      }
+      appState.currentWeekMonday = monday;
+      closeAddWeekModal();
+      saveState();
+      renderAll();
+    }
+
+    function renderRosterTable() {
+      const weekObj = appState.weeks[appState.currentWeekMonday];
+      if (!weekObj) return;
+
+      const prevSunStr = addDaysToDateStr(weekObj.monday, -1);
+      const nextMonStr = addDaysToDateStr(weekObj.monday, 7);
+      document.getElementById('th-prev-sun').innerHTML = `${prevSunStr.slice(8)}/${prevSunStr.slice(5, 7)}<br><span style="font-size:9px;">上日</span>`;
+      document.getElementById('th-next-mon').innerHTML = `${nextMonStr.slice(8)}/${nextMonStr.slice(5, 7)}<br><span style="font-size:9px;">下一</span>`;
+
+      const dayLabels = ['一', '二', '三', '四', '五', '六', '日'];
+      for (let i = 0; i < 7; i++) {
+        const fullDate = addDaysToDateStr(weekObj.monday, i);
+        const [, mm, dd] = fullDate.split('-');
+        const isHol = Boolean(HK_STATUTORY_HOLIDAYS[fullDate]);
+        document.getElementById('th-day-' + i).innerHTML = `<span style="${isHol ? 'color:#be123c;font-weight:800;' : ''}">${dd}/${mm}</span><br><span style="font-size:10px;">${dayLabels[i]}</span>`;
+      }
+
+      const tbody = document.getElementById('roster-table-body');
+      tbody.innerHTML = '';
+      weekObj.rows.forEach((r, rIdx) => {
+        const tr = document.createElement('tr');
+        const prevSunDuty = getDutyOnDateForRow(prevSunStr, r.row, r.name);
+        const nextMonDuty = getDutyOnDateForRow(nextMonStr, r.row, r.name);
+
+        let html = `
+          <td class="sticky-col-1">${r.row}</td>
+          <td class="sticky-col-2" onclick="editStaffName(${rIdx})">${r.name || '-'}</td>
+          <td class="col-edge"><span class="duty-font cell-pill ${getDutyBadgeClass(prevSunDuty)}">${prevSunDuty || '-'}</span></td>
+        `;
+        r.duties.forEach((duty, dIdx) => {
+          html += `<td class="col-day" onclick="editRosterCell(${rIdx}, ${dIdx})"><span class="duty-font cell-pill ${getDutyBadgeClass(duty)}">${duty || ''}</span></td>`;
+        });
+        html += `<td class="col-edge"><span class="duty-font cell-pill ${getDutyBadgeClass(nextMonDuty)}">${nextMonDuty || '-'}</span></td>`;
+        tr.innerHTML = html;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function getDutyBadgeClass(code) {
+      const c = (code || '').trim();
+      if (!c) return '';
+      if (isLeaveOrOffCode(c)) {
+        if (c.toUpperCase().includes('SH') || c.includes('替位')) return 'st-sh';
+        if (c.toUpperCase().includes('AL') || c.toUpperCase().includes('PH')) return 'st-al';
+        return 'st-leave';
+      }
+      if (isMidCode(c)) return 'st-mid';
+      if (isMorningACode(c)) return 'st-a';
+      if (isAfternoonPECode(c)) return 'st-p';
+      if (isNightNCode(c)) return 'st-n';
+      return '';
+    }
+
+    function renderCloudImagesStrip() {
+      const panel = document.getElementById('cloud-images-panel');
+      const strip = document.getElementById('cloud-images-strip');
+      if (!appState.cloudImages || !appState.cloudImages.length) { panel.classList.add('hidden'); return; }
+      panel.classList.remove('hidden');
+      document.getElementById('cloud-images-count').textContent = `${appState.cloudImages.length} 張`;
+      strip.innerHTML = appState.cloudImages.map(img => `
+        <div style="flex-shrink:0;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;width:72px;text-align:center;">
+          <img src="data:image/jpeg;base64,${img.base64}" style="width:100%;height:72px;object-fit:cover;" />
+          <div style="font-size:10px;font-weight:700;color:#115e59;">${img.monday}</div>
+        </div>
+      `).join('');
+    }
+
+    function editRosterCell(rIdx, dIdx) {
+      const weekObj = appState.weeks[appState.currentWeekMonday];
+      const next = prompt(`修改第 ${rIdx + 1} 行 (${weekObj.rows[rIdx].name}) 更期：`, weekObj.rows[rIdx].duties[dIdx] || '');
+      if (next !== null) {
+        weekObj.rows[rIdx].duties[dIdx] = next.trim();
+        learnFromVerifiedWeek(weekObj.rows);
+        saveState();
+        renderRosterTable();
+        renderTodayView();
+      }
+    }
+
+    function editStaffName(rIdx) {
+      const weekObj = appState.weeks[appState.currentWeekMonday];
+      const next = prompt(`修改第 ${rIdx + 1} 行同事姓名：`, weekObj.rows[rIdx].name || '');
+      if (next !== null) {
+        weekObj.rows[rIdx].name = next.trim();
+        learnFromVerifiedWeek(weekObj.rows);
+        saveState();
+        renderAll();
+      }
+    }
+
+    // ==================== AI 規律預測（第2點：月曆左右滑動；第5點：A/P/N分開與Na/Ne編入放假） ====================
+    function initSwipeGestureOnPredictCalendar() {
+      const el = document.getElementById('predict-cal-swipe-box');
+      let startX = 0, startY = 0;
+      el.addEventListener('touchstart', e => {
+        if (e.touches.length === 1) { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }
+      }, { passive: true });
+      el.addEventListener('touchend', e => {
+        if (!startX) return;
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+        startX = 0;
+        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+          changePredictCalendarMonth(dx < 0 ? 1 : -1);
+        }
+      }, { passive: true });
+    }
+
+    function initPredictControls() {
+      const rowSel = document.getElementById('predict-start-row');
+      if (!rowSel.options.length) {
+        for (let i = 1; i <= 17; i++) {
+          const opt = document.createElement('option');
+          opt.value = i;
+          opt.textContent = `第 ${i} 行`;
+          rowSel.appendChild(opt);
+        }
+      }
+      const nowStr = getTodayLocalStr();
+      const baseMon = getMondayOfDate(nowStr);
+      document.getElementById('locked-current-week-label').textContent = `已鎖定本週起始（星期一）：${baseMon}（當刻：${nowStr}）`;
+
+      if (!appState.predictTargetDate) {
+        appState.predictTargetDate = addDaysToDateStr(nowStr, 7);
+        const tObj = parseLocalDate(appState.predictTargetDate);
+        appState.predictCalYear = tObj.getFullYear();
+        appState.predictCalMonth = tObj.getMonth();
+      }
+      renderPredictCalendar();
+    }
+
+    function changePredictCalendarMonth(delta) {
+      appState.predictCalMonth += delta;
+      if (appState.predictCalMonth < 0) { appState.predictCalMonth = 11; appState.predictCalYear--; }
+      if (appState.predictCalMonth > 11) { appState.predictCalMonth = 0; appState.predictCalYear++; }
+      renderPredictCalendar();
+    }
+
+    function selectPredictTargetDate(dateStr) {
+      appState.predictTargetDate = dateStr;
+      renderPredictCalendar();
+      runRowCyclePrediction();
+    }
+
+    function renderPredictCalendar() {
+      const y = appState.predictCalYear, m = appState.predictCalMonth;
+      document.getElementById('predict-cal-month-title').textContent = `${y}年${m + 1}月（紅字為香港法定假期）`;
+      const firstDay = new Date(y, m, 1);
+      const startPad = (firstDay.getDay() + 6) % 7;
+      const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+      const grid = document.getElementById('predict-cal-days-grid');
+      grid.innerHTML = '';
+      for (let i = 0; i < startPad; i++) grid.innerHTML += `<div></div>`;
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const holName = HK_STATUTORY_HOLIDAYS[dStr];
+        const isSel = dStr === appState.predictTargetDate;
+        grid.innerHTML += `
+          <div onclick="selectPredictTargetDate('${dStr}')" class="cal-cell ${isSel ? 'sel' : (holName ? 'hol' : '')}" title="${holName || dStr}">
+            <div>${d}</div>
+            ${holName ? `<div style="font-size:8px;line-height:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${holName}</div>` : ''}
+          </div>
+        `;
+      }
+    }
+
+    function calculatePredictedDutyForDate(startRow1To17, baseMondayStr, targetDateStr) {
+      const baseDate = parseLocalDate(baseMondayStr);
+      const targetDate = parseLocalDate(targetDateStr);
+      const diffDays = Math.round((targetDate - baseDate) / (1000 * 60 * 60 * 24));
+      const targetWeekdayIdx = ((targetDate.getDay() + 6) % 7);
+      const weeksPassed = Math.floor(diffDays / 7);
+      let projectedRowIndex0 = ((startRow1To17 - 1 + weeksPassed) % 17 + 17) % 17;
+      const sampleRowObj = appState.patternSample[projectedRowIndex0];
+      return {
+        projectedRow: projectedRowIndex0 + 1,
+        weekdayName: ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'][targetWeekdayIdx],
+        dutyCode: sampleRowObj ? sampleRowObj.days[targetWeekdayIdx] : '',
+        holidayName: HK_STATUTORY_HOLIDAYS[targetDateStr] || ''
+      };
+    }
+
+    function runRowCyclePrediction() {
+      const startRow = parseInt(document.getElementById('predict-start-row').value || '1', 10);
+      const baseMonday = getMondayOfDate(getTodayLocalStr());
+      const targetDate = appState.predictTargetDate || addDaysToDateStr(getTodayLocalStr(), 7);
+      const res = calculatePredictedDutyForDate(startRow, baseMonday, targetDate);
+
+      document.getElementById('predict-single-result').innerHTML = `
+        <div>
+          <div style="font-size:11px;color:#5eead4;font-weight:600;">
+            ${targetDate}（${res.weekdayName}）
+            ${res.holidayName ? `<span style="background:#e11d48;color:#fff;padding:1px 5px;border-radius:4px;margin-left:4px;">🇭🇰 ${res.holidayName}</span>` : ''}
+          </div>
+          <div style="font-size:13px;font-weight:700;margin-top:2px;">
+            對應規律表：<span style="color:#fcd34d;">第 ${res.projectedRow} 行</span> · ${res.weekdayName}
+          </div>
+        </div>
+        <div class="duty-font result-code">${res.dutyCode}</div>
+      `;
+
+      renderPredictColleaguesOnDate(baseMonday, targetDate);
+
+      const gridEl = document.getElementById('predict-14days-grid');
+      gridEl.innerHTML = '';
+      for (let i = 0; i < 14; i++) {
+        const dStr = addDaysToDateStr(targetDate, i);
+        const dayRes = calculatePredictedDutyForDate(startRow, baseMonday, dStr);
+        const isHol = Boolean(dayRes.holidayName);
+        gridEl.innerHTML += `
+          <div class="day14-card ${isHol ? 'hol' : ''}">
+            <div style="font-size:10px;color:${isHol ? '#be123c' : '#64748b'};">${dStr.slice(5)}</div>
+            <div style="font-size:9px;font-weight:700;color:#115e59;">行${dayRes.projectedRow}·${dayRes.weekdayName.replace('星期', '')}</div>
+            <div class="duty-font" style="font-size:12px;">${dayRes.dutyCode}</div>
+            ${isHol ? `<div style="font-size:8px;color:#e11d48;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${dayRes.holidayName}</div>` : ''}
+          </div>
+        `;
+      }
+    }
+
+    // 第5點：分開 A更、P/中更、今晚返工的 N更，而當日印 Na, Ne（朝早放工）編入放假
+    function renderPredictColleaguesOnDate(baseMonday, targetDate) {
+      const refWeek = appState.weeks[appState.currentWeekMonday] || Object.values(appState.weeks)[0];
+      const aEl = document.getElementById('predict-a-colleagues');
+      const pEl = document.getElementById('predict-p-colleagues');
+      const nEl = document.getElementById('predict-n-colleagues');
+      const offEl = document.getElementById('predict-off-colleagues');
+      document.getElementById('predict-colleagues-title').textContent = `${targetDate} 同日可確定預測同事（第 1–17 行）`;
+      if (!refWeek || !refWeek.rows) return;
+
+      const nextDate = addDaysToDateStr(targetDate, 1);
+      let aList = [], pList = [], nList = [], offList = [];
+
+      for (let rowNum = 1; rowNum <= 17; rowNum++) {
+        const staffRow = refWeek.rows.find(r => r.row === rowNum);
+        if (!staffRow || !staffRow.name) continue;
+
+        const predToday = calculatePredictedDutyForDate(rowNum, baseMonday, targetDate);
+        const predTomorrow = calculatePredictedDutyForDate(rowNum, baseMonday, nextDate);
+
+        const code = (predToday.dutyCode || '').trim();
+        const nextCode = (predTomorrow.dutyCode || '').trim();
+
+        // 若翌日欄為 Na/Ne（或含 /N），表示當晚 22:30 返 N 更
+        if (isNightNCode(nextCode) || nextCode.includes('/N')) {
+          nList.push({ name: staffRow.name, code: nextCode });
+        }
+
+        if (!code || code.includes('替位')) continue;
+
+        if (isNightNCode(code)) {
+          // 朝早 07:18 放工的 Na / Ne 編入放假欄
+          offList.push({ name: staffRow.name, code: code + '(朝早放工)' });
+        } else if (isLeaveOrOffCode(code)) {
+          offList.push({ name: staffRow.name, code });
+        } else if (isMorningACode(code) || code.startsWith('Aa')) {
+          aList.push({ name: staffRow.name, code });
+        } else if (isAfternoonPECode(code) || isMidCode(code)) {
+          pList.push({ name: staffRow.name, code });
+        }
+      }
+
+      document.getElementById('predict-a-count').textContent = `${aList.length}人`;
+      document.getElementById('predict-p-count').textContent = `${pList.length}人`;
+      document.getElementById('predict-n-count').textContent = `${nList.length}人`;
+      document.getElementById('predict-off-count').textContent = `${offList.length}人`;
+
+      aEl.innerHTML = aList.length
+        ? aList.map(c => `<span class="badge-tag" style="background:#f0fdfa;border:1px solid #99f6e4;color:#115e59;">${c.name}<span class="duty-font" style="color:#0f766e;">${c.code}</span></span>`).join('')
+        : '<span style="color:#94a3b8;font-size:11px;">無</span>';
+
+      pEl.innerHTML = pList.length
+        ? pList.map(c => `<span class="badge-tag" style="background:#f0f9ff;border:1px solid #bae6fd;color:#075985;">${c.name}<span class="duty-font" style="color:#0369a1;">${c.code}</span></span>`).join('')
+        : '<span style="color:#94a3b8;font-size:11px;">無</span>';
+
+      nEl.innerHTML = nList.length
+        ? nList.map(c => `<span class="badge-tag" style="background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;">${c.name}<span class="duty-font" style="color:#4338ca;">${c.code}</span></span>`).join('')
+        : '<span style="color:#94a3b8;font-size:11px;">無</span>';
+
+      offEl.innerHTML = offList.length
+        ? offList.map(c => `<span class="badge-tag" style="background:#fff1f2;border:1px solid #fecdd3;color:#9f1239;">${c.name}<span class="duty-font" style="color:#be123c;">${c.code}</span></span>`).join('')
+        : '<span style="color:#94a3b8;font-size:11px;">無</span>';
+    }
+
+    function renderSamplePatternTable() {
+      const tbody = document.getElementById('sample-pattern-tbody');
+      tbody.innerHTML = '';
+      appState.patternSample.forEach((item, rIdx) => {
+        const isCycleRow = item.row <= 17;
+        const tr = document.createElement('tr');
+        tr.style.background = isCycleRow ? '#fff' : '#fffbeb';
+        let html = `<td style="font-weight:700;color:${isCycleRow ? '#115e59' : '#b45309'};">${item.row}</td>`;
+        item.days.forEach((code, dIdx) => {
+          html += `<td style="cursor:pointer;" onclick="editSamplePatternCell(${rIdx}, ${dIdx})"><span class="duty-font cell-pill ${isLeaveOrOffCode(code) ? 'st-sh' : ''}">${code}</span></td>`;
+        });
+        tr.innerHTML = html;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function editSamplePatternCell(rIdx, dIdx) {
+      const rowObj = appState.patternSample[rIdx];
+      const weekdays = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
+      const next = prompt(`修改樣本表 第 ${rowObj.row} 行 (${weekdays[dIdx]})：`, rowObj.days[dIdx]);
+      if (next !== null && next.trim() !== '') {
+        rowObj.days[dIdx] = next.trim();
+        saveState();
+        renderSamplePatternTable();
+        runRowCyclePrediction();
+      }
+    }
+
+    function resetPatternSampleToImage3() {
+      appState.patternSample = JSON.parse(JSON.stringify(IMAGE3_DEFAULT_PATTERN));
+      saveState();
+      renderSamplePatternTable();
+      runRowCyclePrediction();
+    }
+
+    function populateStaffCalculator() {
+      const sel = document.getElementById('calc-staff-select');
+      const weekObj = appState.weeks[appState.currentWeekMonday];
+      if (!weekObj) return;
+      sel.innerHTML = '';
+      weekObj.rows.forEach(r => {
+        if (!r.name) return;
+        const opt = document.createElement('option');
+        opt.value = r.name;
+        opt.textContent = `${r.row}. ${r.name}`;
+        sel.appendChild(opt);
+      });
+      calculateLeaveStats();
+    }
+
+    function calculateLeaveStats() {
+      const staffName = document.getElementById('calc-staff-select').value;
+      let counts = { WO: 0, O: 0, AL: 0, PH: 0, OTHER: 0 };
+      Object.values(appState.weeks).forEach(w => {
+        const found = w.rows.find(r => r.name === staffName);
+        if (found) {
+          found.duties.forEach(d => {
+            const u = (d || '').trim().toUpperCase();
+            if (!u) return;
+            if (u === 'WO' || u.includes('OWING')) counts.WO++;
+            else if (u === 'O') counts.O++;
+            else if (u === 'AL') counts.AL++;
+            else if (u === 'PH') counts.PH++;
+            else if (['SH', 'SL', 'CL'].some(k => u.includes(k)) || u.includes('替位')) counts.OTHER++;
+          });
+        }
+      });
+      document.getElementById('leave-stats-cards').innerHTML = `
+        <div class="stat-box"><div style="font-size:10px;color:#64748b;">WO</div><strong>${counts.WO}</strong></div>
+        <div class="stat-box"><div style="font-size:10px;color:#64748b;">O</div><strong>${counts.O}</strong></div>
+        <div class="stat-box" style="background:#fff1f2;border-color:#fecdd3;"><div style="font-size:10px;color:#e11d48;">AL</div><strong style="color:#9f1239;">${counts.AL}</strong></div>
+        <div class="stat-box" style="background:#fff1f2;border-color:#fecdd3;"><div style="font-size:10px;color:#e11d48;">PH</div><strong style="color:#9f1239;">${counts.PH}</strong></div>
+        <div class="stat-box" style="background:#fffbeb;border-color:#fde68a;"><div style="font-size:10px;color:#d97706;">SH/SL/CL</div><strong style="color:#92400e;">${counts.OTHER}</strong></div>
+      `;
+    }
+
+    // ==================== 第3點 & 第6點：修復 AI 圖片辨析 Load failed + 內嵌 API Key ====================
+    let pendingUploadFiles = [];
+    let verifiedImportPayloads = [];
+    const UNIQUE_SHIFT_CODES = new Set(['Aa', 'Ac', 'Ad', 'Ae', '9-6', '9/5', 'Pa', 'Pe', 'Pu', 'Ec', 'Ed', 'Na', 'Ne']);
+
+    function safeExtractJsonFromText(rawText) {
+      if (!rawText) throw new Error('AI 未回傳文字內容');
+      let cleaned = rawText.trim().replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+      const first = cleaned.indexOf('{'), last = cleaned.lastIndexOf('}');
+      if (first !== -1 && last !== -1) cleaned = cleaned.slice(first, last + 1);
+      return JSON.parse(cleaned);
+    }
+
+    function detectDuplicateShiftsInColumns(rows) {
+      const dayNames = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
+      const duplicates = [];
+      for (let dIdx = 0; dIdx < 7; dIdx++) {
+        const seen = {};
+        rows.forEach(r => {
+          const code = (r.duties?.[dIdx] || '').trim();
+          if (UNIQUE_SHIFT_CODES.has(code)) {
+            if (seen[code]) duplicates.push(`${dayNames[dIdx]}重複「${code}」`);
+            else seen[code] = r.row;
+          }
+        });
+      }
+      return duplicates;
+    }
+
+    function openUploadModal() { document.getElementById('upload-modal').classList.remove('hidden'); }
+    function closeUploadModal() { document.getElementById('upload-modal').classList.add('hidden'); }
+    function openSettingsModal() { updateBackupUI(); document.getElementById('settings-modal').classList.remove('hidden'); }
+    function closeSettingsModal() { document.getElementById('settings-modal').classList.add('hidden'); }
+
+    function handleMultiImageSelect(event) {
+      const files = Array.from(event.target.files || []);
+      if (!files.length) return;
+      pendingUploadFiles = files;
+      const bar = document.getElementById('selected-images-bar');
+      bar.innerHTML = '';
+      bar.classList.remove('hidden');
+      files.forEach((file, idx) => {
+        const url = URL.createObjectURL(file);
+        bar.innerHTML += `<div style="position:relative;flex-shrink:0;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;width:60px;height:75px;"><img src="${url}" style="width:100%;height:100%;object-fit:cover;" /><span style="position:absolute;bottom:0;inset-x:0;background:rgba(0,0,0,0.7);color:#fff;font-size:10px;text-align:center;">圖${idx + 1}</span></div>`;
+      });
+      document.getElementById('btn-run-ocr').disabled = false;
+      document.getElementById('btn-confirm-import').classList.add('hidden');
+      document.getElementById('ocr-preview-area').classList.add('hidden');
+    }
+
+    function appendOcrLog(msg) {
+      const box = document.getElementById('ocr-log-lines');
+      const div = document.createElement('div');
+      div.textContent = '> ' + msg;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function processAllUploadedImages() {
+      const apiKey = (EMBEDDED_GEMINI_API_KEY || '').trim();
+      if (!apiKey) {
+        alert('請先在程式碼頂部 EMBEDDED_GEMINI_API_KEY 填入你的 Gemini API Key！');
+        return;
+      }
+      if (!pendingUploadFiles.length) { alert('請先選取相片。'); return; }
+
+      const progressBox = document.getElementById('ocr-progress-box');
+      const logBox = document.getElementById('ocr-log-lines');
+      progressBox.classList.remove('hidden');
+      logBox.innerHTML = '';
+      verifiedImportPayloads = [];
+      document.getElementById('btn-run-ocr').disabled = true;
+
+      try {
+        for (let i = 0; i < pendingUploadFiles.length; i++) {
+          const file = pendingUploadFiles[i];
+          document.getElementById('ocr-step-title').textContent = `分析第 ${i + 1} / ${pendingUploadFiles.length} 張相片...`;
+          appendOcrLog('壓縮並優化相片解像度（避免超時與 Load failed）...');
+          const base64Data = await resizeImageToBase64(file, 1600, 0.85);
+          const thumbBase64 = await resizeImageToBase64(file, 800, 0.7);
+
+          document.getElementById('ocr-attempt-badge').textContent = '格線提取中';
+          let extractedJson = await callGeminiGridExtractWithFallback(apiKey, base64Data);
+          if (!extractedJson || !Array.isArray(extractedJson.rows) || !extractedJson.rows.length) {
+            throw new Error(`第 ${i + 1} 張相片未能識別表格。`);
+          }
+          appendOcrLog(`識別週一日期：${extractedJson.monday}（共 ${extractedJson.rows.length} 行）`);
+
+          const colDupWarnings = detectDuplicateShiftsInColumns(extractedJson.rows);
+          if (colDupWarnings.length) {
+            appendOcrLog(`發現同欄重複（${colDupWarnings.join('、')}），進行二次糾錯...`);
+            const fixRes = await callGeminiSelfVerifyAndFix(apiKey, base64Data, extractedJson, colDupWarnings);
+            if (fixRes.correctedData && fixRes.correctedData.rows) extractedJson = fixRes.correctedData;
+          }
+
+          extractedJson._cloudImageBase64 = thumbBase64;
+          verifiedImportPayloads.push(extractedJson);
+          appendOcrLog(`✓ 第 ${i + 1} 張相片完成！`);
+        }
+
+        if (verifiedImportPayloads.length > 0) {
+          const sample = verifiedImportPayloads[verifiedImportPayloads.length - 1];
+          document.getElementById('ocr-detected-date-label').textContent = `已辨析 ${verifiedImportPayloads.length} 張（週一：${sample.monday}）`;
+          renderOcrPreviewTable(sample);
+          document.getElementById('ocr-preview-area').classList.remove('hidden');
+          document.getElementById('btn-confirm-import').classList.remove('hidden');
+        }
+      } catch (err) {
+        appendOcrLog(`❌ ${err.message}`);
+        alert('辨識失敗：' + err.message);
+      } finally {
+        document.getElementById('btn-run-ocr').disabled = false;
+      }
+    }
+
+    async function callGeminiGridExtractWithFallback(apiKey, base64Data) {
+      const knownNamesStr = appState.dictionary.names.join('、');
+      const prompt = `請嚴格依照圖片中的黑色表格格線提取更期表，比對標準姓名庫（${knownNamesStr}）：
+1. monday 填寫表格頂部「星期一」日期（YYYY-MM-DD）。跳過「職級」「公眾假期」欄，只取「星期一」至「星期日」7 欄。
+2. 同一直欄（同一日）內專屬更期（Aa, Ac, Ad, Ae, 9-6, 9/5, Pa, Pe, Pu, Ec, Ed, Na, Ne）不可重複。
+3. 區分 9-6/9/5 與 11-8/11/8，保留假期寫法（AL, SH, PH, WO, WO OWING, SL, CL, O）。
+只輸出純 JSON：{"monday":"2026-11-16","rows":[{"row":1,"name":"黃詩琪","duties":["9-6","Ec","Ec","11-8","WO","O","Aa"]}]}`;
+
+      const models = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+      let lastError = null;
+
+      for (const modelName of models) {
+        try {
+          const url = `[https://generativelanguage.googleapis.com/v1beta/models/$](https://generativelanguage.googleapis.com/v1beta/models/$){modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
+          const res = await fetch(url, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: 'image/jpeg', data: base64Data } }] }],
+              generationConfig: { temperature: 0.0, responseMimeType: "application/json" }
+            })
+          });
+          if (!res.ok) {
+            const errText = await res.text().catch(() => '');
+            throw new Error(`HTTP ${res.status}: ${errText.slice(0, 120)}`);
+          }
+          const json = await res.json();
+          return safeExtractJsonFromText(json.candidates?.[0]?.content?.parts?.[0]?.text || '');
+        } catch (err) {
+          lastError = err;
+          appendOcrLog(`模型 ${modelName} 連線異常 (${err.message})，嘗試備援通道...`);
+        }
+      }
+      throw new Error(`無法連接 Gemini API（${lastError ? lastError.message : 'Load failed'}）。請檢查網絡連線或 API Key 權限。`);
+    }
+
+    async function callGeminiSelfVerifyAndFix(apiKey, base64Data, currentJson, duplicateWarnings) {
+      const prompt = `核對並修正重複更期（${duplicateWarnings.join('、')}）與原圖格線。待核對 JSON：${JSON.stringify(currentJson)}。只輸出純 JSON：{"correctionCount":0,"correctedData":{"monday":"...","rows":[...]}}`;
+      try {
+        const res = await fetch(`[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$){encodeURIComponent(apiKey)}`, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: 'image/jpeg', data: base64Data } }] }],
+            generationConfig: { temperature: 0.0, responseMimeType: "application/json" }
+          })
+        });
+        if (!res.ok) return { correctionCount: 0, correctedData: currentJson };
+        const json = await res.json();
+        return safeExtractJsonFromText(json.candidates?.[0]?.content?.parts?.[0]?.text || '');
+      } catch (e) {
+        return { correctionCount: 0, correctedData: currentJson };
+      }
+    }
+
+    function renderOcrPreviewTable(weekPayload) {
+      document.getElementById('ocr-preview-tbody').innerHTML = (weekPayload.rows || []).map(r => `
+        <tr><td>${r.row}</td><td><strong>${r.name || ''}</strong></td>${(r.duties || []).map(d => `<td class="duty-font">${d}</td>`).join('')}</tr>
+      `).join('');
+    }
+
+    function confirmImportAllWeeks() {
+      verifiedImportPayloads.forEach(payload => {
+        const monday = getMondayOfDate(payload.monday);
+        const normalizedRows = Array.from({ length: 21 }, (_, idx) => {
+          const found = (payload.rows || []).find(item => Number(item.row) === idx + 1);
+          return found ? { row: idx + 1, name: found.name || '', duties: (found.duties || []).slice(0, 7) } : { row: idx + 1, name: '', duties: ['', '', '', '', '', '', ''] };
+        });
+        appState.weeks[monday] = { monday, rows: normalizedRows };
+        appState.currentWeekMonday = monday;
+        learnFromVerifiedWeek(normalizedRows);
+        if (payload._cloudImageBase64) {
+          appState.cloudImages = appState.cloudImages.filter(x => x.monday !== monday);
+          appState.cloudImages.push({ monday, uploadedAt: new Date().toISOString(), base64: payload._cloudImageBase64 });
+        }
+      });
+      saveState();
+      renderAll();
+      closeUploadModal();
+      alert(`已成功匯入 ${verifiedImportPayloads.length} 張更期表並儲存至雲端！`);
+    }
+
+    function resizeImageToBase64(file, maxDim, quality) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+            else { w = Math.round(w * maxDim / h); h = maxDim; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          URL.revokeObjectURL(url);
+          resolve(canvas.toDataURL('image/jpeg', quality).split(',')[1]);
+        };
+        img.onerror = reject;
+        img.src = url;
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
