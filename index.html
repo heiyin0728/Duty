@@ -454,7 +454,7 @@
         <label style="display:block;border:2px dashed #14b8a6;background:#f0fdfa;padding:14px;border-radius:10px;text-align:center;cursor:pointer;">
           <input type="file" id="multi-image-input" accept="image/*" multiple class="hidden" onchange="handleMultiImageSelect(event)" />
           <div style="color:#115e59;font-weight:700;">點擊一次選取多張更期表相片</div>
-          <div style="font-size:11px;color:#64748b;margin-top:2px;">支援 Vertex AI Express / AI Studio 雙通道自動格線辨識</div>
+          <div style="font-size:11px;color:#64748b;margin-top:2px;">已內嵌 Gemini AI Studio 金鑰，支援自動格線辨識與雲端儲存</div>
         </label>
 
         <div id="selected-images-bar" class="hidden" style="display:flex;gap:6px;overflow-x:auto;"></div>
@@ -587,7 +587,7 @@
 
   <script>
     // =========================================================================
-    // 分段組合 Gemini API Key ＋ 自動支援 Vertex AI Express Mode (AQ.) 端點
+    // 分段組合 Gemini AI Studio API Key（...0Udg），透過 x-goog-api-key 標頭傳送
     // =========================================================================
     const _kPartA = "AQ.Ab8RN6ImLQ75YkDk8Ykz";
     const _kPartB = "XqJwnUXyd8lzot0fdeP5zQ2zVR0Udg";
@@ -1812,7 +1812,7 @@
       `;
     }
 
-    // ==================== AI 圖片辨析（支援 Vertex AI Express Mode + AI Studio 雙端點） ====================
+    // ==================== AI 圖片辨析（透過 x-goog-api-key 標頭直接驗證 AI Studio 金鑰） ====================
     let pendingUploadFiles = [];
     let verifiedImportPayloads = [];
     const UNIQUE_SHIFT_CODES = new Set(['Aa', 'Ac', 'Ad', 'Ae', '9-6', '9/5', 'Pa', 'Pe', 'Pu', 'Ec', 'Ed', 'Na', 'Ne']);
@@ -1885,7 +1885,7 @@
         for (let i = 0; i < pendingUploadFiles.length; i++) {
           const file = pendingUploadFiles[i];
           document.getElementById('ocr-step-title').textContent = `分析第 ${i + 1} / ${pendingUploadFiles.length} 張相片...`;
-          appendOcrLog('優化相片解像度並連線 Vertex AI 端點...');
+          appendOcrLog('優化相片解像度並連線 Google AI Studio...');
           const base64Data = await resizeImageToBase64(file, 1500, 0.85);
           const thumbBase64 = await resizeImageToBase64(file, 800, 0.7);
 
@@ -1923,13 +1923,6 @@
       }
     }
 
-    function buildGeminiEndpointUrl(apiKey, modelName) {
-      if (apiKey.startsWith('AQ.')) {
-        return `[https://aiplatform.googleapis.com/v1/publishers/google/models/$](https://aiplatform.googleapis.com/v1/publishers/google/models/$){modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
-      }
-      return `[https://generativelanguage.googleapis.com/v1beta/models/$](https://generativelanguage.googleapis.com/v1beta/models/$){modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
-    }
-
     async function callGeminiGridExtractWithFallback(apiKey, base64Data) {
       const knownNamesStr = appState.dictionary.names.join('、');
       const prompt = `請嚴格依照圖片中的黑色表格格線提取更期表，比對標準姓名庫（${knownNamesStr}）：
@@ -1943,16 +1936,18 @@
 
       for (const modelName of models) {
         try {
-          const url = buildGeminiEndpointUrl(apiKey, modelName);
+          const url = `[https://generativelanguage.googleapis.com/v1beta/models/$](https://generativelanguage.googleapis.com/v1beta/models/$){modelName}:generateContent`;
           const res = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': apiKey
+            },
             body: JSON.stringify({
               contents: [{
-                role: 'user',
                 parts: [
                   { text: prompt },
-                  { inlineData: { mimeType: 'image/jpeg', data: base64Data } }
+                  { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
                 ]
               }],
               generationConfig: { temperature: 0.0, responseMimeType: "application/json" }
@@ -1966,25 +1961,27 @@
           return safeExtractJsonFromText(json.candidates?.[0]?.content?.parts?.[0]?.text || '');
         } catch (err) {
           lastError = err;
-          appendOcrLog(`模型 ${modelName} 回應異常 (${err.message})，切換通道...`);
+          appendOcrLog(`模型 ${modelName} 回應異常 (${err.message})，切換備援...`);
         }
       }
-      throw new Error(`API 連線失敗（${lastError ? lastError.message : '未知錯誤'}）。`);
+      throw new Error(`API 連線失敗（${lastError ? lastError.message : '未知錯誤'}）。若香港網絡受阻，請開啟 VPN 後重試。`);
     }
 
     async function callGeminiSelfVerifyAndFix(apiKey, base64Data, currentJson, duplicateWarnings) {
       const prompt = `核對並修正重複更期（${duplicateWarnings.join('、')}）與原圖格線。待核對 JSON：${JSON.stringify(currentJson)}。只輸出純 JSON：{"correctionCount":0,"correctedData":{"monday":"...","rows":[...]}}`;
       try {
-        const url = buildGeminiEndpointUrl(apiKey, 'gemini-2.5-flash');
+        const url = `[https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent](https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent)`;
         const res = await fetch(url, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey
+          },
           body: JSON.stringify({
             contents: [{
-              role: 'user',
               parts: [
                 { text: prompt },
-                { inlineData: { mimeType: 'image/jpeg', data: base64Data } }
+                { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
               ]
             }],
             generationConfig: { temperature: 0.0, responseMimeType: "application/json" }
