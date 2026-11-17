@@ -151,6 +151,21 @@
     .st-p { background: #f0f9ff; color: #075985; }
     .st-n { background: #eef2ff; color: #3730a3; }
 
+    /* 雲端原圖卡片 */
+    .cloud-img-card {
+      flex-shrink: 0; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden;
+      width: 96px; background: #f8fafc; display: flex; flex-direction: column;
+    }
+    .cloud-img-actions {
+      display: flex; border-top: 1px solid #e2e8f0;
+    }
+    .cloud-img-actions button {
+      flex: 1; font-size: 10px; font-weight: 700; padding: 3px 0; background: #fff; color: #334155;
+    }
+    .cloud-img-actions button.del-btn {
+      color: #be123c; border-left: 1px solid #e2e8f0; background: #fff1f2;
+    }
+
     /* 預測與日曆 */
     .predict-top-grid { display: grid; grid-template-columns: 1fr; gap: 8px; background: #f0fdfa; padding: 8px; border-radius: 10px; border: 1px solid #99f6e4; }
     @media (min-width: 640px) { .predict-top-grid { grid-template-columns: 1fr 1fr; } }
@@ -213,7 +228,7 @@
     <nav>
       <div class="nav-grid">
         <button id="nav-today" onclick="switchTab('today')" class="nav-btn active">今日當值</button>
-        <button id="nav-roster" onclick="switchTab('roster')" class="nav-btn">全體更表與規則</button>
+        <button id="nav-roster" onclick="switchTab('roster')" class="nav-btn">全體更表</button>
         <button id="nav-predict" onclick="switchTab('predict')" class="nav-btn">更期預測</button>
       </div>
     </nav>
@@ -226,7 +241,7 @@
   </div>
 
   <main>
-    <!-- ==================== 分頁 1：今日當值與交接 ==================== -->
+    <!-- ==================== 分頁 1：今日當值與交接（嚴格由全體更表抽取） ==================== -->
     <section id="view-today" style="display:flex;flex-direction:column;gap:8px;">
       <div class="card card-pad toolbar">
         <div class="flex-row">
@@ -282,7 +297,7 @@
       </div>
     </section>
 
-    <!-- ==================== 分頁 2：全體更表與規則 ==================== -->
+    <!-- ==================== 分頁 2：全體更表 ==================== -->
     <section id="view-roster" class="hidden" style="display:flex;flex-direction:column;gap:8px;">
       <div class="card card-pad toolbar">
         <div class="flex-row">
@@ -296,7 +311,7 @@
         </div>
       </div>
 
-      <!-- 支援左右滑動切換週次 -->
+      <!-- 支援左右滑動切換週次；上日與下一嚴格依同事姓名配對 -->
       <div id="roster-swipe-container" class="card table-wrap">
         <table class="roster-tbl">
           <thead>
@@ -318,13 +333,16 @@
         </table>
       </div>
 
-      <!-- 雲端已存原圖預覽 -->
+      <!-- 雲端已存原圖預覽（支援檢視大圖、編輯週一日期、刪除） -->
       <div id="cloud-images-panel" class="card card-pad hidden">
         <div class="toolbar" style="margin-bottom:6px;">
-          <strong style="color:#115e59;font-size:12px;">雲端已存更期表原圖</strong>
-          <span id="cloud-images-count" style="font-size:11px;color:#64748b;">0 張</span>
+          <strong style="color:#115e59;font-size:12px;">雲端已存更期表原圖（點擊看大圖／可改期或刪除）</strong>
+          <div class="flex-row">
+            <span id="cloud-images-count" style="font-size:11px;color:#64748b;">0 張</span>
+            <button onclick="clearAllCloudImages()" class="btn-sm btn-rose" style="font-size:10px;padding:2px 6px;">清空全部原圖</button>
+          </div>
         </div>
-        <div id="cloud-images-strip" style="display:flex;gap:8px;overflow-x:auto;"></div>
+        <div id="cloud-images-strip" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;"></div>
       </div>
     </section>
 
@@ -585,6 +603,24 @@
     </div>
   </div>
 
+  <!-- ==================== 彈窗 5：雲端原圖大圖檢視與編輯刪除 ==================== -->
+  <div id="cloud-image-viewer-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeCloudImageViewer()">
+    <div class="modal-box" style="max-width:520px;" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <span id="viewer-img-title">原圖檢視</span>
+        <button onclick="closeCloudImageViewer()" style="background:none;color:#fff;font-size:20px;">&times;</button>
+      </div>
+      <div class="modal-body" style="align-items:center;">
+        <img id="viewer-img-el" src="" style="max-width:100%;max-height:62vh;border-radius:8px;border:1px solid #cbd5e1;" />
+      </div>
+      <div class="modal-foot">
+        <button id="viewer-edit-btn" class="btn-sm btn-teal">修改週一日期</button>
+        <button id="viewer-del-btn" class="btn-sm btn-rose">刪除此原圖</button>
+        <button onclick="closeCloudImageViewer()" class="btn-sm">關閉</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // =========================================================================
     // 分段組合 Gemini AI Studio API Key（...0Udg），透過 Vercel /api/ocr 節點轉發
@@ -595,8 +631,8 @@
 
     const APPLY_SHIFT_FORM_URL = "https://docs.google.com/forms/d/1wZFdmvXap07wmI2nzzdco4ercp5eYPI82yml-tlhkS8/viewform?edit_requested=true&pli=1&authuser=0";
 
-    const STORAGE_KEY = 'qeh_aed_duty_v11';
-    const BACKUP_KEY = 'qeh_aed_duty_backup_v11';
+    const STORAGE_KEY = 'qeh_aed_duty_v12';
+    const BACKUP_KEY = 'qeh_aed_duty_backup_v12';
     const BACKUP_FLAG_KEY = 'qeh_aed_auto_backup_enabled';
     const DICT_STORAGE_KEY = 'qeh_aed_ocr_dictionary_v7';
     const ALARM_STORAGE_KEY = 'qeh_aed_alarms_v6';
@@ -619,7 +655,7 @@
       { id: '242627', name: '謝玉連' },
       { id: '272902', name: '朱翠君' },
       { id: '157242', name: '張麗' },
-      { id: '',       name: '' },        // 空白分隔列（11/16 在第 15 行，11/23 在第 16 行，11/30 在第 17 行）
+      { id: '',       name: '' },        // 空白分隔列
       { id: '177981', name: '侯嘉敏' },
       { id: '166859', name: '馮玉琼' },
       { id: '276239', name: '馮嘉錂' },
@@ -760,7 +796,7 @@
       const baseMon = parseLocalDate('2026-11-16');
       const targetMon = parseLocalDate(getMondayOfDate(mondayStr));
       const weeksDiff = Math.round((targetMon - baseMon) / (7 * 24 * 60 * 60 * 1000));
-      const len = MASTER_21_ROTATION.length; // 21 行循環
+      const len = MASTER_21_ROTATION.length;
 
       return Array.from({ length: len }, (_, idx) => {
         const srcIdx = ((idx - weeksDiff) % len + len) % len;
@@ -772,21 +808,22 @@
       });
     }
 
-    // 跨週查詢某人在某日的更期（優先以姓名匹配，確保週日到週一輪轉行號時依然精準接軌）
-    function getDutyOnDateForRow(dateStr, rowNum, staffName) {
+    // 【嚴格按同事姓名配對】查詢某位同事在指定日期（如上星期日或下星期一）的真實更期
+    // 絕不按行號兜底，確保不會出現 B 同事的上日變了 A 同事、下一變了 C 同事的情況
+    function getDutyByStaffNameOnDate(dateStr, staffName) {
+      const cleanName = (staffName || '').trim();
+      if (!cleanName) return '';
       const monday = getMondayOfDate(dateStr);
       const d = parseLocalDate(dateStr);
       const dayIdx = (d.getDay() + 6) % 7;
       const weekObj = appState.weeks[monday];
-      if (!weekObj || !weekObj.rows) return '';
-      let found = null;
-      if (staffName) found = weekObj.rows.find(r => r.name === staffName);
-      if (!found) found = weekObj.rows.find(r => r.row === rowNum);
-      return found ? (found.duties[dayIdx] || '') : '';
+      if (!weekObj || !Array.isArray(weekObj.rows)) return '';
+      const found = weekObj.rows.find(r => (r.name || '').trim() === cleanName);
+      return found && Array.isArray(found.duties) ? (found.duties[dayIdx] || '') : '';
     }
 
     function closeAllModals() {
-      ['upload-modal', 'add-week-modal', 'alarm-modal', 'settings-modal'].forEach(id => {
+      ['upload-modal', 'add-week-modal', 'alarm-modal', 'settings-modal', 'cloud-image-viewer-modal'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
       });
@@ -797,7 +834,7 @@
 
     function initApp() {
       try {
-        const saved = localStorage.getItem(STORAGE_KEY);
+        const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('qeh_aed_duty_v11');
         const backupFlag = localStorage.getItem(BACKUP_FLAG_KEY);
         const savedDict = localStorage.getItem(DICT_STORAGE_KEY);
         const savedAlarms = localStorage.getItem(ALARM_STORAGE_KEY);
@@ -863,7 +900,7 @@
         updatedAt: new Date().toISOString(),
         weeks: appState.weeks,
         patternSample: appState.patternSample,
-        cloudImages: appState.cloudImages.slice(-10)
+        cloudImages: appState.cloudImages.slice(-15)
       };
       try { localStorage.setItem(CLOUD_SHADOW_DB, JSON.stringify(cloudPayload)); } catch (e) {}
 
@@ -1093,7 +1130,12 @@
         document.getElementById('view-' + t).classList.toggle('hidden', t !== tabName);
         document.getElementById('nav-' + t).classList.toggle('active', t === tabName);
       });
-      if (tabName === 'predict') {
+      if (tabName === 'today') {
+        renderTodayView();
+      } else if (tabName === 'roster') {
+        renderRosterTable();
+        renderCloudImagesStrip();
+      } else if (tabName === 'predict') {
         initPredictControls();
         runRowCyclePrediction();
         calculateLeaveStats();
@@ -1110,7 +1152,7 @@
       populateStaffCalculator();
     }
 
-    // ==================== 今日當值 ====================
+    // ==================== 今日當值（嚴格從全體更表真實更期抽取） ====================
     function shiftTodayDate(deltaDays) {
       const picker = document.getElementById('today-date-picker');
       if (!picker.value) return;
@@ -1176,7 +1218,11 @@
 
       const nextDateStr = addDaysToDateStr(dateStr, 1);
       const mondayStr = getMondayOfDate(dateStr);
-      const weekObj = appState.weeks[mondayStr] || appState.weeks[appState.currentWeekMonday];
+      const nextMondayStr = getMondayOfDate(nextDateStr);
+
+      // 嚴格從全體更表（appState.weeks）中讀取該週真實更表
+      const todayWeekObj = appState.weeks[mondayStr];
+      const nextWeekObj = appState.weeks[nextMondayStr];
 
       const currentListEl = document.getElementById('current-shift-list');
       const nextListEl = document.getElementById('next-shift-list');
@@ -1186,67 +1232,98 @@
       nextListEl.innerHTML = '';
       midListEl.innerHTML = '';
 
+      if (!todayWeekObj && !nextWeekObj) {
+        currentListEl.innerHTML = `<div style="text-align:center;color:#94a3b8;padding:8px;">全體更表尚未建立 ${mondayStr} 週次</div>`;
+        nextListEl.innerHTML = `<div style="text-align:center;color:#94a3b8;padding:8px;">請於「全體更表」新增或匯入</div>`;
+        midListEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#94a3b8;padding:6px;">暫無該週全體更表資料</div>`;
+        document.getElementById('current-shift-count').textContent = '0人';
+        document.getElementById('next-shift-count').textContent = '0人';
+        document.getElementById('mid-shift-count').textContent = '0人';
+        document.getElementById('duty-schedule-detail-list').innerHTML = `<div style="text-align:center;color:#94a3b8;padding:10px;">「全體更表」內尚未有 ${mondayStr} 至 ${addDaysToDateStr(mondayStr, 6)} 的更期紀錄</div>`;
+        return;
+      }
+
+      // 彙整當日涉及的同事清單（優先採用當週全體更表的排位順序）
+      const staffRosterList = [];
+      const seenStaffNames = new Set();
+      if (todayWeekObj && Array.isArray(todayWeekObj.rows)) {
+        todayWeekObj.rows.forEach(r => {
+          const n = (r.name || '').trim();
+          if (n && !seenStaffNames.has(n)) {
+            seenStaffNames.add(n);
+            staffRosterList.push({ row: r.row, name: n });
+          }
+        });
+      }
+      if (nextWeekObj && Array.isArray(nextWeekObj.rows)) {
+        nextWeekObj.rows.forEach(r => {
+          const n = (r.name || '').trim();
+          if (n && !seenStaffNames.has(n)) {
+            seenStaffNames.add(n);
+            staffRosterList.push({ row: r.row, name: n });
+          }
+        });
+      }
+
       let upCount = 0, downCount = 0, midCount = 0;
       let activeWorkingStaff = [];
       let allDayStaffPool = [];
 
-      if (weekObj && weekObj.rows) {
-        weekObj.rows.forEach(r => {
-          if (!r.name) return;
-          const todaySheetCode = getDutyOnDateForRow(dateStr, r.row, r.name);
-          const tomorrowSheetCode = getDutyOnDateForRow(nextDateStr, r.row, r.name);
+      staffRosterList.forEach(staff => {
+        // 嚴格按同事姓名從「全體更表」抽取當日與翌日更期
+        const todaySheetCode = getDutyByStaffNameOnDate(dateStr, staff.name);
+        const tomorrowSheetCode = getDutyByStaffNameOnDate(nextDateStr, staff.name);
 
-          if (isMorningACode(todaySheetCode) || isMidCode(todaySheetCode) || isAfternoonPECode(todaySheetCode)) {
-            allDayStaffPool.push({ row: r.row, name: r.name, code: todaySheetCode, normCode: normalizeDutyCode(todaySheetCode), dayTag: '今日' });
+        if (isMorningACode(todaySheetCode) || isMidCode(todaySheetCode) || isAfternoonPECode(todaySheetCode)) {
+          allDayStaffPool.push({ row: staff.row, name: staff.name, code: todaySheetCode, normCode: normalizeDutyCode(todaySheetCode), dayTag: '今日' });
+        }
+        if (isNightNCode(todaySheetCode)) {
+          allDayStaffPool.push({ row: staff.row, name: staff.name, code: todaySheetCode, normCode: normalizeDutyCode(todaySheetCode), dayTag: '昨夜N(07:18放工)' });
+        }
+        if (isNightNCode(tomorrowSheetCode)) {
+          allDayStaffPool.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, normCode: normalizeDutyCode(tomorrowSheetCode), dayTag: '今晚N(22:30返工)' });
+        }
+
+        if (isMidCode(todaySheetCode)) {
+          midCount++;
+          midListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, todaySheetCode, 'cyan');
+          activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
+        }
+
+        if (appState.selectedSlot === 'A') {
+          if (isMorningACode(todaySheetCode)) {
+            upCount++;
+            currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, todaySheetCode, 'teal');
+            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
           }
-          if (isNightNCode(todaySheetCode)) {
-            allDayStaffPool.push({ row: r.row, name: r.name, code: todaySheetCode, normCode: normalizeDutyCode(todaySheetCode), dayTag: '昨夜N(07:18放工)' });
+          if (isAfternoonPECode(todaySheetCode)) {
+            downCount++;
+            nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, todaySheetCode, '');
+            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
+          }
+        } else if (appState.selectedSlot === 'P') {
+          if (isAfternoonPECode(todaySheetCode)) {
+            upCount++;
+            currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, todaySheetCode, 'teal');
+            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
           }
           if (isNightNCode(tomorrowSheetCode)) {
-            allDayStaffPool.push({ row: r.row, name: r.name, code: tomorrowSheetCode, normCode: normalizeDutyCode(tomorrowSheetCode), dayTag: '今晚N(22:30返工)' });
+            downCount++;
+            nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode + '(今晚N)', '');
+            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: '今晚N(22:30返工)' });
           }
-
-          if (isMidCode(todaySheetCode)) {
-            midCount++;
-            midListEl.innerHTML += createDutyPersonChip(r.row, r.name, todaySheetCode, 'cyan');
-            activeWorkingStaff.push({ row: r.row, name: r.name, code: todaySheetCode, dayTag: '今日' });
+        } else if (appState.selectedSlot === 'N') {
+          if (isNightNCode(tomorrowSheetCode)) {
+            upCount++;
+            currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode + '(今晚N)', 'teal');
+            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: '今晚N(22:30返工)' });
           }
-
-          if (appState.selectedSlot === 'A') {
-            if (isMorningACode(todaySheetCode)) {
-              upCount++;
-              currentListEl.innerHTML += createDutyPersonChip(r.row, r.name, todaySheetCode, 'teal');
-              activeWorkingStaff.push({ row: r.row, name: r.name, code: todaySheetCode, dayTag: '今日' });
-            }
-            if (isAfternoonPECode(todaySheetCode)) {
-              downCount++;
-              nextListEl.innerHTML += createDutyPersonChip(r.row, r.name, todaySheetCode, '');
-              activeWorkingStaff.push({ row: r.row, name: r.name, code: todaySheetCode, dayTag: '今日' });
-            }
-          } else if (appState.selectedSlot === 'P') {
-            if (isAfternoonPECode(todaySheetCode)) {
-              upCount++;
-              currentListEl.innerHTML += createDutyPersonChip(r.row, r.name, todaySheetCode, 'teal');
-              activeWorkingStaff.push({ row: r.row, name: r.name, code: todaySheetCode, dayTag: '今日' });
-            }
-            if (isNightNCode(tomorrowSheetCode)) {
-              downCount++;
-              nextListEl.innerHTML += createDutyPersonChip(r.row, r.name, tomorrowSheetCode + '(今晚N)', '');
-              activeWorkingStaff.push({ row: r.row, name: r.name, code: tomorrowSheetCode, dayTag: '今晚N(22:30返工)' });
-            }
-          } else if (appState.selectedSlot === 'N') {
-            if (isNightNCode(tomorrowSheetCode)) {
-              upCount++;
-              currentListEl.innerHTML += createDutyPersonChip(r.row, r.name, tomorrowSheetCode + '(今晚N)', 'teal');
-              activeWorkingStaff.push({ row: r.row, name: r.name, code: tomorrowSheetCode, dayTag: '今晚N(22:30返工)' });
-            }
-            if (isMorningACode(tomorrowSheetCode)) {
-              downCount++;
-              nextListEl.innerHTML += createDutyPersonChip(r.row, r.name, tomorrowSheetCode + '(明早A)', '');
-            }
+          if (isMorningACode(tomorrowSheetCode)) {
+            downCount++;
+            nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode + '(明早A)', '');
           }
-        });
-      }
+        }
+      });
 
       document.getElementById('current-shift-count').textContent = `${upCount}人`;
       document.getElementById('next-shift-count').textContent = `${downCount}人`;
@@ -1321,16 +1398,12 @@
         const sameWork = list.filter(o => o.name !== person.name && (DUTY_SPEC_MAP[normalizeDutyCode(o.code)]?.work === spec.work)).map(o => `${o.name}(${o.code})`);
         const sameMeal = list.filter(o => o.name !== person.name && (DUTY_SPEC_MAP[normalizeDutyCode(o.code)]?.mealStart === spec.mealStart)).map(o => `${o.name}(${o.code})`);
 
+        // 未來 7 日更期亦嚴格按同事姓名從「全體更表」讀取（未匯入之週次顯示 -）
         let next7Html = '';
-        const baseMon = getMondayOfDate(getTodayLocalStr());
         for (let offset = 1; offset <= 7; offset++) {
           const fDate = addDaysToDateStr(dateStr, offset);
-          let fCode = getDutyOnDateForRow(fDate, person.row, person.name);
-          if (!fCode && person.row >= 1 && person.row <= 17) {
-            const pred = calculatePredictedDutyForDate(person.row, baseMon, fDate);
-            fCode = pred.dutyCode || '-';
-          }
-          const isOff = isLeaveOrOffCode(fCode);
+          const fCode = getDutyByStaffNameOnDate(fDate, person.name);
+          const isOff = fCode ? isLeaveOrOffCode(fCode) : false;
           next7Html += `
             <div class="next7-pill" style="${isOff ? 'background:#fff1f2;border-color:#fecdd3;' : ''}">
               <div style="font-size:9px;color:#64748b;">${fDate.slice(5)}</div>
@@ -1360,7 +1433,7 @@
               <div class="sub-box"><strong style="color:#3730a3;">一齊返放工：</strong>${sameWork.length ? sameWork.join('、') : '無同鐘點'}</div>
             </div>
             <div class="sub-box" style="background:#f0fdfa;border-color:#ccfbf1;">
-              <div style="font-size:10px;font-weight:700;color:#115e59;margin-bottom:2px;">未來 7 日更期：</div>
+              <div style="font-size:10px;font-weight:700;color:#115e59;margin-bottom:2px;">未來 7 日更期（全體更表紀錄）：</div>
               <div class="next7-strip">${next7Html}</div>
             </div>
           </div>
@@ -1501,19 +1574,22 @@
       tbody.innerHTML = '';
       weekObj.rows.forEach((r, rIdx) => {
         const tr = document.createElement('tr');
-        if (!r.name) tr.style.background = '#f8fafc';
-        const prevSunDuty = getDutyOnDateForRow(prevSunStr, r.row, r.name);
-        const nextMonDuty = getDutyOnDateForRow(nextMonStr, r.row, r.name);
+        const staffName = (r.name || '').trim();
+        if (!staffName) tr.style.background = '#f8fafc';
+
+        // 嚴格以「當星期同事姓名」去上星期日與下星期一週表配對該位同事自己的更期
+        const prevSunDuty = staffName ? getDutyByStaffNameOnDate(prevSunStr, staffName) : '';
+        const nextMonDuty = staffName ? getDutyByStaffNameOnDate(nextMonStr, staffName) : '';
 
         let html = `
           <td class="sticky-col-1">${r.row}</td>
-          <td class="sticky-col-2" onclick="editStaffName(${rIdx})">${r.name || '-'}</td>
-          <td class="col-edge"><span class="duty-font cell-pill ${getDutyBadgeClass(prevSunDuty)}">${prevSunDuty || '-'}</span></td>
+          <td class="sticky-col-2" onclick="editStaffName(${rIdx})">${staffName || '-'}</td>
+          <td class="col-edge" title="${staffName ? staffName + ' 上星期日 (' + prevSunStr + ')' : ''}"><span class="duty-font cell-pill ${getDutyBadgeClass(prevSunDuty)}">${prevSunDuty || '-'}</span></td>
         `;
         r.duties.forEach((duty, dIdx) => {
           html += `<td class="col-day" onclick="editRosterCell(${rIdx}, ${dIdx})"><span class="duty-font cell-pill ${getDutyBadgeClass(duty)}">${duty || ''}</span></td>`;
         });
-        html += `<td class="col-edge"><span class="duty-font cell-pill ${getDutyBadgeClass(nextMonDuty)}">${nextMonDuty || '-'}</span></td>`;
+        html += `<td class="col-edge" title="${staffName ? staffName + ' 下星期一 (' + nextMonStr + ')' : ''}"><span class="duty-font cell-pill ${getDutyBadgeClass(nextMonDuty)}">${nextMonDuty || '-'}</span></td>`;
         tr.innerHTML = html;
         tbody.appendChild(tr);
       });
@@ -1534,18 +1610,80 @@
       return '';
     }
 
+    // ==================== 雲端已存更期表原圖：檢視、修改週一日期、刪除 ====================
     function renderCloudImagesStrip() {
       const panel = document.getElementById('cloud-images-panel');
       const strip = document.getElementById('cloud-images-strip');
-      if (!appState.cloudImages || !appState.cloudImages.length) { panel.classList.add('hidden'); return; }
+      if (!appState.cloudImages || !appState.cloudImages.length) {
+        panel.classList.add('hidden');
+        return;
+      }
       panel.classList.remove('hidden');
       document.getElementById('cloud-images-count').textContent = `${appState.cloudImages.length} 張`;
-      strip.innerHTML = appState.cloudImages.map(img => `
-        <div style="flex-shrink:0;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden;width:72px;text-align:center;">
-          <img src="data:image/jpeg;base64,${img.base64}" style="width:100%;height:72px;object-fit:cover;" />
-          <div style="font-size:10px;font-weight:700;color:#115e59;">${img.monday}</div>
+
+      strip.innerHTML = appState.cloudImages.map((img, idx) => `
+        <div class="cloud-img-card">
+          <div onclick="openCloudImageViewer(${idx})" style="cursor:pointer;position:relative;">
+            <img src="data:image/jpeg;base64,${img.base64}" style="width:100%;height:78px;object-fit:cover;display:block;" />
+            <div style="font-size:10px;font-weight:700;color:#115e59;text-align:center;padding:2px 0;background:#f0fdfa;">${img.monday}</div>
+          </div>
+          <div class="cloud-img-actions">
+            <button onclick="editCloudImageMonday(${idx})" title="修改所屬週一日期">改期</button>
+            <button onclick="deleteCloudImage(${idx})" class="del-btn" title="刪除此原圖">刪</button>
+          </div>
         </div>
       `).join('');
+    }
+
+    function openCloudImageViewer(idx) {
+      const img = appState.cloudImages[idx];
+      if (!img) return;
+      document.getElementById('viewer-img-title').textContent = `雲端原圖（週一：${img.monday}）`;
+      document.getElementById('viewer-img-el').src = `data:image/jpeg;base64,${img.base64}`;
+      document.getElementById('viewer-edit-btn').onclick = () => {
+        closeCloudImageViewer();
+        editCloudImageMonday(idx);
+      };
+      document.getElementById('viewer-del-btn').onclick = () => {
+        closeCloudImageViewer();
+        deleteCloudImage(idx);
+      };
+      document.getElementById('cloud-image-viewer-modal').classList.remove('hidden');
+    }
+
+    function closeCloudImageViewer() {
+      document.getElementById('cloud-image-viewer-modal').classList.add('hidden');
+    }
+
+    function editCloudImageMonday(idx) {
+      const img = appState.cloudImages[idx];
+      if (!img) return;
+      const nextDate = prompt('修改此原圖所屬的星期一日期（YYYY-MM-DD）：', img.monday);
+      if (!nextDate || !nextDate.trim()) return;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(nextDate.trim())) {
+        alert('日期格式不正確，請輸入 YYYY-MM-DD（例如 2026-11-23）');
+        return;
+      }
+      img.monday = getMondayOfDate(nextDate.trim());
+      saveState();
+      renderCloudImagesStrip();
+    }
+
+    function deleteCloudImage(idx) {
+      const img = appState.cloudImages[idx];
+      if (!img) return;
+      if (!confirm(`確定要刪除 ${img.monday} 的雲端更期表原圖嗎？`)) return;
+      appState.cloudImages.splice(idx, 1);
+      saveState();
+      renderCloudImagesStrip();
+    }
+
+    function clearAllCloudImages() {
+      if (!appState.cloudImages.length) return;
+      if (!confirm('確定要清空全部已儲存的雲端更期表原圖嗎？（不會影響全體更表文字數據）')) return;
+      appState.cloudImages = [];
+      saveState();
+      renderCloudImagesStrip();
     }
 
     function editRosterCell(rIdx, dIdx) {
