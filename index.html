@@ -35,6 +35,9 @@
       font-size: 10px; background: rgba(19,78,74,0.9); color: #6ee7b7;
       padding: 2px 6px; border-radius: 4px; border: 1px solid #0f766e;
     }
+    .badge-cloud.warn {
+      background: #78350f; color: #fde68a; border-color: #f59e0b;
+    }
     .header-actions { display: flex; align-items: center; gap: 6px; }
     .btn-icon {
       background: rgba(19,78,74,0.9); color: #ccfbf1; padding: 5px 8px;
@@ -252,7 +255,7 @@
       <div class="header-title">
         <span class="dot-live"></span>
         <span>QEH AED Duty System</span>
-        <span id="cloud-sync-badge" class="badge-cloud">☁ 雲端已存</span>
+        <span id="cloud-sync-badge" class="badge-cloud">☁ 檢查連線...</span>
       </div>
       <div class="header-actions">
         <button onclick="openAlarmModal()" class="btn-icon" title="鬧鐘提醒控制">
@@ -281,14 +284,12 @@
     <!-- ==================== 分頁 1：OnDuty ==================== -->
     <section id="view-today" style="display:flex;flex-direction:column;gap:8px;">
       <div class="card card-pad" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-        <!-- 取消左右 <> 按鈕，日期與星期置中 -->
         <div class="flex-center">
           <input type="date" id="today-date-picker" onchange="renderTodayView()" class="input-box" />
           <span id="today-weekday-badge" class="btn-sm" style="background:#f0fdfa;color:#115e59;border-color:#99f6e4;">星期三</span>
           <span id="today-hk-holiday-badge" class="btn-sm hidden" style="background:#ffe4e6;color:#9f1239;border-color:#fecdd3;"></span>
         </div>
 
-        <!-- A Duty / P Duty / N Duty 按鈕置中 -->
         <div class="flex-center">
           <div class="slot-group">
             <button onclick="setShiftSlot('A')" id="slot-A" class="slot-btn active">A Duty</button>
@@ -297,13 +298,12 @@
           </div>
         </div>
 
-        <!-- 現時 HH:MM (X Duty) 放在 A P N Duty 按鈕下方並置中 -->
         <div class="flex-center">
           <span id="auto-time-slot-hint" style="font-size:11px;color:#0f766e;font-weight:700;background:#f0fdfa;border:1px solid #99f6e4;padding:2px 8px;border-radius:6px;"></span>
         </div>
       </div>
 
-      <!-- 僅在 A Duty 頁面時，於 A / P Duty 上方顯示 Sleeping 同事卡片（與中更卡片相同形式） -->
+      <!-- 僅在 A Duty 頁面時，於 A / P Duty 上方顯示 Sleeping 同事卡片 -->
       <div id="sleeping-shift-card" class="card hidden">
         <div class="panel-head bg-indigo">
           <div>Sleeping<span id="sleeping-shift-count" class="pill-count">0人</span></div>
@@ -367,7 +367,7 @@
         </div>
         <div class="flex-center">
           <button onclick="openUploadModal()" class="btn-sm btn-emerald">⬆ 上載更期</button>
-          <a href="https://docs.google.com/spreadsheets/d/17wae7UwtU93GSEDcq-tZ1Uptj3mL2hEaxYcKSTvePD4/edit?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="btn-sm btn-blue">調更</a>
+          <a href="https://docs.google.com/spreadsheets/d/17wae7UwtU93GSEDcq-tZUptj3mL2hEaxYcKSTvePD4/edit?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="btn-sm btn-blue">調更</a>
         </div>
       </div>
 
@@ -396,7 +396,7 @@
       <!-- 雲端已存原圖預覽 -->
       <div id="cloud-images-panel" class="card card-pad hidden">
         <div class="toolbar" style="margin-bottom:6px;">
-          <strong style="color:#115e59;font-size:12px;">雲端已存更期表原圖（點擊看大圖／可改期或刪除）</strong>
+          <strong style="color:#115e59;font-size:12px;">已存更期表原圖（點擊看大圖／可改期或刪除）</strong>
           <div class="flex-row">
             <span id="cloud-images-count" style="font-size:11px;color:#64748b;">0 張</span>
             <button onclick="clearAllCloudImages()" class="btn-sm btn-rose" style="font-size:10px;padding:2px 6px;">清空全部原圖</button>
@@ -410,16 +410,16 @@
     <section id="view-predict" class="hidden" style="display:flex;flex-direction:column;gap:10px;">
       <div class="card card-pad" style="display:flex;flex-direction:column;gap:10px;">
         <div class="toolbar" style="border-bottom:1px solid #f1f5f9;padding-bottom:6px;">
-          <strong style="color:#115e59;font-size:13px;">更期規律跨週推算</strong>
+          <strong style="color:#115e59;font-size:13px;">更期規律跨週推算（總行數 21 行）</strong>
         </div>
 
         <div class="predict-top-grid">
           <div>
-            <label style="display:block;font-weight:700;color:#115e59;margin-bottom:4px;">本星期所屬行數 (1–22行)</label>
+            <label style="display:block;font-weight:700;color:#115e59;margin-bottom:4px;">本星期所屬行數 (1–21行)</label>
             <select id="predict-start-row" onchange="runRowCyclePrediction()" class="input-box" style="width:100%;padding:6px;"></select>
             <div id="locked-current-week-label" style="font-size:11px;color:#0f766e;font-weight:600;margin-top:6px;"></div>
             <div id="reserve-row-notice" class="hidden" style="margin-top:6px;padding:6px 8px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;color:#92400e;font-size:11px;font-weight:700;">
-              第 18–22 行為替位人員，僅供行數核對，不納入固定循環更期預測。
+              第 18–21 行為替位人員，僅供行數核對，不納入固定循環更期預測。
             </div>
           </div>
 
@@ -494,8 +494,8 @@
 
         <div>
           <div class="toolbar" style="margin-bottom:4px;">
-            <strong style="font-size:12px;">可編輯規律樣本表（點擊直接修改）</strong>
-            <span style="font-size:10px;color:#0f766e;font-weight:600;">1–17行循環 / 18–22行替位</span>
+            <strong style="font-size:12px;">可編輯規律樣本表（點擊直接修改 · 總共 21 行）</strong>
+            <span style="font-size:10px;color:#0f766e;font-weight:600;">1–17行循環 / 18–21行替位</span>
           </div>
           <div class="table-wrap" style="max-height:280px;border:1px solid #cbd5e1;border-radius:8px;">
             <table class="roster-tbl">
@@ -567,7 +567,7 @@
     </div>
   </div>
 
-  <!-- ==================== 彈窗 2：全平台鬧鐘控制（支援 Android / Windows / Mac / iOS） ==================== -->
+  <!-- ==================== 彈窗 2：全平台鬧鐘控制 ==================== -->
   <div id="alarm-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeAlarmModal()">
     <div class="modal-box" style="max-width:450px;" onclick="event.stopPropagation()">
       <div class="modal-head">
@@ -601,7 +601,7 @@
     </div>
   </div>
 
-  <!-- ==================== 彈窗 3：系統與雲端設定（精簡只保留上傳與下載還原按鈕） ==================== -->
+  <!-- ==================== 彈窗 3：系統與雲端設定 ==================== -->
   <div id="settings-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeSettingsModal()">
     <div class="modal-box" style="max-width:440px;" onclick="event.stopPropagation()">
       <div class="modal-head">
@@ -614,7 +614,7 @@
             <button onclick="syncAllToCloud(false)" class="btn-sm" style="flex:1;background:#0369a1;color:#fff;padding:7px;">立即上傳至雲端</button>
             <button onclick="pullAllFromCloud()" class="btn-sm" style="flex:1;padding:7px;">從雲端下載還原</button>
           </div>
-          <div id="cloud-last-sync-label" style="font-size:11px;color:#0369a1;">雲端資料庫狀態：已連線並自動同步 DutyList</div>
+          <div id="cloud-last-sync-label" style="font-size:11px;color:#0369a1;font-weight:600;">雲端資料庫狀態：檢查連線中...</div>
         </div>
 
         <div class="toolbar sub-box" style="padding:8px;">
@@ -663,24 +663,20 @@
   </div>
 
   <script>
-    // =========================================================================
-    // 分段組合 Gemini AI Studio API Key（...0Udg），透過 Vercel /api/ocr 節點轉發
-    // =========================================================================
     const _kPartA = "AQ.Ab8RN6ImLQ75YkDk8Ykz";
     const _kPartB = "XqJwnUXyd8lzot0fdeP5zQ2zVR0Udg";
     const EMBEDDED_GEMINI_API_KEY = [_kPartA, _kPartB].join("");
 
     const APPLY_SHIFT_FORM_URL = "https://docs.google.com/forms/d/1wZFdmvXap07wmI2nzzdco4ercp5eYPI82yml-tlhkS8/viewform?edit_requested=true&pli=1&authuser=0";
 
-    const STORAGE_KEY = 'qeh_aed_duty_v15';
-    const BACKUP_KEY = 'qeh_aed_duty_backup_v15';
+    const STORAGE_KEY = 'qeh_aed_duty_v16';
+    const BACKUP_KEY = 'qeh_aed_duty_backup_v16';
     const BACKUP_FLAG_KEY = 'qeh_aed_auto_backup_enabled';
     const DICT_STORAGE_KEY = 'qeh_aed_ocr_dictionary_v10';
     const ALARM_STORAGE_KEY = 'qeh_aed_alarms_v7';
-    const CLOUD_SHADOW_DB = 'qeh_aed_cloud_storage_v7';
     const CLOUD_DB_ENDPOINT = '/api/duty-db';
 
-    // 基準週（2026-11-16）的 21 行輪轉序列
+    // 總共 21 行人員輪轉序列
     const MASTER_21_ROTATION = [
       { id: '175542', name: '黃詩琪' },
       { id: '162684', name: '李嘉琪' },
@@ -696,7 +692,7 @@
       { id: '242627', name: '謝玉連' },
       { id: '272902', name: '朱翠君' },
       { id: '157242', name: '張麗' },
-      { id: '',       name: '' },        // 空白分隔列
+      { id: '',       name: '' },        // 第 15 行為空白分隔列
       { id: '177981', name: '侯嘉敏' },
       { id: '166859', name: '馮玉琼' },
       { id: '276239', name: '馮嘉錂' },
@@ -705,21 +701,21 @@
       { id: '302592', name: '黃雅倩' }
     ];
 
-    // 謝小曼為選配職員：僅當上傳更期圖片中有出現時才顯示於 DutyList
     const OPTIONAL_STAFF_MEMBERS = [
       { id: '', name: '謝小曼' }
     ];
 
+    // 香港法定假期（已將 2026-12-26 改為「聖誕節翌日」）
     const HK_STATUTORY_HOLIDAYS = {
       '2026-01-01': '元旦', '2026-02-17': '農曆年初一', '2026-02-18': '農曆年初二', '2026-02-19': '農曆年初三',
       '2026-04-03': '耶穌受難節', '2026-04-04': '耶穌受難節翌日', '2026-04-05': '清明節', '2026-04-06': '清明節翌日',
       '2026-05-01': '勞動節', '2026-05-24': '佛誕', '2026-05-25': '佛誕翌日', '2026-06-19': '端午節',
       '2026-07-01': '香港特區成立紀念日', '2026-09-26': '中秋節翌日', '2026-10-01': '國慶日',
-      '2026-10-18': '重陽節', '2026-10-19': '重陽節翌日', '2026-12-25': '聖誕節', '2026-12-26': '聖誕節後第一個周日',
+      '2026-10-18': '重陽節', '2026-10-19': '重陽節翌日', '2026-12-25': '聖誕節', '2026-12-26': '聖誕節翌日',
       '2027-01-01': '元旦', '2027-02-06': '農曆年初一', '2027-02-07': '農曆年初二', '2027-02-08': '農曆年初三',
       '2027-03-26': '耶穌受難節', '2027-04-05': '清明節', '2027-05-01': '勞動節', '2027-05-13': '佛誕',
       '2027-06-09': '端午節', '2027-07-01': '香港特區成立紀念日', '2027-09-16': '中秋節翌日',
-      '2027-10-01': '國慶日', '2027-10-08': '重陽節', '2027-12-25': '聖誕節'
+      '2027-10-01': '國慶日', '2027-10-08': '重陽節', '2027-12-25': '聖誕節', '2027-12-26': '聖誕節翌日'
     };
 
     const DUTY_SPEC_MAP = {
@@ -740,6 +736,7 @@
       'Ne':   { work: '2230-0718', workStart: '22:30', mealStart: '03:30', mealText: '0330-0500', takeOverFromCodes: ['Pe', 'Ec'], handoverToCodes: ['Ae', 'Ac'] }
     };
 
+    // 總行數更新為 21 行（1–17 行循環，18–21 行替位）
     const IMAGE3_DEFAULT_PATTERN = [
       { row: 1,  days: ['SH/替位', 'Ec', 'Pu', 'O', 'WO', 'Ad', 'Ae/N'] },
       { row: 2,  days: ['Na', 'O', 'Ec', '11-8', 'Ad', 'WO', 'Ac'] },
@@ -761,11 +758,9 @@
       { row: 18, days: ['替位', '替位', '替位', '替位', '替位', '替位', '替位'] },
       { row: 19, days: ['替位', '替位', '替位', '替位', '替位', '替位', '替位'] },
       { row: 20, days: ['替位', '替位', '替位', '替位', '替位', '替位', '替位'] },
-      { row: 21, days: ['替位', '替位', '替位', '替位', '替位', '替位', '替位'] },
-      { row: 22, days: ['替位', '替位', '替位', '替位', '替位', '替位', '替位'] }
+      { row: 21, days: ['替位', '替位', '替位', '替位', '替位', '替位', '替位'] }
     ];
 
-    // 預設資料（無謝小曼時不顯示；WO OWING 已轉寫為 OW）
     const DEFAULT_WEEK_DATA = {
       '2026-11-16': {
         monday: '2026-11-16',
@@ -847,7 +842,6 @@
       return formatLocalDate(d);
     }
 
-    // 根據當前時鐘時間自動判斷所屬更期（07:00-13:44 -> A Duty, 13:45-22:29 -> P Duty, 22:30-06:59 -> N Duty）
     function getSlotByCurrentClockTime(dateObj = new Date()) {
       const mins = dateObj.getHours() * 60 + dateObj.getMinutes();
       if (mins >= 7 * 60 && mins < 13 * 60 + 45) return 'A';
@@ -904,7 +898,6 @@
       return /^[A-Za-z]$/.test(inner) && inner.toUpperCase() !== 'O';
     }
 
-    // 計算該週第 1~21 行的輪轉人員（不包含未出現的謝小曼）
     function getExpectedRosterForWeek(mondayStr) {
       const baseMon = parseLocalDate('2026-11-16');
       const targetMon = parseLocalDate(getMondayOfDate(mondayStr));
@@ -943,9 +936,22 @@
       if (e.key === 'Escape') closeAllModals();
     });
 
+    function updateCloudStatusUI(isSynced, badgeText, detailText) {
+      const badge = document.getElementById('cloud-sync-badge');
+      const statusLabel = document.getElementById('cloud-last-sync-label');
+      if (badge) {
+        badge.textContent = badgeText;
+        badge.classList.toggle('warn', !isSynced);
+      }
+      if (statusLabel) {
+        statusLabel.textContent = detailText;
+        statusLabel.style.color = isSynced ? '#0369a1' : '#b45309';
+      }
+    }
+
     function initApp() {
       try {
-        const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('qeh_aed_duty_v14') || localStorage.getItem('qeh_aed_duty_v13');
+        const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('qeh_aed_duty_v15') || localStorage.getItem('qeh_aed_duty_v14');
         const backupFlag = localStorage.getItem(BACKUP_FLAG_KEY);
         const savedDict = localStorage.getItem(DICT_STORAGE_KEY);
         const savedAlarms = localStorage.getItem(ALARM_STORAGE_KEY);
@@ -966,7 +972,6 @@
             w.rows.forEach(r => {
               r.duties = (r.duties || []).map(d => sanitizeTwoLetterDutyCode(d));
             });
-            // 若「謝小曼」整行完全沒有任何更期數據，則自動隱藏不顯示
             w.rows = w.rows.filter(r => {
               if ((r.name || '').trim() === '謝小曼') {
                 return (r.duties || []).some(d => (d || '').trim() !== '');
@@ -975,7 +980,9 @@
             });
           });
           appState.currentWeekMonday = parsed.currentWeekMonday || Object.keys(appState.weeks)[0];
-          appState.patternSample = parsed.patternSample || JSON.parse(JSON.stringify(IMAGE3_DEFAULT_PATTERN));
+          // 強制確保樣本表總行數為 21 行
+          const loadedPattern = Array.isArray(parsed.patternSample) ? parsed.patternSample.slice(0, 21) : JSON.parse(JSON.stringify(IMAGE3_DEFAULT_PATTERN));
+          appState.patternSample = loadedPattern;
           appState.cloudImages = parsed.cloudImages || [];
         } else {
           appState.weeks = JSON.parse(JSON.stringify(DEFAULT_WEEK_DATA));
@@ -999,11 +1006,11 @@
       updateBackupUI();
       renderAll();
 
-      // 啟動時嘗試從雲端資料庫同步最新 DutyList
+      // 啟動時立即向真實雲端資料庫 (/api/duty-db) 拉取最新 DutyList（支援無痕模式與跨裝置）
       autoLoadFromCloudOnStartup();
     }
 
-    function saveState() {
+    function saveLocalOnly() {
       const payloadObj = {
         weeks: appState.weeks,
         currentWeekMonday: appState.currentWeekMonday,
@@ -1014,98 +1021,113 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payloadObj));
         localStorage.setItem(DICT_STORAGE_KEY, JSON.stringify(appState.dictionary));
       } catch (e) {}
+    }
+
+    function saveState() {
+      saveLocalOnly();
       syncAllToCloud(true);
       if (appState.autoBackup) performManualBackup(true);
     }
 
-    // 將 DutyList 數據存入雲端資料庫
+    // 真實寫入雲端資料庫 (/api/duty-db)
     async function syncAllToCloud(silent = false) {
-      const cloudPayload = {
+      updateCloudStatusUI(true, '☁ 上傳中...', '正在寫入雲端資料庫...');
+
+      // 優先傳送輕量 DutyList 核心數據（避免原圖 Base64 過大造成請求超時或被拒絕）
+      const corePayload = {
         updatedAt: new Date().toISOString(),
         dutyList: appState.weeks,
         weeks: appState.weeks,
-        patternSample: appState.patternSample,
-        cloudImages: appState.cloudImages.slice(-15)
+        patternSample: appState.patternSample.slice(0, 21)
       };
-      try { localStorage.setItem(CLOUD_SHADOW_DB, JSON.stringify(cloudPayload)); } catch (e) {}
-
-      const badge = document.getElementById('cloud-sync-badge');
-      const statusLabel = document.getElementById('cloud-last-sync-label');
 
       try {
         const res = await fetch(CLOUD_DB_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(cloudPayload)
+          body: JSON.stringify(corePayload)
         });
-        if (res.ok) {
-          if (badge) badge.textContent = '☁ 雲端已同步';
-          if (statusLabel) statusLabel.textContent = `DutyList 已存入雲端資料庫 (${new Date().toLocaleTimeString('zh-HK')})`;
-          if (!silent) alert('已成功將 DutyList 數據上傳至雲端資料庫！');
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) {
+          const timeText = new Date().toLocaleTimeString('zh-HK');
+          updateCloudStatusUI(true, '☁ 雲端已同步', `已同步至雲端資料庫 (${timeText})`);
+          if (!silent) alert('已成功將 DutyList 數據上傳至雲端資料庫！無痕模式與其他裝置重新整理即可自動同步。');
           return;
         }
-      } catch (err) {}
-
-      if (badge) badge.textContent = '☁ 雲端已存';
-      if (statusLabel) statusLabel.textContent = `DutyList 已儲存至雲端緩存 (${new Date().toLocaleTimeString('zh-HK')})`;
-      if (!silent) alert('已將 DutyList 數據儲存至雲端！');
+        const errMsg = data.error || `HTTP ${res.status}`;
+        updateCloudStatusUI(false, '⚠ 未同步雲端', `雲端寫入失敗：${errMsg}`);
+        if (!silent) alert(`雲端上傳失敗：${errMsg}\n\n請確認 Vercel 已連結 Upstash Redis 並執行過 Redeploy。`);
+      } catch (err) {
+        updateCloudStatusUI(false, '⚠ 離線/未同步', `網路或伺服器錯誤：${err.message}`);
+        if (!silent) alert('無法連線至雲端資料庫：' + err.message);
+      }
     }
 
     async function autoLoadFromCloudOnStartup() {
+      updateCloudStatusUI(true, '☁ 同步中...', '正在從雲端資料庫讀取最新更期...');
       try {
-        const res = await fetch(CLOUD_DB_ENDPOINT);
-        if (!res.ok) return;
-        const data = await res.json();
+        const res = await fetch(`${CLOUD_DB_ENDPOINT}?t=${Date.now()}`, { cache: 'no-store' });
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          const errMsg = data.error || `HTTP ${res.status}`;
+          updateCloudStatusUI(false, '⚠ 雲端未連線', `雲端讀取失敗：${errMsg}`);
+          return;
+        }
+
         const remoteWeeks = data?.dutyList || data?.weeks;
         if (remoteWeeks && Object.keys(remoteWeeks).length > 0) {
           appState.weeks = remoteWeeks;
-          if (Array.isArray(data.cloudImages)) appState.cloudImages = data.cloudImages;
-          if (Array.isArray(data.patternSample)) appState.patternSample = data.patternSample;
+          if (Array.isArray(data.patternSample) && data.patternSample.length > 0) {
+            appState.patternSample = data.patternSample.slice(0, 21);
+          }
           if (!appState.weeks[appState.currentWeekMonday]) {
             appState.currentWeekMonday = Object.keys(appState.weeks).sort()[0];
           }
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            weeks: appState.weeks,
-            currentWeekMonday: appState.currentWeekMonday,
-            patternSample: appState.patternSample,
-            cloudImages: appState.cloudImages
-          }));
+          saveLocalOnly();
           renderAll();
+          const syncTime = data.updatedAt ? new Date(data.updatedAt).toLocaleString('zh-HK') : '最新';
+          updateCloudStatusUI(true, '☁ 雲端已同步', `已從雲端載入最新 DutyList (${syncTime})`);
+        } else {
+          updateCloudStatusUI(false, '☁ 雲端無資料', '雲端資料庫已連線，但尚未上傳任何更期數據（請在有資料的裝置按「立即上傳至雲端」）');
         }
-      } catch (e) {}
+      } catch (e) {
+        updateCloudStatusUI(false, '⚠ 雲端離線', `無法連線雲端：${e.message}`);
+      }
     }
 
     async function pullAllFromCloud() {
+      updateCloudStatusUI(true, '☁ 下載中...', '正在從雲端資料庫下載...');
       try {
-        let data = null;
-        try {
-          const res = await fetch(CLOUD_DB_ENDPOINT);
-          if (res.ok) data = await res.json();
-        } catch (e) {}
+        const res = await fetch(`${CLOUD_DB_ENDPOINT}?t=${Date.now()}`, { cache: 'no-store' });
+        const data = await res.json().catch(() => ({}));
 
-        if (!data || (!data.dutyList && !data.weeks)) {
-          const shadow = localStorage.getItem(CLOUD_SHADOW_DB);
-          if (shadow) data = JSON.parse(shadow);
+        if (!res.ok) {
+          const errMsg = data.error || `HTTP ${res.status}`;
+          updateCloudStatusUI(false, '⚠ 下載失敗', `雲端讀取失敗：${errMsg}`);
+          alert(`從雲端下載失敗：${errMsg}`);
+          return;
         }
 
         const loadedWeeks = data?.dutyList || data?.weeks;
         if (!loadedWeeks || !Object.keys(loadedWeeks).length) {
-          alert('雲端資料庫暫無資料。');
+          updateCloudStatusUI(false, '☁ 雲端無資料', '雲端資料庫目前沒有任何已上傳的更期數據');
+          alert('雲端資料庫目前沒有數據，請先在存有更期的裝置點擊「立即上傳至雲端」。');
           return;
         }
+
         appState.weeks = loadedWeeks;
-        appState.cloudImages = data.cloudImages || [];
-        if (data.patternSample) appState.patternSample = data.patternSample;
+        if (Array.isArray(data.patternSample) && data.patternSample.length > 0) {
+          appState.patternSample = data.patternSample.slice(0, 21);
+        }
         appState.currentWeekMonday = Object.keys(appState.weeks).sort()[0];
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-          weeks: appState.weeks,
-          currentWeekMonday: appState.currentWeekMonday,
-          patternSample: appState.patternSample,
-          cloudImages: appState.cloudImages
-        }));
+        saveLocalOnly();
         renderAll();
+        const syncTime = data.updatedAt ? new Date(data.updatedAt).toLocaleString('zh-HK') : '最新';
+        updateCloudStatusUI(true, '☁ 雲端已同步', `已從雲端還原最新 DutyList (${syncTime})`);
         alert('已從雲端資料庫下載還原最新 DutyList！');
       } catch (e) {
+        updateCloudStatusUI(false, '⚠ 下載失敗', `網路錯誤：${e.message}`);
         alert('雲端下載失敗：' + e.message);
       }
     }
@@ -1147,7 +1169,7 @@
       const parsed = JSON.parse(raw);
       appState.weeks = parsed.data.weeks;
       appState.currentWeekMonday = parsed.data.currentWeekMonday;
-      appState.patternSample = parsed.data.patternSample;
+      appState.patternSample = (parsed.data.patternSample || IMAGE3_DEFAULT_PATTERN).slice(0, 21);
       saveState();
       renderAll();
       alert('已還原至備份版本（' + parsed.timestamp + '）');
@@ -1168,7 +1190,7 @@
       }
     }
 
-    // ==================== 全平台鬧鐘控制（iOS 捷徑 ＋ 非 iOS 設備連續音效/震動/系統通知） ====================
+    // ==================== 全平台鬧鐘控制 ====================
     function requestUniversalNotificationPermission() {
       if ('Notification' in window && Notification.permission === 'default') {
         Notification.requestPermission().catch(() => {});
@@ -1258,7 +1280,6 @@
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const now = ctx.currentTime;
-        // 雙音階清脆鬧鐘聲（適合 Android / Windows / Mac）
         [880, 1174.66].forEach((freq, idx) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -1408,7 +1429,6 @@
       const sleepingCardEl = document.getElementById('sleeping-shift-card');
       const sleepingListEl = document.getElementById('sleeping-shift-list');
 
-      // 僅在 A Duty 頁面顯示 Sleeping 卡片（位於 A / P Duty 上方，形式同中更卡片）
       if (appState.selectedSlot === 'A') {
         sleepingCardEl.classList.remove('hidden');
         curTitleEl.textContent = 'A Duty'; curTagEl.textContent = 'A Duty';
@@ -1508,7 +1528,6 @@
         }
         if (isNightNCode(todaySheetCode)) {
           allDayStaffPool.push({ row: staff.row, name: staff.name, code: todaySheetCode, normCode: normalizeDutyCode(todaySheetCode), dayTag: '昨夜N(07:18放工)' });
-          // 朝早放工（當日更表標記為 Na/Ne）歸入 Sleeping 卡片
           sleepingCount++;
           sleepingListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, todaySheetCode, 'indigo');
         }
@@ -1594,7 +1613,6 @@
       renderDutyScheduleDetails(activeWorkingStaff, allDayStaffPool, dateStr);
     }
 
-    // 卡片內的名字嚴格水平垂直對齊
     function createDutyPersonChip(rowNum, name, code, theme) {
       const isHighlighted = appState.highlightedStaff === name;
       return `
@@ -1662,7 +1680,6 @@
         if (handoverNames.length) handoverDescParts.push(`收工交 ${handoverNames.join('、')}`);
         const handoverFullText = handoverDescParts.length ? handoverDescParts.join(' ｜ ') : '按更交接';
 
-        // 針對 11-8 職員卡片：取消顯示（）及裡面文字，並將 Ec 與 Pa 兩位同事做成獨立卡片顯示
         let swapMeal118Html = '';
         if (norm === '11/8') {
           const ecStaffList = allDayStaffPool.filter(p => p.dayTag === '今日' && p.normCode === 'Ec');
@@ -1736,7 +1753,7 @@
       }).join('');
     }
 
-    // ==================== 刪除本週（雙擊確認）與 DutyList 左右滑動 ====================
+    // ==================== 刪除本週與 DutyList ====================
     let deleteConfirmTimer = null;
     let isDeleteArmed = false;
 
@@ -1887,7 +1904,6 @@
       return '';
     }
 
-    // ==================== 雲端已存更期表原圖：檢視、修改週一日期、刪除 ====================
     function renderCloudImagesStrip() {
       const panel = document.getElementById('cloud-images-panel');
       const strip = document.getElementById('cloud-images-strip');
@@ -1915,7 +1931,7 @@
     function openCloudImageViewer(idx) {
       const img = appState.cloudImages[idx];
       if (!img) return;
-      document.getElementById('viewer-img-title').textContent = `雲端原圖（週一：${img.monday}）`;
+      document.getElementById('viewer-img-title').textContent = `原圖檢視（週一：${img.monday}）`;
       document.getElementById('viewer-img-el').src = `data:image/jpeg;base64,${img.base64}`;
       document.getElementById('viewer-edit-btn').onclick = () => {
         closeCloudImageViewer();
@@ -1942,24 +1958,24 @@
         return;
       }
       img.monday = getMondayOfDate(nextDate.trim());
-      saveState();
+      saveLocalOnly();
       renderCloudImagesStrip();
     }
 
     function deleteCloudImage(idx) {
       const img = appState.cloudImages[idx];
       if (!img) return;
-      if (!confirm(`確定要刪除 ${img.monday} 的雲端更期表原圖嗎？`)) return;
+      if (!confirm(`確定要刪除 ${img.monday} 的更期表原圖嗎？`)) return;
       appState.cloudImages.splice(idx, 1);
-      saveState();
+      saveLocalOnly();
       renderCloudImagesStrip();
     }
 
     function clearAllCloudImages() {
       if (!appState.cloudImages.length) return;
-      if (!confirm('確定要清空全部已儲存的雲端更期表原圖嗎？（不會影響 DutyList 文字數據）')) return;
+      if (!confirm('確定要清空全部已儲存的更期表原圖嗎？（不會影響 DutyList 文字數據）')) return;
       appState.cloudImages = [];
-      saveState();
+      saveLocalOnly();
       renderCloudImagesStrip();
     }
 
@@ -1986,7 +2002,7 @@
       }
     }
 
-    // ==================== 更期預測（1–22行選擇，18–22行僅作行數核對不作循環預測） ====================
+    // ==================== 更期預測（總行數 21 行：1–17 行循環，18–21 行替位） ====================
     function initSwipeGestureOnPredictCalendar() {
       const el = document.getElementById('predict-cal-swipe-box');
       let startX = 0, startY = 0;
@@ -2007,7 +2023,7 @@
     function initPredictControls() {
       const rowSel = document.getElementById('predict-start-row');
       if (!rowSel.options.length) {
-        for (let i = 1; i <= 22; i++) {
+        for (let i = 1; i <= 21; i++) {
           const opt = document.createElement('option');
           opt.value = i;
           opt.textContent = i <= 17 ? `第 ${i} 行` : `第 ${i} 行（替位）`;
@@ -2090,7 +2106,7 @@
       const reserveNoticeEl = document.getElementById('reserve-row-notice');
       const twoWeeksWrapEl = document.getElementById('predict-two-weeks-wrapper');
 
-      // 第 18–22 行為替位人員，只作行數計算之用，不在更期預測之列
+      // 第 18–21 行為替位人員，只作行數計算之用，不在更期預測之列
       if (startRow > 17) {
         reserveNoticeEl.classList.remove('hidden');
         twoWeeksWrapEl.classList.add('hidden');
@@ -2229,7 +2245,7 @@
     function renderSamplePatternTable() {
       const tbody = document.getElementById('sample-pattern-tbody');
       tbody.innerHTML = '';
-      appState.patternSample.forEach((item, rIdx) => {
+      appState.patternSample.slice(0, 21).forEach((item, rIdx) => {
         const isCycleRow = item.row <= 17;
         const tr = document.createElement('tr');
         tr.style.background = isCycleRow ? '#fff' : '#fffbeb';
@@ -2295,7 +2311,7 @@
       `;
     }
 
-    // ==================== AI 圖片辨析（未出現謝小曼時自動隱藏 + 保留 [...] 方括號 + WO OWING -> OW） ====================
+    // ==================== AI 圖片辨析 ====================
     let pendingUploadFiles = [];
     let verifiedImportPayloads = [];
     const UNIQUE_SHIFT_CODES = new Set(['Aa', 'Ac', 'Ad', 'Ae', '9-6', '9/5', 'Pa', 'Pe', 'Pu', 'Ec', 'Ed', 'Na', 'Ne']);
@@ -2429,7 +2445,6 @@
             return { row: exp.row, name: exp.name, duties: cleanDuties };
           });
 
-          // 僅當上傳圖片中有識別出謝小曼（或其他額外同事）且有更期數據時才加入顯示；若未有謝小曼則不顯示
           const mappedNames = new Set(mappedRows.map(r => r.name).filter(Boolean));
           extractedJson.rows.forEach(r => {
             const rName = (r.name || '').trim();
@@ -2566,7 +2581,7 @@
       saveState();
       renderAll();
       closeUploadModal();
-      alert(`已成功匯入 ${verifiedImportPayloads.length} 張更期表至 DutyList 並存入雲端資料庫！`);
+      alert(`已成功匯入 ${verifiedImportPayloads.length} 張更期表至 DutyList 並觸發雲端同步！`);
     }
 
     function resizeImageToBase64(file, maxDim, quality) {
