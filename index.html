@@ -116,22 +116,44 @@
     .mid-grid { padding: 6px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
     @media (min-width: 640px) { .mid-grid { grid-template-columns: repeat(4, 1fr); } }
 
-    /* OnDuty 卡片內的名字嚴格對齊 */
+    /* OnDuty 卡片內的名字嚴格對齊 + 實時狀態顏色 */
     .person-chip {
-      display: flex; align-items: center; justify-content: space-between;
-      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 5px 8px; cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between; gap: 4px;
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 5px 7px; cursor: pointer;
+      transition: background-color 0.15s, border-color 0.15s;
     }
-    .person-chip.hl { background: #fef3c7; border-color: #f59e0b; }
+    .person-chip.st-not-started {
+      background: #eff6ff; border-color: #93c5fd;
+    }
+    .person-chip.st-meal {
+      background: #fffbeb; border-color: #fbbf24;
+    }
+    .person-chip.st-off-work {
+      background: #f1f5f9; border-color: #cbd5e1; opacity: 0.72;
+    }
+    .person-chip.hl {
+      box-shadow: 0 0 0 2px #f59e0b;
+    }
     .chip-name-wrap {
-      display: flex; align-items: center; min-width: 0;
+      display: flex; align-items: center; min-width: 0; flex: 1;
     }
     .chip-row-num {
-      display: inline-block; width: 20px; flex-shrink: 0;
+      display: inline-block; width: 19px; flex-shrink: 0;
       font-size: 10px; color: #94a3b8; text-align: left; font-variant-numeric: tabular-nums;
     }
     .chip-staff-name {
       font-weight: 700; color: #1e293b; white-space: nowrap;
     }
+    .chip-right-wrap {
+      display: flex; align-items: center; gap: 3px; flex-shrink: 0;
+    }
+    .status-mini-pill {
+      font-size: 9px; font-weight: 800; padding: 1px 4px; border-radius: 4px; white-space: nowrap;
+    }
+    .status-mini-pill.not-started { background: #dbeafe; color: #1d4ed8; }
+    .status-mini-pill.meal { background: #fef3c7; color: #b45309; }
+    .status-mini-pill.off-work { background: #e2e8f0; color: #475569; }
+
     .code-badge {
       font-size: 11px; padding: 1px 6px; border-radius: 4px; border: 1px solid #cbd5e1; background: #e2e8f0; color: #0f172a; flex-shrink: 0;
     }
@@ -139,6 +161,15 @@
     .code-badge.cyan { background: #cffafe; border-color: #67e8f9; color: #155e75; }
     .code-badge.indigo { background: #e0e7ff; border-color: #a5b4fc; color: #3730a3; }
     .code-badge.warn { background: #fef3c7; border-color: #fcd34d; color: #92400e; }
+
+    /* 狀態圖例提示條 */
+    .legend-bar {
+      display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap;
+      font-size: 10px; color: #475569; padding-top: 2px;
+    }
+    .legend-dot {
+      display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 3px; vertical-align: middle;
+    }
 
     /* 明細卡片 */
     .detail-item {
@@ -255,7 +286,7 @@
       <div class="header-title">
         <span class="dot-live"></span>
         <span>QEH AED Duty System</span>
-        <span id="cloud-sync-badge" class="badge-cloud">☁ 檢查連線...</span>
+        <span id="cloud-sync-badge" class="badge-cloud">☁ 同步中...</span>
       </div>
       <div class="header-actions">
         <button onclick="openAlarmModal()" class="btn-icon" title="鬧鐘提醒控制">
@@ -300,6 +331,13 @@
 
         <div class="flex-center">
           <span id="auto-time-slot-hint" style="font-size:11px;color:#0f766e;font-weight:700;background:#f0fdfa;border:1px solid #99f6e4;padding:2px 8px;border-radius:6px;"></span>
+        </div>
+
+        <div class="legend-bar">
+          <span><span class="legend-dot" style="background:#dbeafe;border:1px solid #93c5fd;"></span>未上班</span>
+          <span><span class="legend-dot" style="background:#fef3c7;border:1px solid #fbbf24;"></span>食飯中</span>
+          <span><span class="legend-dot" style="background:#f8fafc;border:1px solid #cbd5e1;"></span>當值中</span>
+          <span><span class="legend-dot" style="background:#e2e8f0;border:1px solid #94a3b8;"></span>已放工</span>
         </div>
       </div>
 
@@ -526,14 +564,14 @@
   <div id="upload-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeUploadModal()">
     <div class="modal-box" onclick="event.stopPropagation()">
       <div class="modal-head">
-        <span>上載更期（雙字母崗位辨析 ＋ 括號更期 ＋ 雲端儲存）</span>
+        <span>上載更期（雙字母崗位辨析 ＋ 括號更期 ＋ 雲端同步）</span>
         <button onclick="closeUploadModal()" style="background:none;color:#fff;font-size:20px;">&times;</button>
       </div>
       <div class="modal-body">
         <label style="display:block;border:2px dashed #14b8a6;background:#f0fdfa;padding:14px;border-radius:10px;text-align:center;cursor:pointer;">
           <input type="file" id="multi-image-input" accept="image/*" multiple class="hidden" onchange="handleMultiImageSelect(event)" />
           <div style="color:#115e59;font-weight:700;">點擊一次選取多張更期表相片</div>
-          <div style="font-size:11px;color:#64748b;margin-top:2px;">完整讀取雙字母崗位、保留 [Pa]/[11-8] 方括號、WO OWING 自動轉寫為 OW</div>
+          <div style="font-size:11px;color:#64748b;margin-top:2px;">完整讀取雙字母崗位、僅在原圖有 [ ] 時保留括號、WO OWING 自動轉寫為 OW</div>
         </label>
 
         <div id="selected-images-bar" class="hidden" style="display:flex;gap:6px;overflow-x:auto;"></div>
@@ -562,7 +600,7 @@
       <div class="modal-foot">
         <button onclick="closeUploadModal()" class="btn-sm">取消</button>
         <button id="btn-run-ocr" onclick="processAllUploadedImages()" class="btn-sm btn-amber" disabled>開始 AI 辨析</button>
-        <button id="btn-confirm-import" onclick="confirmImportAllWeeks()" class="btn-sm btn-teal hidden">確認匯入並上傳雲端</button>
+        <button id="btn-confirm-import" onclick="confirmImportAllWeeks()" class="btn-sm btn-teal hidden">確認匯入並自動同步雲端</button>
       </div>
     </div>
   </div>
@@ -605,14 +643,17 @@
   <div id="settings-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeSettingsModal()">
     <div class="modal-box" style="max-width:440px;" onclick="event.stopPropagation()">
       <div class="modal-head">
-        <span>雲端資料庫、本機備份與字庫設定</span>
+        <span>雲端雙向即時同步、本機備份與字庫設定</span>
         <button onclick="closeSettingsModal()" style="background:none;color:#fff;font-size:20px;">&times;</button>
       </div>
       <div class="modal-body">
         <div class="sub-box" style="background:#f0f9ff;border-color:#bae6fd;padding:8px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:11px;color:#0f766e;font-weight:700;">
+            ⚡ 雙向即時自動備份已啟用：任何修改即時寫入雲端；雲端有更新亦即時自動下載同步至所有本地裝置。
+          </div>
           <div class="flex-row">
             <button onclick="syncAllToCloud(false)" class="btn-sm" style="flex:1;background:#0369a1;color:#fff;padding:7px;">立即上傳至雲端</button>
-            <button onclick="pullAllFromCloud()" class="btn-sm" style="flex:1;padding:7px;">從雲端下載還原</button>
+            <button onclick="pullAllFromCloud(false)" class="btn-sm" style="flex:1;padding:7px;">從雲端下載還原</button>
           </div>
           <div id="cloud-last-sync-label" style="font-size:11px;color:#0369a1;font-weight:600;">雲端資料庫狀態：檢查連線中...</div>
         </div>
@@ -669,8 +710,8 @@
 
     const APPLY_SHIFT_FORM_URL = "https://docs.google.com/forms/d/1wZFdmvXap07wmI2nzzdco4ercp5eYPI82yml-tlhkS8/viewform?edit_requested=true&pli=1&authuser=0";
 
-    const STORAGE_KEY = 'qeh_aed_duty_v16';
-    const BACKUP_KEY = 'qeh_aed_duty_backup_v16';
+    const STORAGE_KEY = 'qeh_aed_duty_v17';
+    const BACKUP_KEY = 'qeh_aed_duty_backup_v17';
     const BACKUP_FLAG_KEY = 'qeh_aed_auto_backup_enabled';
     const DICT_STORAGE_KEY = 'qeh_aed_ocr_dictionary_v10';
     const ALARM_STORAGE_KEY = 'qeh_aed_alarms_v7';
@@ -705,7 +746,6 @@
       { id: '', name: '謝小曼' }
     ];
 
-    // 香港法定假期（已將 2026-12-26 改為「聖誕節翌日」）
     const HK_STATUTORY_HOLIDAYS = {
       '2026-01-01': '元旦', '2026-02-17': '農曆年初一', '2026-02-18': '農曆年初二', '2026-02-19': '農曆年初三',
       '2026-04-03': '耶穌受難節', '2026-04-04': '耶穌受難節翌日', '2026-04-05': '清明節', '2026-04-06': '清明節翌日',
@@ -718,25 +758,25 @@
       '2027-10-01': '國慶日', '2027-10-08': '重陽節', '2027-12-25': '聖誕節', '2027-12-26': '聖誕節翌日'
     };
 
+    // 加入精準分鐘區間（workStartMin, workEndMin, mealStartMin, mealEndMin）以判斷「未上班 / 食飯中 / 已放工」
     const DUTY_SPEC_MAP = {
-      'Aa':   { work: '0700-1503', workStart: '07:00', mealStart: '10:00', mealText: '1000-1030', takeOverFromCodes: ['Na'], handoverToCodes: [] },
-      'Ac':   { work: '0700-1548', workStart: '07:00', mealStart: '12:00', mealText: '1200-1300 (由11/8接手)', takeOverFromCodes: ['Ne'], handoverToCodes: ['Ec'] },
-      'Ad':   { work: '0700-1548', workStart: '07:00', mealStart: '13:00', mealText: '1300-1400 (由Aa接手)', takeOverFromCodes: ['Na'], handoverToCodes: ['Ed'] },
-      'Ae':   { work: '0700-1503', workStart: '07:00', mealStart: '09:30', mealText: '0930-1000', takeOverFromCodes: ['Ne'], handoverToCodes: ['Ac'] },
-      '9/5':  { work: '0900-1748', workStart: '09:00', mealStart: '13:00', mealText: '1300-1400', takeOverFromCodes: [], handoverToCodes: [] },
-      '9-6':  { work: '0900-1748', workStart: '09:00', mealStart: '13:00', mealText: '1300-1400', takeOverFromCodes: [], handoverToCodes: [] },
-      '11/8': { work: '1115-2003', workStart: '11:15', mealStart: '17:00', mealText: '1700-1800', takeOverFromCodes: [], handoverToCodes: [] },
-      '11-8': { work: '1115-2003', workStart: '11:15', mealStart: '17:00', mealText: '1700-1800', takeOverFromCodes: [], handoverToCodes: [] },
-      'Pa':   { work: '1345-2233', workStart: '13:45', mealStart: '19:00', mealText: '1900-2000', takeOverFromCodes: [], handoverToCodes: ['Na'] },
-      'Pe':   { work: '1345-2233', workStart: '13:45', mealStart: '18:00', mealText: '1800-1900', takeOverFromCodes: [], handoverToCodes: ['Ne'] },
-      'Pu':   { work: '1345-2233', workStart: '13:45', mealStart: '18:00', mealText: '1800-1900', takeOverFromCodes: [], handoverToCodes: [] },
-      'Ec':   { work: '1415-2303', workStart: '14:15', mealStart: '19:00', mealText: '1900-2000 (由11/8接手)', takeOverFromCodes: ['Ac'], handoverToCodes: [] },
-      'Ed':   { work: '1415-2303', workStart: '14:15', mealStart: '20:00', mealText: '2000-2100 (由Pa接手)', takeOverFromCodes: ['Ad'], handoverToCodes: ['Na'] },
-      'Na':   { work: '2230-0718', workStart: '22:30', mealStart: '01:30', mealText: '0130-0300', takeOverFromCodes: ['Pa', 'Ed'], handoverToCodes: ['Aa', 'Ad'] },
-      'Ne':   { work: '2230-0718', workStart: '22:30', mealStart: '03:30', mealText: '0330-0500', takeOverFromCodes: ['Pe', 'Ec'], handoverToCodes: ['Ae', 'Ac'] }
+      'Aa':   { work: '0700-1503', workStart: '07:00', workStartMin: 420,  workEndMin: 903,  mealStart: '10:00', mealStartMin: 600,  mealEndMin: 630,  mealText: '1000-1030', takeOverFromCodes: ['Na'], handoverToCodes: [] },
+      'Ac':   { work: '0700-1548', workStart: '07:00', workStartMin: 420,  workEndMin: 948,  mealStart: '12:00', mealStartMin: 720,  mealEndMin: 780,  mealText: '1200-1300 (由11/8接手)', takeOverFromCodes: ['Ne'], handoverToCodes: ['Ec'] },
+      'Ad':   { work: '0700-1548', workStart: '07:00', workStartMin: 420,  workEndMin: 948,  mealStart: '13:00', mealStartMin: 780,  mealEndMin: 840,  mealText: '1300-1400 (由Aa接手)', takeOverFromCodes: ['Na'], handoverToCodes: ['Ed'] },
+      'Ae':   { work: '0700-1503', workStart: '07:00', workStartMin: 420,  workEndMin: 903,  mealStart: '09:30', mealStartMin: 570,  mealEndMin: 600,  mealText: '0930-1000', takeOverFromCodes: ['Ne'], handoverToCodes: ['Ac'] },
+      '9/5':  { work: '0900-1748', workStart: '09:00', workStartMin: 540,  workEndMin: 1068, mealStart: '13:00', mealStartMin: 780,  mealEndMin: 840,  mealText: '1300-1400', takeOverFromCodes: [], handoverToCodes: [] },
+      '9-6':  { work: '0900-1748', workStart: '09:00', workStartMin: 540,  workEndMin: 1068, mealStart: '13:00', mealStartMin: 780,  mealEndMin: 840,  mealText: '1300-1400', takeOverFromCodes: [], handoverToCodes: [] },
+      '11/8': { work: '1115-2003', workStart: '11:15', workStartMin: 675,  workEndMin: 1203, mealStart: '17:00', mealStartMin: 1020, mealEndMin: 1080, mealText: '1700-1800', takeOverFromCodes: [], handoverToCodes: [] },
+      '11-8': { work: '1115-2003', workStart: '11:15', workStartMin: 675,  workEndMin: 1203, mealStart: '17:00', mealStartMin: 1020, mealEndMin: 1080, mealText: '1700-1800', takeOverFromCodes: [], handoverToCodes: [] },
+      'Pa':   { work: '1345-2233', workStart: '13:45', workStartMin: 825,  workEndMin: 1353, mealStart: '19:00', mealStartMin: 1140, mealEndMin: 1200, mealText: '1900-2000', takeOverFromCodes: [], handoverToCodes: ['Na'] },
+      'Pe':   { work: '1345-2233', workStart: '13:45', workStartMin: 825,  workEndMin: 1353, mealStart: '18:00', mealStartMin: 1080, mealEndMin: 1140, mealText: '1800-1900', takeOverFromCodes: [], handoverToCodes: ['Ne'] },
+      'Pu':   { work: '1345-2233', workStart: '13:45', workStartMin: 825,  workEndMin: 1353, mealStart: '18:00', mealStartMin: 1080, mealEndMin: 1140, mealText: '1800-1900', takeOverFromCodes: [], handoverToCodes: [] },
+      'Ec':   { work: '1415-2303', workStart: '14:15', workStartMin: 855,  workEndMin: 1383, mealStart: '19:00', mealStartMin: 1140, mealEndMin: 1200, mealText: '1900-2000 (由11/8接手)', takeOverFromCodes: ['Ac'], handoverToCodes: [] },
+      'Ed':   { work: '1415-2303', workStart: '14:15', workStartMin: 855,  workEndMin: 1383, mealStart: '20:00', mealStartMin: 1200, mealEndMin: 1260, mealText: '2000-2100 (由Pa接手)', takeOverFromCodes: ['Ad'], handoverToCodes: ['Na'] },
+      'Na':   { work: '2230-0718', workStart: '22:30', workStartMin: 1350, workEndMin: 438,  mealStart: '01:30', mealStartMin: 90,   mealEndMin: 180,  mealText: '0130-0300', takeOverFromCodes: ['Pa', 'Ed'], handoverToCodes: ['Aa', 'Ad'] },
+      'Ne':   { work: '2230-0718', workStart: '22:30', workStartMin: 1350, workEndMin: 438,  mealStart: '03:30', mealStartMin: 210,  mealEndMin: 300,  mealText: '0330-0500', takeOverFromCodes: ['Pe', 'Ec'], handoverToCodes: ['Ae', 'Ac'] }
     };
 
-    // 總行數更新為 21 行（1–17 行循環，18–21 行替位）
     const IMAGE3_DEFAULT_PATTERN = [
       { row: 1,  days: ['SH/替位', 'Ec', 'Pu', 'O', 'WO', 'Ad', 'Ae/N'] },
       { row: 2,  days: ['Na', 'O', 'Ec', '11-8', 'Ad', 'WO', 'Ac'] },
@@ -761,6 +801,7 @@
       { row: 21, days: ['替位', '替位', '替位', '替位', '替位', '替位', '替位'] }
     ];
 
+    // 預設資料中所有 11-8 皆不加 []（僅當上載圖片有 [] 才保留 []）
     const DEFAULT_WEEK_DATA = {
       '2026-11-16': {
         monday: '2026-11-16',
@@ -810,6 +851,7 @@
       highlightedStaff: '',
       alarms: [],
       cloudImages: [],
+      lastCloudUpdatedAt: '',
       predictCalYear: 2026,
       predictCalMonth: 10,
       predictTargetDate: ''
@@ -861,6 +903,62 @@
       const mm = String(now.getMinutes()).padStart(2, '0');
       const hintEl = document.getElementById('auto-time-slot-hint');
       if (hintEl) hintEl.textContent = `現時 ${hh}:${mm} (${autoSlot} Duty)`;
+    }
+
+    // 判斷同事卡片在選取日期與目前時鐘時間下的即時狀態（未上班 / 食飯中 / 已放工 / 當值中）
+    function evaluateStaffLiveStatus(code, selectedDateStr, isTonightNextNight = false) {
+      const todayStr = getTodayLocalStr();
+      const tomorrowStr = addDaysToDateStr(todayStr, 1);
+      const norm = normalizeDutyCode(code);
+      const spec = DUTY_SPEC_MAP[norm];
+      if (!spec) return { state: 'normal', label: '', cssClass: '' };
+
+      const now = new Date();
+      const nowMins = now.getHours() * 60 + now.getMinutes();
+
+      // 今晚夜更（屬於明日表格列，22:30 才上班）
+      if (isTonightNextNight) {
+        if (selectedDateStr === todayStr) {
+          if (nowMins < spec.workStartMin) {
+            return { state: 'not-started', label: '未上班', cssClass: 'st-not-started' };
+          }
+          return { state: 'working', label: '', cssClass: '' };
+        }
+        return { state: 'normal', label: '', cssClass: '' };
+      }
+
+      // 查詢未來日期：全部屬未上班
+      if (selectedDateStr > todayStr) {
+        return { state: 'not-started', label: '未上班', cssClass: 'st-not-started' };
+      }
+      // 查詢過去日期：全部屬已放工
+      if (selectedDateStr < todayStr) {
+        return { state: 'off-work', label: '已放工', cssClass: 'st-off-work' };
+      }
+
+      // 查詢今日（selectedDateStr === todayStr）：依實時鐘點判斷
+      if (isNightNCode(code)) {
+        // 昨夜開工今日 07:18 放工的夜更
+        if (nowMins >= spec.mealStartMin && nowMins < spec.mealEndMin) {
+          return { state: 'meal', label: '食飯中', cssClass: 'st-meal' };
+        }
+        if (nowMins >= spec.workEndMin) {
+          return { state: 'off-work', label: '已放工', cssClass: 'st-off-work' };
+        }
+        return { state: 'working', label: '', cssClass: '' };
+      }
+
+      // 日更 / 中更 / 午更（如 Pa 13:45 上班、Ed 14:15 上班）
+      if (nowMins < spec.workStartMin) {
+        return { state: 'not-started', label: '未上班', cssClass: 'st-not-started' };
+      }
+      if (nowMins >= spec.mealStartMin && nowMins < spec.mealEndMin) {
+        return { state: 'meal', label: '食飯中', cssClass: 'st-meal' };
+      }
+      if (nowMins >= spec.workEndMin) {
+        return { state: 'off-work', label: '已放工', cssClass: 'st-off-work' };
+      }
+      return { state: 'working', label: '', cssClass: '' };
     }
 
     function unwrapBracketDuty(code) {
@@ -951,7 +1049,7 @@
 
     function initApp() {
       try {
-        const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('qeh_aed_duty_v15') || localStorage.getItem('qeh_aed_duty_v14');
+        const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('qeh_aed_duty_v16') || localStorage.getItem('qeh_aed_duty_v15');
         const backupFlag = localStorage.getItem(BACKUP_FLAG_KEY);
         const savedDict = localStorage.getItem(DICT_STORAGE_KEY);
         const savedAlarms = localStorage.getItem(ALARM_STORAGE_KEY);
@@ -980,10 +1078,10 @@
             });
           });
           appState.currentWeekMonday = parsed.currentWeekMonday || Object.keys(appState.weeks)[0];
-          // 強制確保樣本表總行數為 21 行
           const loadedPattern = Array.isArray(parsed.patternSample) ? parsed.patternSample.slice(0, 21) : JSON.parse(JSON.stringify(IMAGE3_DEFAULT_PATTERN));
           appState.patternSample = loadedPattern;
           appState.cloudImages = parsed.cloudImages || [];
+          appState.lastCloudUpdatedAt = parsed.lastCloudUpdatedAt || '';
         } else {
           appState.weeks = JSON.parse(JSON.stringify(DEFAULT_WEEK_DATA));
         }
@@ -1002,12 +1100,13 @@
       initSwipeGestureOnPredictCalendar();
       initPredictControls();
       startAlarmTicker();
+      startRealtimeCloudSyncWatcher();
       updateAlarmUI();
       updateBackupUI();
       renderAll();
 
-      // 啟動時立即向真實雲端資料庫 (/api/duty-db) 拉取最新 DutyList（支援無痕模式與跨裝置）
-      autoLoadFromCloudOnStartup();
+      // 啟動時立即檢查雲端更新並自動同步至本地
+      pullAllFromCloud(true);
     }
 
     function saveLocalOnly() {
@@ -1015,7 +1114,8 @@
         weeks: appState.weeks,
         currentWeekMonday: appState.currentWeekMonday,
         patternSample: appState.patternSample,
-        cloudImages: appState.cloudImages
+        cloudImages: appState.cloudImages,
+        lastCloudUpdatedAt: appState.lastCloudUpdatedAt
       };
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(payloadObj));
@@ -1023,19 +1123,24 @@
       } catch (e) {}
     }
 
+    // 任何更新即時寫入本地並自動備份上傳到雲端
     function saveState() {
+      appState.lastCloudUpdatedAt = new Date().toISOString();
       saveLocalOnly();
       syncAllToCloud(true);
       if (appState.autoBackup) performManualBackup(true);
     }
 
-    // 真實寫入雲端資料庫 (/api/duty-db)
-    async function syncAllToCloud(silent = false) {
-      updateCloudStatusUI(true, '☁ 上傳中...', '正在寫入雲端資料庫...');
+    let isCloudRequestRunning = false;
 
-      // 優先傳送輕量 DutyList 核心數據（避免原圖 Base64 過大造成請求超時或被拒絕）
+    async function syncAllToCloud(silent = false) {
+      if (isCloudRequestRunning && silent) return;
+      isCloudRequestRunning = true;
+      updateCloudStatusUI(true, '☁ 自動上傳中...', '有更新，正在即時備份至雲端...');
+
+      const nowIso = appState.lastCloudUpdatedAt || new Date().toISOString();
       const corePayload = {
-        updatedAt: new Date().toISOString(),
+        updatedAt: nowIso,
         dutyList: appState.weeks,
         weeks: appState.weeks,
         patternSample: appState.patternSample.slice(0, 21)
@@ -1049,22 +1154,30 @@
         });
         const data = await res.json().catch(() => ({}));
         if (res.ok && data.ok) {
+          appState.lastCloudUpdatedAt = data.updatedAt || nowIso;
+          saveLocalOnly();
           const timeText = new Date().toLocaleTimeString('zh-HK');
-          updateCloudStatusUI(true, '☁ 雲端已同步', `已同步至雲端資料庫 (${timeText})`);
-          if (!silent) alert('已成功將 DutyList 數據上傳至雲端資料庫！無痕模式與其他裝置重新整理即可自動同步。');
+          updateCloudStatusUI(true, '☁ 雲端已同步', `已即時自動備份至雲端 (${timeText})`);
+          if (!silent) alert('已成功將最新更期上傳至雲端資料庫！');
           return;
         }
         const errMsg = data.error || `HTTP ${res.status}`;
-        updateCloudStatusUI(false, '⚠ 未同步雲端', `雲端寫入失敗：${errMsg}`);
-        if (!silent) alert(`雲端上傳失敗：${errMsg}\n\n請確認 Vercel 已連結 Upstash Redis 並執行過 Redeploy。`);
+        updateCloudStatusUI(false, '⚠ 未同步雲端', `雲端備份失敗：${errMsg}`);
+        if (!silent) alert(`雲端上傳失敗：${errMsg}`);
       } catch (err) {
         updateCloudStatusUI(false, '⚠ 離線/未同步', `網路或伺服器錯誤：${err.message}`);
         if (!silent) alert('無法連線至雲端資料庫：' + err.message);
+      } finally {
+        isCloudRequestRunning = false;
       }
     }
 
-    async function autoLoadFromCloudOnStartup() {
-      updateCloudStatusUI(true, '☁ 同步中...', '正在從雲端資料庫讀取最新更期...');
+    // 雲端有更新亦即時自動下載同步到本地
+    async function pullAllFromCloud(silent = true) {
+      if (isCloudRequestRunning && silent) return;
+      isCloudRequestRunning = true;
+      if (!silent) updateCloudStatusUI(true, '☁ 下載中...', '正在從雲端資料庫下載...');
+
       try {
         const res = await fetch(`${CLOUD_DB_ENDPOINT}?t=${Date.now()}`, { cache: 'no-store' });
         const data = await res.json().catch(() => ({}));
@@ -1072,11 +1185,22 @@
         if (!res.ok) {
           const errMsg = data.error || `HTTP ${res.status}`;
           updateCloudStatusUI(false, '⚠ 雲端未連線', `雲端讀取失敗：${errMsg}`);
+          if (!silent) alert(`從雲端下載失敗：${errMsg}`);
           return;
         }
 
         const remoteWeeks = data?.dutyList || data?.weeks;
-        if (remoteWeeks && Object.keys(remoteWeeks).length > 0) {
+        if (!remoteWeeks || !Object.keys(remoteWeeks).length) {
+          updateCloudStatusUI(false, '☁ 雲端無資料', '雲端資料庫已連線，尚無已上傳更期（首次有更新時將自動備份）');
+          if (!silent) alert('雲端資料庫目前沒有數據。');
+          return;
+        }
+
+        const remoteTs = data.updatedAt || '';
+        const localTs = appState.lastCloudUpdatedAt || '';
+        const isRemoteNewer = !silent || !localTs || (remoteTs && remoteTs > localTs);
+
+        if (isRemoteNewer) {
           appState.weeks = remoteWeeks;
           if (Array.isArray(data.patternSample) && data.patternSample.length > 0) {
             appState.patternSample = data.patternSample.slice(0, 21);
@@ -1084,52 +1208,51 @@
           if (!appState.weeks[appState.currentWeekMonday]) {
             appState.currentWeekMonday = Object.keys(appState.weeks).sort()[0];
           }
+          if (remoteTs) appState.lastCloudUpdatedAt = remoteTs;
           saveLocalOnly();
           renderAll();
-          const syncTime = data.updatedAt ? new Date(data.updatedAt).toLocaleString('zh-HK') : '最新';
-          updateCloudStatusUI(true, '☁ 雲端已同步', `已從雲端載入最新 DutyList (${syncTime})`);
+          const syncTime = remoteTs ? new Date(remoteTs).toLocaleTimeString('zh-HK') : '最新';
+          updateCloudStatusUI(true, '☁ 雲端已同步', `已自動從雲端同步最新更期 (${syncTime})`);
+          if (!silent) alert('已從雲端下載還原最新 DutyList！');
         } else {
-          updateCloudStatusUI(false, '☁ 雲端無資料', '雲端資料庫已連線，但尚未上傳任何更期數據（請在有資料的裝置按「立即上傳至雲端」）');
+          const syncTime = localTs ? new Date(localTs).toLocaleTimeString('zh-HK') : '最新';
+          updateCloudStatusUI(true, '☁ 雲端已同步', `雲端與本地資料已保持最新同步 (${syncTime})`);
         }
       } catch (e) {
         updateCloudStatusUI(false, '⚠ 雲端離線', `無法連線雲端：${e.message}`);
+        if (!silent) alert('雲端下載失敗：' + e.message);
+      } finally {
+        isCloudRequestRunning = false;
       }
     }
 
-    async function pullAllFromCloud() {
-      updateCloudStatusUI(true, '☁ 下載中...', '正在從雲端資料庫下載...');
-      try {
-        const res = await fetch(`${CLOUD_DB_ENDPOINT}?t=${Date.now()}`, { cache: 'no-store' });
-        const data = await res.json().catch(() => ({}));
-
-        if (!res.ok) {
-          const errMsg = data.error || `HTTP ${res.status}`;
-          updateCloudStatusUI(false, '⚠ 下載失敗', `雲端讀取失敗：${errMsg}`);
-          alert(`從雲端下載失敗：${errMsg}`);
-          return;
+    // 雙向即時輪詢＋切回視窗自動同步＋每分鐘自動更新 OnDuty 上班/食飯顏色狀態
+    function startRealtimeCloudSyncWatcher() {
+      setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          pullAllFromCloud(true);
         }
+      }, 8000);
 
-        const loadedWeeks = data?.dutyList || data?.weeks;
-        if (!loadedWeeks || !Object.keys(loadedWeeks).length) {
-          updateCloudStatusUI(false, '☁ 雲端無資料', '雲端資料庫目前沒有任何已上傳的更期數據');
-          alert('雲端資料庫目前沒有數據，請先在存有更期的裝置點擊「立即上傳至雲端」。');
-          return;
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          pullAllFromCloud(true);
+          renderTodayView();
         }
+      });
 
-        appState.weeks = loadedWeeks;
-        if (Array.isArray(data.patternSample) && data.patternSample.length > 0) {
-          appState.patternSample = data.patternSample.slice(0, 21);
+      window.addEventListener('focus', () => {
+        pullAllFromCloud(true);
+        renderTodayView();
+      });
+
+      // 每 30 秒重新計算一次實時「未上班 / 食飯中 / 已放工」卡片顏色
+      setInterval(() => {
+        const todayView = document.getElementById('view-today');
+        if (todayView && !todayView.classList.contains('hidden')) {
+          renderTodayView();
         }
-        appState.currentWeekMonday = Object.keys(appState.weeks).sort()[0];
-        saveLocalOnly();
-        renderAll();
-        const syncTime = data.updatedAt ? new Date(data.updatedAt).toLocaleString('zh-HK') : '最新';
-        updateCloudStatusUI(true, '☁ 雲端已同步', `已從雲端還原最新 DutyList (${syncTime})`);
-        alert('已從雲端資料庫下載還原最新 DutyList！');
-      } catch (e) {
-        updateCloudStatusUI(false, '⚠ 下載失敗', `網路錯誤：${e.message}`);
-        alert('雲端下載失敗：' + e.message);
-      }
+      }, 30000);
     }
 
     function learnFromVerifiedWeek(weekRows) {
@@ -1529,7 +1652,8 @@
         if (isNightNCode(todaySheetCode)) {
           allDayStaffPool.push({ row: staff.row, name: staff.name, code: todaySheetCode, normCode: normalizeDutyCode(todaySheetCode), dayTag: '昨夜N(07:18放工)' });
           sleepingCount++;
-          sleepingListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, todaySheetCode, 'indigo');
+          const sleepStatus = evaluateStaffLiveStatus(todaySheetCode, dateStr, false);
+          sleepingListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, todaySheetCode, 'indigo', sleepStatus);
         }
         if (isNightNCode(tomorrowSheetCode)) {
           allDayStaffPool.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, normCode: normalizeDutyCode(tomorrowSheetCode), dayTag: '今晚N(22:30返工)' });
@@ -1537,7 +1661,8 @@
 
         if (isMidCode(todaySheetCode)) {
           midCount++;
-          midListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, todaySheetCode, 'cyan');
+          const midStatus = evaluateStaffLiveStatus(todaySheetCode, dateStr, false);
+          midListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, todaySheetCode, 'cyan', midStatus);
           activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
         }
 
@@ -1545,36 +1670,42 @@
           if (isMorningACode(todaySheetCode)) {
             upCount++;
             const dispCode = isIncompleteSingleLetter(todaySheetCode) ? `${todaySheetCode}(待補位)` : todaySheetCode;
-            currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, dispCode, isIncompleteSingleLetter(todaySheetCode) ? 'warn' : 'teal');
+            const st = evaluateStaffLiveStatus(todaySheetCode, dateStr, false);
+            currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, dispCode, isIncompleteSingleLetter(todaySheetCode) ? 'warn' : 'teal', st);
             activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
           }
           if (isAfternoonPECode(todaySheetCode)) {
             downCount++;
             const dispCode = isIncompleteSingleLetter(todaySheetCode) ? `${todaySheetCode}(待補位)` : todaySheetCode;
-            nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, dispCode, isIncompleteSingleLetter(todaySheetCode) ? 'warn' : '');
+            const st = evaluateStaffLiveStatus(todaySheetCode, dateStr, false);
+            nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, dispCode, isIncompleteSingleLetter(todaySheetCode) ? 'warn' : '', st);
             activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
           }
         } else if (appState.selectedSlot === 'P') {
           if (isAfternoonPECode(todaySheetCode)) {
             upCount++;
             const dispCode = isIncompleteSingleLetter(todaySheetCode) ? `${todaySheetCode}(待補位)` : todaySheetCode;
-            currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, dispCode, isIncompleteSingleLetter(todaySheetCode) ? 'warn' : 'teal');
+            const st = evaluateStaffLiveStatus(todaySheetCode, dateStr, false);
+            currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, dispCode, isIncompleteSingleLetter(todaySheetCode) ? 'warn' : 'teal', st);
             activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
           }
           if (isNightNCode(tomorrowSheetCode)) {
             downCount++;
-            nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode, isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : '');
+            const st = evaluateStaffLiveStatus(tomorrowSheetCode, dateStr, true);
+            nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode, isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : '', st);
             activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: '今晚N(22:30返工)' });
           }
         } else if (appState.selectedSlot === 'N') {
           if (isNightNCode(tomorrowSheetCode)) {
             upCount++;
-            currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode, isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : 'teal');
+            const st = evaluateStaffLiveStatus(tomorrowSheetCode, dateStr, true);
+            currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode, isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : 'teal', st);
             activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: '今晚N(22:30返工)' });
           }
           if (isMorningACode(tomorrowSheetCode)) {
             downCount++;
-            nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode, isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : '');
+            const st = evaluateStaffLiveStatus(tomorrowSheetCode, nextDateStr, false);
+            nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode, isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : '', st);
           }
         }
       });
@@ -1613,15 +1744,21 @@
       renderDutyScheduleDetails(activeWorkingStaff, allDayStaffPool, dateStr);
     }
 
-    function createDutyPersonChip(rowNum, name, code, theme) {
+    function createDutyPersonChip(rowNum, name, code, theme, liveStatus = { state: 'normal', label: '', cssClass: '' }) {
       const isHighlighted = appState.highlightedStaff === name;
+      const statusBadgeHtml = liveStatus && liveStatus.label
+        ? `<span class="status-mini-pill ${liveStatus.state}">${liveStatus.label}</span>`
+        : '';
       return `
-        <div onclick="highlightStaff('${name}')" class="person-chip ${isHighlighted ? 'hl' : ''}">
+        <div onclick="highlightStaff('${name}')" class="person-chip ${liveStatus.cssClass || ''} ${isHighlighted ? 'hl' : ''}">
           <div class="chip-name-wrap">
             <span class="chip-row-num">${rowNum}</span>
             <span class="chip-staff-name">${name}</span>
           </div>
-          <span class="duty-font code-badge ${theme}">${code}</span>
+          <div class="chip-right-wrap">
+            ${statusBadgeHtml}
+            <span class="duty-font code-badge ${theme}">${code}</span>
+          </div>
         </div>
       `;
     }
@@ -1656,6 +1793,8 @@
           : { work: '依更表', workStart: '07:00', mealStart: '13:00', mealText: '依崗位', takeOverFromCodes: [], handoverToCodes: [] };
 
         const spec = DUTY_SPEC_MAP[norm] || fallbackSpec;
+        const isTonightN = person.dayTag === '今晚N(22:30返工)';
+        const liveSt = evaluateStaffLiveStatus(person.code, dateStr, isTonightN);
 
         const takeOverNames = (spec.takeOverFromCodes || []).map(targetCode => {
           const matched = allDayStaffPool.find(p => {
@@ -1723,12 +1862,21 @@
           `;
         }
 
+        const cardBgStyle = liveSt.state === 'not-started'
+          ? 'background:#eff6ff;border-color:#93c5fd;'
+          : liveSt.state === 'meal'
+          ? 'background:#fffbeb;border-color:#fbbf24;'
+          : liveSt.state === 'off-work'
+          ? 'background:#f1f5f9;border-color:#cbd5e1;opacity:0.78;'
+          : '';
+
         return `
-          <div class="detail-item">
+          <div class="detail-item" style="${cardBgStyle}">
             <div class="detail-top">
               <div>
                 <strong style="font-size:13px;">${person.name}</strong>
                 <span class="duty-font code-badge ${isIncompleteSingleLetter(person.code) ? 'warn' : 'teal'}" style="margin-left:4px;">${person.code}</span>
+                ${liveSt.label ? `<span class="status-mini-pill ${liveSt.state}" style="margin-left:4px;">${liveSt.label}</span>` : ''}
                 <span style="font-size:11px;color:#334155;font-weight:700;margin-left:4px;">${spec.work}</span>
               </div>
               <div class="flex-row">
@@ -1981,7 +2129,7 @@
 
     function editRosterCell(rIdx, dIdx) {
       const weekObj = appState.weeks[appState.currentWeekMonday];
-      const next = prompt(`修改第 ${rIdx + 1} 行 (${weekObj.rows[rIdx].name || '空白列'}) 更期（支援方括號如 [Pa], [11-8]；WO OWING 自動轉為 OW）：`, weekObj.rows[rIdx].duties[dIdx] || '');
+      const next = prompt(`修改第 ${rIdx + 1} 行 (${weekObj.rows[rIdx].name || '空白列'}) 更期（僅在原圖有括號才需加 []；WO OWING 自動轉為 OW）：`, weekObj.rows[rIdx].duties[dIdx] || '');
       if (next !== null) {
         weekObj.rows[rIdx].duties[dIdx] = sanitizeTwoLetterDutyCode(next.trim());
         learnFromVerifiedWeek(weekObj.rows);
@@ -2002,7 +2150,7 @@
       }
     }
 
-    // ==================== 更期預測（總行數 21 行：1–17 行循環，18–21 行替位） ====================
+    // ==================== 更期預測（總行數 21 行） ====================
     function initSwipeGestureOnPredictCalendar() {
       const el = document.getElementById('predict-cal-swipe-box');
       let startX = 0, startY = 0;
@@ -2106,7 +2254,6 @@
       const reserveNoticeEl = document.getElementById('reserve-row-notice');
       const twoWeeksWrapEl = document.getElementById('predict-two-weeks-wrapper');
 
-      // 第 18–21 行為替位人員，只作行數計算之用，不在更期預測之列
       if (startRow > 17) {
         reserveNoticeEl.classList.remove('hidden');
         twoWeeksWrapEl.classList.add('hidden');
@@ -2500,19 +2647,20 @@
       const knownNamesStr = ALL_KNOWN_STAFF.map(x => x.id ? `${x.name}(${x.id})` : x.name).join('、');
       const prompt = `請嚴格依照圖片中的黑色表格格線提取更期表（包含全部同事；若圖片中出現「謝小曼」則一併讀取，若圖片中沒有「謝小曼」則不要憑空捏造），對照員工姓名與 Staff ID（${knownNamesStr}）：
 1. monday 填寫表格頂部「星期一」日期（YYYY-MM-DD）。跳過「職級」「公眾假期」欄，只取「星期一」至「星期日」7 欄。
-2. 【方括號 [] 必須完整保留！】
-   - 如果格子內的更期帶有方括號 [ ]，例如 [Pa]、[11-8]、[Aa]、[Ac]、[Ad]、[Ae]、[Pe]、[Ec]、[Ed]、[Na]、[Ne]、[9-6] 等，**必須連同方括號一併原樣輸出**（例如輸出 "[Pa]"、"[11-8]"），絕對不可刪除方括號！
+2. 【方括號 [] 規則】
+   - 僅當圖片該格子內**實際印有或寫有**方括號 [ ] 時（例如圖片上寫著 [11-8] 或 [Pa]），才保留方括號輸出 "[11-8]" 或 "[Pa]"。
+   - 若圖片格子內沒有方括號（例如只寫著 11-8 或 Pa），則直接輸出 "11-8" 或 "Pa"，絕對不可自行加上方括號！
 3. 【放假簡寫規則】若格子內為 "WO OWING"，請直接簡化輸出為 "OW"。
 4. 【最重要規則：除 O 之外，所有字母更期必須有兩個字母！】
    - 絕對不可只輸出單字母 "A"、"P"、"E" 或 "N"！每格更期大寫字母後面一定跟著一個代表崗位的小寫字母：
-     * 早更（每日最少 4 人）：Aa, Ac, Ad, Ae（或 [Aa], [Ac], [Ad], [Ae]）
-     * 午更（每日最少 4 人）：Pa, Pe, Pu, Ec, Ed（或 [Pa], [Pe], [Pu], [Ec], [Ed]）
-     * 夜更（每日 2 人）：Na, Ne（或 [Na], [Ne]，第二個字母是小寫 a 或 e）
-     * 中更：9-6（或 9/5）、11-8（或 11/8）、[9-6]、[11-8]
+     * 早更（每日最少 4 人）：Aa, Ac, Ad, Ae
+     * 午更（每日最少 4 人）：Pa, Pe, Pu, Ec, Ed
+     * 夜更（每日 2 人）：Na, Ne（第二個字母是小寫 a 或 e）
+     * 中更：9-6（或 9/5）、11-8（或 11/8）
      * 假期：O（單字母休假）、WO、OW、AL、SH、PH、SL、CL
 5. 【姓名與空白列規則】只輸出圖片中真實存在的同事；若表中有 1 行為全空白分隔列，該空行輸出 "name":"","duties":["","","","","","",""]。
-6. 忽略右上角小字上標（如 U, D, C, E, T, RAT, (1) 等），但保留方括號 [ ]。
-只輸出純 JSON：{"monday":"2026-11-23","rows":[{"row":1,"name":"黃雅倩","duties":["Ac","[Pa]","Pu","O","WO","[11-8]","Ae"]}]}`;
+6. 忽略右上角小字上標（如 U, D, C, E, T, RAT, (1) 等）。
+只輸出純 JSON：{"monday":"2026-11-23","rows":[{"row":1,"name":"黃雅倩","duties":["Ac","Pa","Pu","O","WO","11-8","Ae"]}]}`;
 
       appendOcrLog('透過 Vercel 雲端節點連線 Google AI...');
       const res = await fetch('/api/ocr', {
@@ -2533,9 +2681,9 @@
     }
 
     async function callGeminiSelfVerifyAndFix(apiKey, base64Data, currentJson, issuesList) {
-      const prompt = `【緊急修正】以下格子的更期辨識不完整（除 O 之外，所有字母更期必須有兩個字母，例如 Aa, Ac, Ad, Ae, Pa, Pe, Pu, Ec, Ed, Na, Ne，保留方括號如 [Pa], [11-8]，且 WO OWING 統一寫成 OW）：
+      const prompt = `【緊急修正】以下格子的更期辨識不完整（除 O 之外，所有字母更期必須有兩個字母，例如 Aa, Ac, Ad, Ae, Pa, Pe, Pu, Ec, Ed, Na, Ne；僅原圖有方括號才保留 [ ]，否則不加括號；WO OWING 統一寫成 OW）：
 問題清單：${issuesList.join('；')}
-請重新放大查看原圖對應格子的第二個小寫字母（a, c, d, e, u）以及方括號 [ ]。
+請重新放大查看原圖對應格子的第二個小寫字母（a, c, d, e, u）。
 待修正 JSON：${JSON.stringify(currentJson)}
 只輸出純 JSON：{"correctionCount":0,"correctedData":{"monday":"...","rows":[...]}}`;
       try {
@@ -2581,7 +2729,7 @@
       saveState();
       renderAll();
       closeUploadModal();
-      alert(`已成功匯入 ${verifiedImportPayloads.length} 張更期表至 DutyList 並觸發雲端同步！`);
+      alert(`已成功匯入 ${verifiedImportPayloads.length} 張更期表至 DutyList 並自動備份至雲端！`);
     }
 
     function resizeImageToBase64(file, maxDim, quality) {
