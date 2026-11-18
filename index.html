@@ -116,7 +116,7 @@
     .mid-grid { padding: 6px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
     @media (min-width: 640px) { .mid-grid { grid-template-columns: repeat(4, 1fr); } }
 
-    /* OnDuty 卡片內的名字嚴格對齊 + 實時狀態顏色 */
+    /* OnDuty 卡片內的名字嚴格對齊 + 實時狀態與崗位標籤 */
     .person-chip {
       display: flex; align-items: center; justify-content: space-between; gap: 4px;
       background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 5px 7px; cursor: pointer;
@@ -145,7 +145,7 @@
       font-weight: 700; color: #1e293b; white-space: nowrap;
     }
     .chip-right-wrap {
-      display: flex; align-items: center; gap: 3px; flex-shrink: 0;
+      display: flex; align-items: center; gap: 3px; flex-shrink: 1; min-width: 0; justify-content: flex-end; flex-wrap: wrap;
     }
     .status-mini-pill {
       font-size: 9px; font-weight: 800; padding: 1px 4px; border-radius: 4px; white-space: nowrap;
@@ -153,6 +153,10 @@
     .status-mini-pill.not-started { background: #dbeafe; color: #1d4ed8; }
     .status-mini-pill.meal { background: #fef3c7; color: #b45309; }
     .status-mini-pill.off-work { background: #e2e8f0; color: #475569; }
+    .status-mini-pill.zone {
+      background: #ccfbf1; color: #115e59; border: 1px solid #5eead4;
+      white-space: normal; line-height: 1.15; text-align: right; max-width: 112px;
+    }
 
     .code-badge {
       font-size: 11px; padding: 1px 6px; border-radius: 4px; border: 1px solid #cbd5e1; background: #e2e8f0; color: #0f172a; flex-shrink: 0;
@@ -194,7 +198,7 @@
       flex-shrink: 0; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 5px; text-align: center; background: #f8fafc; min-width: 38px;
     }
 
-    /* DutyList 表格 */
+    /* DutyList 表格與即日標示 */
     .table-wrap { overflow-x: auto; width: 100%; }
     table.roster-tbl { width: 100%; border-collapse: collapse; text-align: center; font-size: 11px; table-layout: fixed; }
     table.roster-tbl th, table.roster-tbl td { border: 1px solid #cbd5e1; padding: 3px 1px; }
@@ -204,6 +208,8 @@
     th.sticky-col-1, th.sticky-col-2 { background: #f1f5f9; z-index: 3; }
     .col-edge { background: #fffbeb !important; width: 36px; }
     .col-day { width: 36px; cursor: pointer; }
+    th.col-today { background: #0f766e !important; color: #fff !important; }
+    td.col-today { background: #ecfdf5 !important; border-left: 2px solid #0d9488 !important; border-right: 2px solid #0d9488 !important; }
     .cell-pill { display: inline-block; width: 100%; padding: 2px 0; border-radius: 4px; }
     .st-leave { background: #f1f5f9; color: #64748b; }
     .st-al { background: #ffe4e6; color: #9f1239; }
@@ -315,6 +321,12 @@
     <!-- ==================== 分頁 1：OnDuty ==================== -->
     <section id="view-today" style="display:flex;flex-direction:column;gap:8px;">
       <div class="card card-pad" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <!-- 實時今日日期與每秒跳動時鐘 -->
+        <div class="flex-center">
+          <span id="live-today-clock-badge" style="font-size:11px;color:#0f766e;font-weight:800;background:#f0fdfa;border:1px solid #5eead4;padding:3px 9px;border-radius:6px;font-variant-numeric:tabular-nums;">今日：-- ｜ 現時：--:--:--</span>
+          <button onclick="jumpToRealToday()" class="btn-sm" style="font-size:11px;padding:3px 7px;background:#ecfdf5;color:#065f46;border-color:#6ee7b7;">回今日</button>
+        </div>
+
         <div class="flex-center">
           <input type="date" id="today-date-picker" onchange="renderTodayView()" class="input-box" />
           <span id="today-weekday-badge" class="btn-sm" style="background:#f0fdfa;color:#115e59;border-color:#99f6e4;">星期三</span>
@@ -323,20 +335,16 @@
 
         <div class="flex-center">
           <div class="slot-group">
-            <button onclick="setShiftSlot('A')" id="slot-A" class="slot-btn active">A Duty</button>
-            <button onclick="setShiftSlot('P')" id="slot-P" class="slot-btn">P Duty</button>
-            <button onclick="setShiftSlot('N')" id="slot-N" class="slot-btn">N Duty</button>
+            <button onclick="setShiftSlot('A', true)" id="slot-A" class="slot-btn active">A Duty</button>
+            <button onclick="setShiftSlot('P', true)" id="slot-P" class="slot-btn">P Duty</button>
+            <button onclick="setShiftSlot('N', true)" id="slot-N" class="slot-btn">N Duty</button>
           </div>
-        </div>
-
-        <div class="flex-center">
-          <span id="auto-time-slot-hint" style="font-size:11px;color:#0f766e;font-weight:700;background:#f0fdfa;border:1px solid #99f6e4;padding:2px 8px;border-radius:6px;"></span>
         </div>
 
         <div class="legend-bar">
           <span><span class="legend-dot" style="background:#dbeafe;border:1px solid #93c5fd;"></span>未上班</span>
           <span><span class="legend-dot" style="background:#fef3c7;border:1px solid #fbbf24;"></span>食飯中</span>
-          <span><span class="legend-dot" style="background:#f8fafc;border:1px solid #cbd5e1;"></span>當值中</span>
+          <span><span class="legend-dot" style="background:#ccfbf1;border:1px solid #5eead4;"></span>實時崗位</span>
           <span><span class="legend-dot" style="background:#e2e8f0;border:1px solid #94a3b8;"></span>已放工</span>
         </div>
       </div>
@@ -600,7 +608,7 @@
       <div class="modal-foot">
         <button onclick="closeUploadModal()" class="btn-sm">取消</button>
         <button id="btn-run-ocr" onclick="processAllUploadedImages()" class="btn-sm btn-amber" disabled>開始 AI 辨析</button>
-        <button id="btn-confirm-import" onclick="confirmImportAllWeeks()" class="btn-sm btn-teal hidden">確認匯入並自動同步雲端</button>
+        <button id="btn-confirm-import" onclick="confirmImportAllWeeks()" class="btn-sm btn-teal hidden">確認匯入</button>
       </div>
     </div>
   </div>
@@ -643,14 +651,20 @@
   <div id="settings-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeSettingsModal()">
     <div class="modal-box" style="max-width:440px;" onclick="event.stopPropagation()">
       <div class="modal-head">
-        <span>雲端雙向即時同步、本機備份與字庫設定</span>
+        <span>雲端自動上傳、本機備份與字庫設定</span>
         <button onclick="closeSettingsModal()" style="background:none;color:#fff;font-size:20px;">&times;</button>
       </div>
       <div class="modal-body">
-        <div class="sub-box" style="background:#f0f9ff;border-color:#bae6fd;padding:8px;display:flex;flex-direction:column;gap:6px;">
-          <div style="font-size:11px;color:#0f766e;font-weight:700;">
-            ⚡ 雙向即時自動備份已啟用：任何修改即時寫入雲端；雲端有更新亦即時自動下載同步至所有本地裝置。
+        <!-- 自動上傳雲端開關（開啟時彈出詢問） -->
+        <div class="toolbar sub-box" style="background:#f0f9ff;border-color:#bae6fd;padding:8px;">
+          <div>
+            <strong style="color:#0369a1;">自動上傳雲端</strong>
+            <div id="auto-cloud-upload-status" style="font-size:11px;color:#64748b;">目前狀態：已關閉</div>
           </div>
+          <input type="checkbox" id="auto-cloud-upload-toggle" onchange="toggleAutoCloudUpload(this)" style="width:18px;height:18px;" />
+        </div>
+
+        <div class="sub-box" style="background:#f0f9ff;border-color:#bae6fd;padding:8px;display:flex;flex-direction:column;gap:6px;">
           <div class="flex-row">
             <button onclick="syncAllToCloud(false)" class="btn-sm" style="flex:1;background:#0369a1;color:#fff;padding:7px;">立即上傳至雲端</button>
             <button onclick="pullAllFromCloud(false)" class="btn-sm" style="flex:1;padding:7px;">從雲端下載還原</button>
@@ -710,14 +724,15 @@
 
     const APPLY_SHIFT_FORM_URL = "https://docs.google.com/forms/d/1wZFdmvXap07wmI2nzzdco4ercp5eYPI82yml-tlhkS8/viewform?edit_requested=true&pli=1&authuser=0";
 
-    const STORAGE_KEY = 'qeh_aed_duty_v17';
-    const BACKUP_KEY = 'qeh_aed_duty_backup_v17';
+    const STORAGE_KEY = 'qeh_aed_duty_v18';
+    const BACKUP_KEY = 'qeh_aed_duty_backup_v18';
     const BACKUP_FLAG_KEY = 'qeh_aed_auto_backup_enabled';
+    const AUTO_CLOUD_FLAG_KEY = 'qeh_aed_auto_cloud_upload_enabled';
     const DICT_STORAGE_KEY = 'qeh_aed_ocr_dictionary_v10';
     const ALARM_STORAGE_KEY = 'qeh_aed_alarms_v7';
     const CLOUD_DB_ENDPOINT = '/api/duty-db';
 
-    // 總共 21 行人員輪轉序列
+    // 總共 21 行人員輪轉序列（21人滿編時不留空行）
     const MASTER_21_ROTATION = [
       { id: '175542', name: '黃詩琪' },
       { id: '162684', name: '李嘉琪' },
@@ -733,17 +748,13 @@
       { id: '242627', name: '謝玉連' },
       { id: '272902', name: '朱翠君' },
       { id: '157242', name: '張麗' },
-      { id: '',       name: '' },        // 第 15 行為空白分隔列
+      { id: '',       name: '謝小曼' },
       { id: '177981', name: '侯嘉敏' },
       { id: '166859', name: '馮玉琼' },
       { id: '276239', name: '馮嘉錂' },
       { id: '257094', name: '蘇靖珊' },
       { id: '213820', name: '葉曉彤' },
       { id: '302592', name: '黃雅倩' }
-    ];
-
-    const OPTIONAL_STAFF_MEMBERS = [
-      { id: '', name: '謝小曼' }
     ];
 
     const HK_STATUTORY_HOLIDAYS = {
@@ -758,7 +769,6 @@
       '2027-10-01': '國慶日', '2027-10-08': '重陽節', '2027-12-25': '聖誕節', '2027-12-26': '聖誕節翌日'
     };
 
-    // 加入精準分鐘區間（workStartMin, workEndMin, mealStartMin, mealEndMin）以判斷「未上班 / 食飯中 / 已放工」
     const DUTY_SPEC_MAP = {
       'Aa':   { work: '0700-1503', workStart: '07:00', workStartMin: 420,  workEndMin: 903,  mealStart: '10:00', mealStartMin: 600,  mealEndMin: 630,  mealText: '1000-1030', takeOverFromCodes: ['Na'], handoverToCodes: [] },
       'Ac':   { work: '0700-1548', workStart: '07:00', workStartMin: 420,  workEndMin: 948,  mealStart: '12:00', mealStartMin: 720,  mealEndMin: 780,  mealText: '1200-1300 (由11/8接手)', takeOverFromCodes: ['Ne'], handoverToCodes: ['Ec'] },
@@ -801,7 +811,6 @@
       { row: 21, days: ['替位', '替位', '替位', '替位', '替位', '替位', '替位'] }
     ];
 
-    // 預設資料中所有 11-8 皆不加 []（僅當上載圖片有 [] 才保留 []）
     const DEFAULT_WEEK_DATA = {
       '2026-11-16': {
         monday: '2026-11-16',
@@ -820,21 +829,17 @@
           { row: 12, name: '謝玉連', duties: ['AL', 'Ae', 'Na', '9-6', 'O', 'Ae', 'Na'] },
           { row: 13, name: '朱翠君', duties: ['WO', '11-8', 'Ae', 'Na', 'O', 'Ad', 'Ec'] },
           { row: 14, name: '張麗',   duties: ['Pe', 'Pu', 'WO', 'O', 'Pa', 'Pe', 'Ac'] },
-          { row: 15, name: '',       duties: ['', '', '', '', '', '', ''] },
-          { row: 16, name: '侯嘉敏', duties: ['O', 'Ad', 'Ed', 'Ed', 'Ed', 'Ed', 'WO'] },
-          { row: 17, name: '馮玉琼', duties: ['O', 'Ac', 'Ac', 'Pu', 'Ad', 'WO', 'Aa'] },
-          { row: 18, name: '馮嘉錂', duties: ['O', '9-6', 'Pa', 'Ec', '11-8', 'WO', 'Ad'] },
-          { row: 19, name: '蘇靖珊', duties: ['Ec', 'WO', 'SH', 'SH', 'Ac', 'Aa', 'Ne'] },
-          { row: 20, name: '葉曉彤', duties: ['Ac', 'WO', 'SH', 'Ac', 'Ae', 'Na', 'O'] },
-          { row: 21, name: '黃雅倩', duties: ['Ne', 'O', 'Ad', 'Pe', 'Pa', 'WO', '11-8'] }
+          { row: 15, name: '侯嘉敏', duties: ['O', 'Ad', 'Ed', 'Ed', 'Ed', 'Ed', 'WO'] },
+          { row: 16, name: '馮玉琼', duties: ['O', 'Ac', 'Ac', 'Pu', 'Ad', 'WO', 'Aa'] },
+          { row: 17, name: '馮嘉錂', duties: ['O', '9-6', 'Pa', 'Ec', '11-8', 'WO', 'Ad'] },
+          { row: 18, name: '蘇靖珊', duties: ['Ec', 'WO', 'SH', 'SH', 'Ac', 'Aa', 'Ne'] },
+          { row: 19, name: '葉曉彤', duties: ['Ac', 'WO', 'SH', 'Ac', 'Ae', 'Na', 'O'] },
+          { row: 20, name: '黃雅倩', duties: ['Ne', 'O', 'Ad', 'Pe', 'Pa', 'WO', '11-8'] }
         ]
       }
     };
 
-    const ALL_KNOWN_STAFF = [
-      ...MASTER_21_ROTATION.filter(x => x.name),
-      ...OPTIONAL_STAFF_MEMBERS.filter(x => x.name)
-    ];
+    const ALL_KNOWN_STAFF = MASTER_21_ROTATION.filter(x => x.name);
 
     const DEFAULT_DICTIONARY = {
       names: ALL_KNOWN_STAFF.map(x => x.name),
@@ -846,7 +851,9 @@
       currentWeekMonday: '2026-11-16',
       patternSample: JSON.parse(JSON.stringify(IMAGE3_DEFAULT_PATTERN)),
       selectedSlot: 'A',
+      manualSlotOverride: false,
       autoBackup: false,
+      autoCloudUpload: false,
       dictionary: JSON.parse(JSON.stringify(DEFAULT_DICTIONARY)),
       highlightedStaff: '',
       alarms: [],
@@ -891,74 +898,117 @@
       return 'N';
     }
 
-    function applyAutoSlotByCurrentTime() {
+    // 即時更新 OnDuty 頂部「今日日期 ＋ 實時鐘點（含秒數）」並自動轉換 A/P/N Duty 頁面
+    function updateLiveClockAndAutoSlot(forceAutoSlot = false) {
       const now = new Date();
-      const autoSlot = getSlotByCurrentClockTime(now);
-      appState.selectedSlot = autoSlot;
-      ['A', 'P', 'N'].forEach(s => {
-        const btn = document.getElementById('slot-' + s);
-        if (btn) btn.classList.toggle('active', s === autoSlot);
-      });
+      const todayStr = formatLocalDate(now);
+      const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
       const hh = String(now.getHours()).padStart(2, '0');
       const mm = String(now.getMinutes()).padStart(2, '0');
-      const hintEl = document.getElementById('auto-time-slot-hint');
-      if (hintEl) hintEl.textContent = `現時 ${hh}:${mm} (${autoSlot} Duty)`;
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      const autoSlot = getSlotByCurrentClockTime(now);
+
+      const liveBadge = document.getElementById('live-today-clock-badge');
+      if (liveBadge) {
+        liveBadge.textContent = `今日：${todayStr} (${dayNames[now.getDay()]}) ｜ 現時：${hh}:${mm}:${ss} (${autoSlot} Duty)`;
+      }
+
+      if (forceAutoSlot || !appState.manualSlotOverride) {
+        if (appState.selectedSlot !== autoSlot || forceAutoSlot) {
+          appState.selectedSlot = autoSlot;
+          ['A', 'P', 'N'].forEach(s => {
+            const btn = document.getElementById('slot-' + s);
+            if (btn) btn.classList.toggle('active', s === autoSlot);
+          });
+          const todayView = document.getElementById('view-today');
+          if (todayView && !todayView.classList.contains('hidden')) {
+            renderTodayView();
+          }
+        }
+      }
     }
 
-    // 判斷同事卡片在選取日期與目前時鐘時間下的即時狀態（未上班 / 食飯中 / 已放工 / 當值中）
+    function jumpToRealToday() {
+      appState.manualSlotOverride = false;
+      const picker = document.getElementById('today-date-picker');
+      if (picker) picker.value = getTodayLocalStr();
+      updateLiveClockAndAutoSlot(true);
+      renderTodayView();
+    }
+
+    // 7. 取得 Aa / Ac / Ad / Ae 在各時段的簡化崗位標籤（比照食飯中方式顯示）
+    function getRealtimeZoneLabel(code, selectedDateStr) {
+      const todayStr = getTodayLocalStr();
+      if (selectedDateStr !== todayStr) return '';
+      const norm = normalizeDutyCode(code);
+      const now = new Date();
+      const mins = now.getHours() * 60 + now.getMinutes();
+
+      if (norm === 'Aa') {
+        if (mins >= 420 && mins < 480) return '換垃圾袋針盒/O房';   // 07:00 - 08:00
+        if (mins >= 780 && mins < 840) return 'R房';                 // 13:00 - 14:00
+      } else if (norm === 'Ac') {
+        if (mins >= 420 && mins < 480) return '接電話/H2 /+/-ALG';  // 07:00 - 08:00
+        if (mins >= 480 && mins < 948) return '診症格/O房/美好/負壓房/+/-G1/H2'; // 08:00 後
+      } else if (norm === 'Ad') {
+        if (mins >= 420 && mins < 948) return 'R房';                 // 07:00 後一直顯示為 R房
+      } else if (norm === 'Ae') {
+        if (mins >= 420 && mins < 480) return 'G1';                  // 07:00 - 08:00
+        if (mins >= 510 && mins < 540) return 'Non24';               // 08:30 - 09:00
+        if (mins >= 600 && mins < 903) return 'G1/H2/診症格';        // 10:00 後
+      }
+      return '';
+    }
+
+    // 判斷同事卡片在選取日期與目前時鐘時間下的即時狀態（未上班 / 食飯中 / 已放工 / 實時崗位）
     function evaluateStaffLiveStatus(code, selectedDateStr, isTonightNextNight = false) {
       const todayStr = getTodayLocalStr();
-      const tomorrowStr = addDaysToDateStr(todayStr, 1);
       const norm = normalizeDutyCode(code);
       const spec = DUTY_SPEC_MAP[norm];
-      if (!spec) return { state: 'normal', label: '', cssClass: '' };
+      if (!spec) return { state: 'normal', label: '', zoneLabel: '', cssClass: '' };
 
       const now = new Date();
       const nowMins = now.getHours() * 60 + now.getMinutes();
 
-      // 今晚夜更（屬於明日表格列，22:30 才上班）
       if (isTonightNextNight) {
         if (selectedDateStr === todayStr) {
           if (nowMins < spec.workStartMin) {
-            return { state: 'not-started', label: '未上班', cssClass: 'st-not-started' };
+            return { state: 'not-started', label: '未上班', zoneLabel: '', cssClass: 'st-not-started' };
           }
-          return { state: 'working', label: '', cssClass: '' };
+          return { state: 'working', label: '', zoneLabel: '', cssClass: '' };
         }
-        return { state: 'normal', label: '', cssClass: '' };
+        return { state: 'normal', label: '', zoneLabel: '', cssClass: '' };
       }
 
-      // 查詢未來日期：全部屬未上班
       if (selectedDateStr > todayStr) {
-        return { state: 'not-started', label: '未上班', cssClass: 'st-not-started' };
+        return { state: 'not-started', label: '未上班', zoneLabel: '', cssClass: 'st-not-started' };
       }
-      // 查詢過去日期：全部屬已放工
       if (selectedDateStr < todayStr) {
-        return { state: 'off-work', label: '已放工', cssClass: 'st-off-work' };
+        return { state: 'off-work', label: '已放工', zoneLabel: '', cssClass: 'st-off-work' };
       }
 
-      // 查詢今日（selectedDateStr === todayStr）：依實時鐘點判斷
       if (isNightNCode(code)) {
-        // 昨夜開工今日 07:18 放工的夜更
         if (nowMins >= spec.mealStartMin && nowMins < spec.mealEndMin) {
-          return { state: 'meal', label: '食飯中', cssClass: 'st-meal' };
+          return { state: 'meal', label: '食飯中', zoneLabel: '', cssClass: 'st-meal' };
         }
         if (nowMins >= spec.workEndMin) {
-          return { state: 'off-work', label: '已放工', cssClass: 'st-off-work' };
+          return { state: 'off-work', label: '已放工', zoneLabel: '', cssClass: 'st-off-work' };
         }
-        return { state: 'working', label: '', cssClass: '' };
+        return { state: 'working', label: '', zoneLabel: '', cssClass: '' };
       }
 
-      // 日更 / 中更 / 午更（如 Pa 13:45 上班、Ed 14:15 上班）
       if (nowMins < spec.workStartMin) {
-        return { state: 'not-started', label: '未上班', cssClass: 'st-not-started' };
-      }
-      if (nowMins >= spec.mealStartMin && nowMins < spec.mealEndMin) {
-        return { state: 'meal', label: '食飯中', cssClass: 'st-meal' };
+        return { state: 'not-started', label: '未上班', zoneLabel: '', cssClass: 'st-not-started' };
       }
       if (nowMins >= spec.workEndMin) {
-        return { state: 'off-work', label: '已放工', cssClass: 'st-off-work' };
+        return { state: 'off-work', label: '已放工', zoneLabel: '', cssClass: 'st-off-work' };
       }
-      return { state: 'working', label: '', cssClass: '' };
+
+      const zoneLabel = getRealtimeZoneLabel(code, selectedDateStr);
+      if (nowMins >= spec.mealStartMin && nowMins < spec.mealEndMin) {
+        return { state: 'meal', label: '食飯中', zoneLabel, cssClass: 'st-meal' };
+      }
+      return { state: 'working', label: '', zoneLabel, cssClass: '' };
     }
 
     function unwrapBracketDuty(code) {
@@ -994,6 +1044,23 @@
     function isIncompleteSingleLetter(code) {
       const inner = unwrapBracketDuty(code);
       return /^[A-Za-z]$/.test(inner) && inner.toUpperCase() !== 'O';
+    }
+
+    // 2. 整理週列表：當有 21 人（或以上）時，自動移除空白分隔列並重新連續編號；不足 21 人時保留完整輪轉
+    function normalizeWeekRowsNoEmptyWhenFull(rows) {
+      const validRows = (rows || []).filter(r => (r.name || '').trim() !== '');
+      if (validRows.length >= 21) {
+        return validRows.map((r, idx) => ({
+          row: idx + 1,
+          name: (r.name || '').trim(),
+          duties: (r.duties || []).slice(0, 7).map(d => sanitizeTwoLetterDutyCode(d))
+        }));
+      }
+      return (rows || []).map((r, idx) => ({
+        row: r.row || (idx + 1),
+        name: (r.name || '').trim(),
+        duties: (r.name || '').trim() ? (r.duties || []).slice(0, 7).map(d => sanitizeTwoLetterDutyCode(d)) : ['', '', '', '', '', '', '']
+      }));
     }
 
     function getExpectedRosterForWeek(mondayStr) {
@@ -1049,12 +1116,15 @@
 
     function initApp() {
       try {
-        const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('qeh_aed_duty_v16') || localStorage.getItem('qeh_aed_duty_v15');
+        const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('qeh_aed_duty_v17') || localStorage.getItem('qeh_aed_duty_v16');
         const backupFlag = localStorage.getItem(BACKUP_FLAG_KEY);
+        const autoCloudFlag = localStorage.getItem(AUTO_CLOUD_FLAG_KEY);
         const savedDict = localStorage.getItem(DICT_STORAGE_KEY);
         const savedAlarms = localStorage.getItem(ALARM_STORAGE_KEY);
 
         appState.autoBackup = (backupFlag === 'true');
+        appState.autoCloudUpload = (autoCloudFlag === 'true');
+
         if (savedDict) {
           const parsedDict = JSON.parse(savedDict);
           const mergedNames = Array.from(new Set([...(parsedDict.names || []), ...ALL_KNOWN_STAFF.map(x => x.name)]));
@@ -1066,16 +1136,7 @@
           const parsed = JSON.parse(saved);
           appState.weeks = parsed.weeks || JSON.parse(JSON.stringify(DEFAULT_WEEK_DATA));
           Object.values(appState.weeks).forEach(w => {
-            if (!Array.isArray(w.rows)) w.rows = [];
-            w.rows.forEach(r => {
-              r.duties = (r.duties || []).map(d => sanitizeTwoLetterDutyCode(d));
-            });
-            w.rows = w.rows.filter(r => {
-              if ((r.name || '').trim() === '謝小曼') {
-                return (r.duties || []).some(d => (d || '').trim() !== '');
-              }
-              return true;
-            });
+            w.rows = normalizeWeekRowsNoEmptyWhenFull(w.rows || []);
           });
           appState.currentWeekMonday = parsed.currentWeekMonday || Object.keys(appState.weeks)[0];
           const loadedPattern = Array.isArray(parsed.patternSample) ? parsed.patternSample.slice(0, 21) : JSON.parse(JSON.stringify(IMAGE3_DEFAULT_PATTERN));
@@ -1091,9 +1152,9 @@
 
       const nowStr = getTodayLocalStr();
       const todayPicker = document.getElementById('today-date-picker');
-      todayPicker.value = appState.weeks[getMondayOfDate(nowStr)] ? nowStr : '2026-11-17';
+      todayPicker.value = appState.weeks[getMondayOfDate(nowStr)] ? nowStr : nowStr;
 
-      applyAutoSlotByCurrentTime();
+      updateLiveClockAndAutoSlot(true);
 
       initSwipeGestureOnTodayView();
       initSwipeGestureOnRosterTable();
@@ -1105,7 +1166,6 @@
       updateBackupUI();
       renderAll();
 
-      // 啟動時立即檢查雲端更新並自動同步至本地
       pullAllFromCloud(true);
     }
 
@@ -1123,12 +1183,40 @@
       } catch (e) {}
     }
 
-    // 任何更新即時寫入本地並自動備份上傳到雲端
+    // 4. 儲存時檢查「自動上傳雲端」開關狀態
     function saveState() {
       appState.lastCloudUpdatedAt = new Date().toISOString();
       saveLocalOnly();
-      syncAllToCloud(true);
+      if (appState.autoCloudUpload) {
+        syncAllToCloud(true);
+      } else {
+        updateCloudStatusUI(false, '☁ 自動上傳已關', '自動上傳雲端已關閉（可於設定開啟或手動上傳）');
+      }
       if (appState.autoBackup) performManualBackup(true);
+    }
+
+    // 4. 自動上傳雲端開關：開啟時彈出確認詢問
+    function toggleAutoCloudUpload(checkboxEl) {
+      const wantEnable = checkboxEl.checked;
+      if (wantEnable) {
+        const confirmed = confirm('確定要開啟「自動上傳雲端」嗎？\n開啟後，每次上載更期或修改資料都會自動同步備份至雲端資料庫。');
+        if (!confirmed) {
+          checkboxEl.checked = false;
+          appState.autoCloudUpload = false;
+          localStorage.setItem(AUTO_CLOUD_FLAG_KEY, 'false');
+          updateBackupUI();
+          return;
+        }
+        appState.autoCloudUpload = true;
+        localStorage.setItem(AUTO_CLOUD_FLAG_KEY, 'true');
+        updateBackupUI();
+        syncAllToCloud(true);
+      } else {
+        appState.autoCloudUpload = false;
+        localStorage.setItem(AUTO_CLOUD_FLAG_KEY, 'false');
+        updateBackupUI();
+        updateCloudStatusUI(false, '☁ 自動上傳已關', '已關閉自動上傳雲端');
+      }
     }
 
     let isCloudRequestRunning = false;
@@ -1136,7 +1224,7 @@
     async function syncAllToCloud(silent = false) {
       if (isCloudRequestRunning && silent) return;
       isCloudRequestRunning = true;
-      updateCloudStatusUI(true, '☁ 自動上傳中...', '有更新，正在即時備份至雲端...');
+      updateCloudStatusUI(true, '☁ 上傳中...', '正在上傳至雲端資料庫...');
 
       const nowIso = appState.lastCloudUpdatedAt || new Date().toISOString();
       const corePayload = {
@@ -1157,7 +1245,7 @@
           appState.lastCloudUpdatedAt = data.updatedAt || nowIso;
           saveLocalOnly();
           const timeText = new Date().toLocaleTimeString('zh-HK');
-          updateCloudStatusUI(true, '☁ 雲端已同步', `已即時自動備份至雲端 (${timeText})`);
+          updateCloudStatusUI(true, '☁ 雲端已同步', `已同步至雲端 (${timeText})`);
           if (!silent) alert('已成功將最新更期上傳至雲端資料庫！');
           return;
         }
@@ -1172,7 +1260,6 @@
       }
     }
 
-    // 雲端有更新亦即時自動下載同步到本地
     async function pullAllFromCloud(silent = true) {
       if (isCloudRequestRunning && silent) return;
       isCloudRequestRunning = true;
@@ -1191,7 +1278,8 @@
 
         const remoteWeeks = data?.dutyList || data?.weeks;
         if (!remoteWeeks || !Object.keys(remoteWeeks).length) {
-          updateCloudStatusUI(false, '☁ 雲端無資料', '雲端資料庫已連線，尚無已上傳更期（首次有更新時將自動備份）');
+          const statusMsg = appState.autoCloudUpload ? '雲端資料庫已連線，尚無已上傳更期' : '自動上傳雲端已關閉';
+          updateCloudStatusUI(appState.autoCloudUpload, appState.autoCloudUpload ? '☁ 雲端已連線' : '☁ 自動上傳已關', statusMsg);
           if (!silent) alert('雲端資料庫目前沒有數據。');
           return;
         }
@@ -1201,6 +1289,9 @@
         const isRemoteNewer = !silent || !localTs || (remoteTs && remoteTs > localTs);
 
         if (isRemoteNewer) {
+          Object.values(remoteWeeks).forEach(w => {
+            w.rows = normalizeWeekRowsNoEmptyWhenFull(w.rows || []);
+          });
           appState.weeks = remoteWeeks;
           if (Array.isArray(data.patternSample) && data.patternSample.length > 0) {
             appState.patternSample = data.patternSample.slice(0, 21);
@@ -1226,8 +1317,12 @@
       }
     }
 
-    // 雙向即時輪詢＋切回視窗自動同步＋每分鐘自動更新 OnDuty 上班/食飯顏色狀態
     function startRealtimeCloudSyncWatcher() {
+      // 每秒即時更新 OnDuty 頁面今日日期、實時時鐘，並在到點時自動切換 A / P / N Duty
+      setInterval(() => {
+        updateLiveClockAndAutoSlot(false);
+      }, 1000);
+
       setInterval(() => {
         if (document.visibilityState === 'visible') {
           pullAllFromCloud(true);
@@ -1237,22 +1332,26 @@
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
           pullAllFromCloud(true);
+          updateLiveClockAndAutoSlot(false);
           renderTodayView();
+          renderRosterTable();
         }
       });
 
       window.addEventListener('focus', () => {
         pullAllFromCloud(true);
+        updateLiveClockAndAutoSlot(false);
         renderTodayView();
+        renderRosterTable();
       });
 
-      // 每 30 秒重新計算一次實時「未上班 / 食飯中 / 已放工」卡片顏色
+      // 每 15 秒重新計算一次實時「未上班 / 食飯中 / 實時崗位 / 已放工」標籤
       setInterval(() => {
         const todayView = document.getElementById('view-today');
         if (todayView && !todayView.classList.contains('hidden')) {
           renderTodayView();
         }
-      }, 30000);
+      }, 15000);
     }
 
     function learnFromVerifiedWeek(weekRows) {
@@ -1301,11 +1400,16 @@
     function updateBackupUI() {
       const toggle = document.getElementById('auto-backup-toggle');
       const statusText = document.getElementById('backup-status-text');
+      const cloudToggle = document.getElementById('auto-cloud-upload-toggle');
+      const cloudStatusText = document.getElementById('auto-cloud-upload-status');
       const timeLabel = document.getElementById('last-backup-time');
       const dictSummary = document.getElementById('dictionary-summary');
 
       if (toggle) toggle.checked = appState.autoBackup;
       if (statusText) statusText.textContent = appState.autoBackup ? '目前狀態：已開啟（自動儲存）' : '目前狀態：已關閉（預設）';
+      if (cloudToggle) cloudToggle.checked = appState.autoCloudUpload;
+      if (cloudStatusText) cloudStatusText.textContent = appState.autoCloudUpload ? '目前狀態：已開啟（更新時自動上傳）' : '目前狀態：已關閉（預設）';
+
       const raw = localStorage.getItem(BACKUP_KEY);
       if (raw && timeLabel) { try { timeLabel.textContent = JSON.parse(raw).timestamp; } catch (e) {} }
       if (dictSummary) {
@@ -1461,7 +1565,8 @@
         document.getElementById('nav-' + t).classList.toggle('active', t === tabName);
       });
       if (tabName === 'today') {
-        applyAutoSlotByCurrentTime();
+        appState.manualSlotOverride = false;
+        updateLiveClockAndAutoSlot(true);
         renderTodayView();
       } else if (tabName === 'roster') {
         renderRosterTable();
@@ -1504,7 +1609,8 @@
       }, { passive: true });
     }
 
-    function setShiftSlot(slot) {
+    function setShiftSlot(slot, isManual = false) {
+      if (isManual) appState.manualSlotOverride = true;
       appState.selectedSlot = slot;
       ['A', 'P', 'N'].forEach(s => document.getElementById('slot-' + s).classList.toggle('active', s === slot));
       renderTodayView();
@@ -1744,10 +1850,14 @@
       renderDutyScheduleDetails(activeWorkingStaff, allDayStaffPool, dateStr);
     }
 
-    function createDutyPersonChip(rowNum, name, code, theme, liveStatus = { state: 'normal', label: '', cssClass: '' }) {
+    // 7. 卡片內同時以最簡化徽章顯示「食飯中 / 未上班 / 已放工」以及 Aa / Ac / Ad / Ae 的即時崗位分工
+    function createDutyPersonChip(rowNum, name, code, theme, liveStatus = { state: 'normal', label: '', zoneLabel: '', cssClass: '' }) {
       const isHighlighted = appState.highlightedStaff === name;
       const statusBadgeHtml = liveStatus && liveStatus.label
         ? `<span class="status-mini-pill ${liveStatus.state}">${liveStatus.label}</span>`
+        : '';
+      const zoneBadgeHtml = liveStatus && liveStatus.zoneLabel
+        ? `<span class="status-mini-pill zone">${liveStatus.zoneLabel}</span>`
         : '';
       return `
         <div onclick="highlightStaff('${name}')" class="person-chip ${liveStatus.cssClass || ''} ${isHighlighted ? 'hl' : ''}">
@@ -1756,6 +1866,7 @@
             <span class="chip-staff-name">${name}</span>
           </div>
           <div class="chip-right-wrap">
+            ${zoneBadgeHtml}
             ${statusBadgeHtml}
             <span class="duty-font code-badge ${theme}">${code}</span>
           </div>
@@ -1876,6 +1987,7 @@
               <div>
                 <strong style="font-size:13px;">${person.name}</strong>
                 <span class="duty-font code-badge ${isIncompleteSingleLetter(person.code) ? 'warn' : 'teal'}" style="margin-left:4px;">${person.code}</span>
+                ${liveSt.zoneLabel ? `<span class="status-mini-pill zone" style="margin-left:4px;">${liveSt.zoneLabel}</span>` : ''}
                 ${liveSt.label ? `<span class="status-mini-pill ${liveSt.state}" style="margin-left:4px;">${liveSt.label}</span>` : ''}
                 <span style="font-size:11px;color:#334155;font-weight:700;margin-left:4px;">${spec.work}</span>
               </div>
@@ -1997,17 +2109,23 @@
       const weekObj = appState.weeks[appState.currentWeekMonday];
       if (!weekObj) return;
 
+      const realTodayStr = getTodayLocalStr();
       const prevSunStr = addDaysToDateStr(weekObj.monday, -1);
       const nextMonStr = addDaysToDateStr(weekObj.monday, 7);
       document.getElementById('th-prev-sun').innerHTML = `${prevSunStr.slice(8)}/${prevSunStr.slice(5, 7)}<br><span style="font-size:9px;">上日</span>`;
       document.getElementById('th-next-mon').innerHTML = `${nextMonStr.slice(8)}/${nextMonStr.slice(5, 7)}<br><span style="font-size:9px;">下一</span>`;
 
       const dayLabels = ['一', '二', '三', '四', '五', '六', '日'];
+      const dayIsTodayFlags = [];
       for (let i = 0; i < 7; i++) {
         const fullDate = addDaysToDateStr(weekObj.monday, i);
         const [, mm, dd] = fullDate.split('-');
         const isHol = Boolean(HK_STATUTORY_HOLIDAYS[fullDate]);
-        document.getElementById('th-day-' + i).innerHTML = `<span style="${isHol ? 'color:#be123c;font-weight:800;' : ''}">${dd}/${mm}</span><br><span style="font-size:10px;">${dayLabels[i]}</span>`;
+        const isTodayCol = (fullDate === realTodayStr);
+        dayIsTodayFlags.push(isTodayCol);
+        const thEl = document.getElementById('th-day-' + i);
+        thEl.classList.toggle('col-today', isTodayCol);
+        thEl.innerHTML = `<span style="${isTodayCol ? 'color:#fff;font-weight:800;' : (isHol ? 'color:#be123c;font-weight:800;' : '')}">${dd}/${mm}</span><br><span style="font-size:10px;">${isTodayCol ? '今日' : dayLabels[i]}</span>`;
       }
 
       const tbody = document.getElementById('roster-table-body');
@@ -2016,6 +2134,10 @@
         const tr = document.createElement('tr');
         const staffName = (r.name || '').trim();
         if (!staffName) tr.style.background = '#f8fafc';
+
+        // 1. 檢查該同事本週是否有 5 日 AL；若有，全星期都用同 AL 同色（st-al）
+        const alCountInWeek = (r.duties || []).filter(d => unwrapBracketDuty(d).toUpperCase() === 'AL').length;
+        const isFullWeekAl = (alCountInWeek >= 5);
 
         const prevSunDuty = staffName ? getDutyByStaffNameOnDate(prevSunStr, staffName) : '';
         const nextMonDuty = staffName ? getDutyByStaffNameOnDate(nextMonStr, staffName) : '';
@@ -2027,7 +2149,9 @@
         `;
         r.duties.forEach((duty, dIdx) => {
           const cleanD = sanitizeTwoLetterDutyCode(duty);
-          html += `<td class="col-day" onclick="editRosterCell(${rIdx}, ${dIdx})"><span class="duty-font cell-pill ${getDutyBadgeClass(cleanD)}">${cleanD || ''}</span></td>`;
+          const badgeCls = isFullWeekAl && cleanD ? 'st-al' : getDutyBadgeClass(cleanD);
+          const todayCellCls = dayIsTodayFlags[dIdx] ? 'col-today' : '';
+          html += `<td class="col-day ${todayCellCls}" onclick="editRosterCell(${rIdx}, ${dIdx})"><span class="duty-font cell-pill ${badgeCls}">${cleanD || ''}</span></td>`;
         });
         html += `<td class="col-edge" title="${staffName ? staffName + ' 下星期一 (' + nextMonStr + ')' : ''}"><span class="duty-font cell-pill ${getDutyBadgeClass(nextMonDuty)}">${nextMonDuty || '-'}</span></td>`;
         tr.innerHTML = html;
@@ -2144,6 +2268,7 @@
       const next = prompt(`修改第 ${rIdx + 1} 行同事姓名：`, weekObj.rows[rIdx].name || '');
       if (next !== null) {
         weekObj.rows[rIdx].name = next.trim();
+        weekObj.rows = normalizeWeekRowsNoEmptyWhenFull(weekObj.rows);
         learnFromVerifiedWeek(weekObj.rows);
         saveState();
         renderAll();
@@ -2458,7 +2583,7 @@
       `;
     }
 
-    // ==================== AI 圖片辨析 ====================
+    // ==================== AI 圖片辨析（嚴格跟從上傳圖片的行號，夠21人無空行） ====================
     let pendingUploadFiles = [];
     let verifiedImportPayloads = [];
     const UNIQUE_SHIFT_CODES = new Set(['Aa', 'Ac', 'Ad', 'Ae', '9-6', '9/5', 'Pa', 'Pe', 'Pu', 'Ec', 'Ed', 'Na', 'Ne']);
@@ -2561,7 +2686,7 @@
         for (let i = 0; i < pendingUploadFiles.length; i++) {
           const file = pendingUploadFiles[i];
           document.getElementById('ocr-step-title').textContent = `分析第 ${i + 1} / ${pendingUploadFiles.length} 張相片...`;
-          appendOcrLog('優化相片解像度（雙字母崗位、[] 括號與 OW 識別模式）...');
+          appendOcrLog('優化相片解像度（嚴格對齊圖片行號 ＋ 雙字母崗位識別）...');
           const base64Data = await resizeImageToBase64(file, 2200, 0.92);
           const thumbBase64 = await resizeImageToBase64(file, 800, 0.70);
 
@@ -2574,39 +2699,25 @@
           const cleanMonday = getMondayOfDate(extractedJson.monday);
           extractedJson.monday = cleanMonday;
 
-          const expectedRoster = getExpectedRosterForWeek(cleanMonday);
-          const emptyRowObj = expectedRoster.find(x => !x.name);
-          appendOcrLog(`識別週一：${cleanMonday}（空白分隔列為第 ${emptyRowObj ? emptyRowObj.row : '-'} 行）`);
-
-          const mappedRows = expectedRoster.map(exp => {
-            if (!exp.name) {
-              return { row: exp.row, name: '', duties: ['', '', '', '', '', '', ''] };
-            }
-            let matched = extractedJson.rows.find(r => (r.name || '').trim() === exp.name);
-            if (!matched && exp.row <= 21) {
-              matched = extractedJson.rows.find(r => Number(r.row) === exp.row && (r.duties || []).some(d => d && d.trim()));
-            }
-            const cleanDuties = matched && Array.isArray(matched.duties)
-              ? matched.duties.slice(0, 7).map(d => sanitizeTwoLetterDutyCode(d))
-              : ['', '', '', '', '', '', ''];
-            return { row: exp.row, name: exp.name, duties: cleanDuties };
-          });
-
-          const mappedNames = new Set(mappedRows.map(r => r.name).filter(Boolean));
-          extractedJson.rows.forEach(r => {
-            const rName = (r.name || '').trim();
-            const rDuties = (r.duties || []).slice(0, 7).map(d => sanitizeTwoLetterDutyCode(d));
-            const hasAnyDuty = rDuties.some(d => d !== '');
-            if (rName && !mappedNames.has(rName) && hasAnyDuty) {
-              mappedNames.add(rName);
-              mappedRows.push({
-                row: mappedRows.length + 1,
+          // 2. 嚴格跟從上傳圖片的行號與順序提取；若滿 21 人則不保留任何空白列
+          let orderedRows = extractedJson.rows
+            .map((r, idx) => {
+              const rName = (r.name || '').trim();
+              const rDuties = Array.isArray(r.duties)
+                ? r.duties.slice(0, 7).map(d => sanitizeTwoLetterDutyCode(d))
+                : ['', '', '', '', '', '', ''];
+              while (rDuties.length < 7) rDuties.push('');
+              return {
+                row: Number(r.row) || (idx + 1),
                 name: rName,
                 duties: rDuties
-              });
-            }
-          });
-          extractedJson.rows = mappedRows;
+              };
+            })
+            .sort((a, b) => a.row - b.row);
+
+          orderedRows = normalizeWeekRowsNoEmptyWhenFull(orderedRows);
+          extractedJson.rows = orderedRows;
+          appendOcrLog(`識別週一：${cleanMonday}（共讀取 ${orderedRows.filter(x => x.name).length} 人，嚴格按原圖行號排列）`);
 
           const validationIssues = detectValidationIssuesInRows(extractedJson.rows);
           if (validationIssues.length) {
@@ -2645,20 +2756,22 @@
 
     async function callGeminiGridExtractWithFallback(apiKey, base64Data) {
       const knownNamesStr = ALL_KNOWN_STAFF.map(x => x.id ? `${x.name}(${x.id})` : x.name).join('、');
-      const prompt = `請嚴格依照圖片中的黑色表格格線提取更期表（包含全部同事；若圖片中出現「謝小曼」則一併讀取，若圖片中沒有「謝小曼」則不要憑空捏造），對照員工姓名與 Staff ID（${knownNamesStr}）：
+      const prompt = `請嚴格依照圖片中的黑色表格格線，**由上至下完全跟從上傳圖片的實際行號（row 1, 2, 3...）**提取更期表，對照員工姓名與 Staff ID（${knownNamesStr}）：
 1. monday 填寫表格頂部「星期一」日期（YYYY-MM-DD）。跳過「職級」「公眾假期」欄，只取「星期一」至「星期日」7 欄。
-2. 【方括號 [] 規則】
+2. 【嚴格跟從圖片行號與無空行規則】
+   - 必須完全依照圖片上每一行從上到下的順序輸出對應的 row（1, 2, 3...），絕對不可自行調換行次或套用其他週次的排序！
+   - 若圖片中有 21 位同事（無空白列），請輸出全部 21 行（row 1 至 21），不要插入任何空行。
+3. 【方括號 [] 規則】
    - 僅當圖片該格子內**實際印有或寫有**方括號 [ ] 時（例如圖片上寫著 [11-8] 或 [Pa]），才保留方括號輸出 "[11-8]" 或 "[Pa]"。
    - 若圖片格子內沒有方括號（例如只寫著 11-8 或 Pa），則直接輸出 "11-8" 或 "Pa"，絕對不可自行加上方括號！
-3. 【放假簡寫規則】若格子內為 "WO OWING"，請直接簡化輸出為 "OW"。
-4. 【最重要規則：除 O 之外，所有字母更期必須有兩個字母！】
+4. 【放假簡寫規則】若格子內為 "WO OWING"，請直接簡化輸出為 "OW"。
+5. 【最重要規則：除 O 之外，所有字母更期必須有兩個字母！】
    - 絕對不可只輸出單字母 "A"、"P"、"E" 或 "N"！每格更期大寫字母後面一定跟著一個代表崗位的小寫字母：
      * 早更（每日最少 4 人）：Aa, Ac, Ad, Ae
      * 午更（每日最少 4 人）：Pa, Pe, Pu, Ec, Ed
      * 夜更（每日 2 人）：Na, Ne（第二個字母是小寫 a 或 e）
      * 中更：9-6（或 9/5）、11-8（或 11/8）
      * 假期：O（單字母休假）、WO、OW、AL、SH、PH、SL、CL
-5. 【姓名與空白列規則】只輸出圖片中真實存在的同事；若表中有 1 行為全空白分隔列，該空行輸出 "name":"","duties":["","","","","","",""]。
 6. 忽略右上角小字上標（如 U, D, C, E, T, RAT, (1) 等）。
 只輸出純 JSON：{"monday":"2026-11-23","rows":[{"row":1,"name":"黃雅倩","duties":["Ac","Pa","Pu","O","WO","11-8","Ae"]}]}`;
 
@@ -2681,7 +2794,7 @@
     }
 
     async function callGeminiSelfVerifyAndFix(apiKey, base64Data, currentJson, issuesList) {
-      const prompt = `【緊急修正】以下格子的更期辨識不完整（除 O 之外，所有字母更期必須有兩個字母，例如 Aa, Ac, Ad, Ae, Pa, Pe, Pu, Ec, Ed, Na, Ne；僅原圖有方括號才保留 [ ]，否則不加括號；WO OWING 統一寫成 OW）：
+      const prompt = `【緊急修正】以下格子的更期辨識不完整（除 O 之外，所有字母更期必須有兩個字母，例如 Aa, Ac, Ad, Ae, Pa, Pe, Pu, Ec, Ed, Na, Ne；僅原圖有方括號才保留 [ ]，否則不加括號；WO OWING 統一寫成 OW；必須嚴格維持原圖 row 行號順序）：
 問題清單：${issuesList.join('；')}
 請重新放大查看原圖對應格子的第二個小寫字母（a, c, d, e, u）。
 待修正 JSON：${JSON.stringify(currentJson)}
@@ -2713,11 +2826,7 @@
     function confirmImportAllWeeks() {
       verifiedImportPayloads.forEach(payload => {
         const monday = getMondayOfDate(payload.monday);
-        const normalizedRows = (payload.rows || []).map((item, idx) => ({
-          row: item.row || (idx + 1),
-          name: (item.name || '').trim(),
-          duties: (item.name || '').trim() ? (item.duties || []).slice(0, 7).map(d => sanitizeTwoLetterDutyCode(d)) : ['', '', '', '', '', '', '']
-        }));
+        const normalizedRows = normalizeWeekRowsNoEmptyWhenFull(payload.rows || []);
         appState.weeks[monday] = { monday, rows: normalizedRows };
         appState.currentWeekMonday = monday;
         learnFromVerifiedWeek(normalizedRows);
@@ -2729,7 +2838,8 @@
       saveState();
       renderAll();
       closeUploadModal();
-      alert(`已成功匯入 ${verifiedImportPayloads.length} 張更期表至 DutyList 並自動備份至雲端！`);
+      const cloudNote = appState.autoCloudUpload ? '並已自動上傳至雲端！' : '（目前自動上傳雲端已關閉，如需備份可於設定開啟或按立即上傳）';
+      alert(`已成功匯入 ${verifiedImportPayloads.length} 張更期表至 DutyList ${cloudNote}`);
     }
 
     function resizeImageToBase64(file, maxDim, quality) {
