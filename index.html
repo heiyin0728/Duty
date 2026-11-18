@@ -116,9 +116,9 @@
     .mid-grid { padding: 6px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
     @media (min-width: 640px) { .mid-grid { grid-template-columns: repeat(4, 1fr); } }
 
-    /* OnDuty 卡片內的名字嚴格對齊 + 實時狀態與崗位標籤 */
+    /* OnDuty 卡片內的名字嚴格對齊 + 自動分行簡化工作位置與實時狀態標籤 */
     .person-chip {
-      display: flex; align-items: center; justify-content: space-between; gap: 4px;
+      display: flex; flex-direction: column; gap: 3px;
       background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 5px 7px; cursor: pointer;
       transition: background-color 0.15s, border-color 0.15s;
     }
@@ -134,6 +134,9 @@
     .person-chip.hl {
       box-shadow: 0 0 0 2px #f59e0b;
     }
+    .chip-top-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 4px; width: 100%;
+    }
     .chip-name-wrap {
       display: flex; align-items: center; min-width: 0; flex: 1;
     }
@@ -144,18 +147,22 @@
     .chip-staff-name {
       font-weight: 700; color: #1e293b; white-space: nowrap;
     }
-    .chip-right-wrap {
-      display: flex; align-items: center; gap: 3px; flex-shrink: 1; min-width: 0; justify-content: flex-end; flex-wrap: wrap;
+    .chip-badges-wrap {
+      display: flex; align-items: center; gap: 3px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end;
+    }
+    .chip-sub-row {
+      display: flex; align-items: center; flex-wrap: wrap; gap: 3px; padding-left: 19px;
     }
     .status-mini-pill {
-      font-size: 9px; font-weight: 800; padding: 1px 4px; border-radius: 4px; white-space: nowrap;
+      font-size: 10px; font-weight: 800; padding: 1px 5px; border-radius: 4px; white-space: nowrap; line-height: 1.25;
     }
-    .status-mini-pill.not-started { background: #dbeafe; color: #1d4ed8; }
-    .status-mini-pill.meal { background: #fef3c7; color: #b45309; }
+    .status-mini-pill.not-started { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .status-mini-pill.meal { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
     .status-mini-pill.off-work { background: #e2e8f0; color: #475569; }
+    .status-mini-pill.relief { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
     .status-mini-pill.zone {
       background: #ccfbf1; color: #115e59; border: 1px solid #5eead4;
-      white-space: normal; line-height: 1.15; text-align: right; max-width: 112px;
+      white-space: normal; word-break: break-word; line-height: 1.2;
     }
 
     .code-badge {
@@ -344,7 +351,8 @@
         <div class="legend-bar">
           <span><span class="legend-dot" style="background:#dbeafe;border:1px solid #93c5fd;"></span>未上班</span>
           <span><span class="legend-dot" style="background:#fef3c7;border:1px solid #fbbf24;"></span>食飯中</span>
-          <span><span class="legend-dot" style="background:#ccfbf1;border:1px solid #5eead4;"></span>實時崗位</span>
+          <span><span class="legend-dot" style="background:#ffedd5;border:1px solid #fdba74;"></span>替食飯</span>
+          <span><span class="legend-dot" style="background:#ccfbf1;border:1px solid #5eead4;"></span>工作位置</span>
           <span><span class="legend-dot" style="background:#e2e8f0;border:1px solid #94a3b8;"></span>已放工</span>
         </div>
       </div>
@@ -732,7 +740,6 @@
     const ALARM_STORAGE_KEY = 'qeh_aed_alarms_v7';
     const CLOUD_DB_ENDPOINT = '/api/duty-db';
 
-    // 總共 21 行人員輪轉序列（21人滿編時不留空行）
     const MASTER_21_ROTATION = [
       { id: '175542', name: '黃詩琪' },
       { id: '162684', name: '李嘉琪' },
@@ -891,14 +898,17 @@
       return formatLocalDate(d);
     }
 
+    // 2. 根據實時鐘點自動判斷屬於哪一個 Duty 頁面：
+    // A Duty: 07:00 - 15:48 (420 - 948)
+    // P Duty: 15:48 - 23:03 (948 - 1383)
+    // N Duty: 23:03 - 07:00 (1383 - 1440 及 0 - 420)
     function getSlotByCurrentClockTime(dateObj = new Date()) {
       const mins = dateObj.getHours() * 60 + dateObj.getMinutes();
-      if (mins >= 7 * 60 && mins < 13 * 60 + 45) return 'A';
-      if (mins >= 13 * 60 + 45 && mins < 22 * 60 + 30) return 'P';
+      if (mins >= 420 && mins < 948) return 'A';
+      if (mins >= 948 && mins < 1383) return 'P';
       return 'N';
     }
 
-    // 即時更新 OnDuty 頂部「今日日期 ＋ 實時鐘點（含秒數）」並自動轉換 A/P/N Duty 頁面
     function updateLiveClockAndAutoSlot(forceAutoSlot = false) {
       const now = new Date();
       const todayStr = formatLocalDate(now);
@@ -936,7 +946,23 @@
       renderTodayView();
     }
 
-    // 7. 取得 Aa / Ac / Ad / Ae 在各時段的簡化崗位標籤（比照食飯中方式顯示）
+    // 1. 替食飯時段判斷：
+    // 11-8: 1200-1300 替 Ac, 1900-2000 替 Ec
+    // Aa: 1300-1400 替 Ad
+    // Pa: 2000-2100 替 Ed
+    function getMealReliefLabel(normCode, mins) {
+      if (normCode === '11/8' || normCode === '11-8') {
+        if (mins >= 720 && mins < 780) return '替 Ac';
+        if (mins >= 1140 && mins < 1200) return '替 Ec';
+      } else if (normCode === 'Aa') {
+        if (mins >= 780 && mins < 840) return '替 Ad';
+      } else if (normCode === 'Pa') {
+        if (mins >= 1200 && mins < 1260) return '替 Ed';
+      }
+      return '';
+    }
+
+    // 3. 取得各更種簡化工作位置先後次序（食飯時不顯示工作位置）
     function getRealtimeZoneLabel(code, selectedDateStr) {
       const todayStr = getTodayLocalStr();
       if (selectedDateStr !== todayStr) return '';
@@ -945,27 +971,58 @@
       const mins = now.getHours() * 60 + now.getMinutes();
 
       if (norm === 'Aa') {
-        if (mins >= 420 && mins < 480) return '換垃圾袋針盒/O房';   // 07:00 - 08:00
-        if (mins >= 780 && mins < 840) return 'R房';                 // 13:00 - 14:00
+        if (mins >= 420 && mins < 480) return '加O房/物資';                // 0700-0800
+        if (mins >= 780 && mins < 840) return 'R房/Cub';                   // 1300-1400
+        if (mins >= 420 && mins < 903) return 'Cub/R房';                   // 其他時間
       } else if (norm === 'Ac') {
-        if (mins >= 420 && mins < 480) return '接電話/H2 /+/-ALG';  // 07:00 - 08:00
-        if (mins >= 480 && mins < 948) return '診症格/O房/美好/負壓房/+/-G1/H2'; // 08:00 後
+        if (mins >= 420 && mins < 480) return '電話/H2/ALG';               // 0700-0800
+        if (mins >= 900 && mins < 930) return 'Cub/ALG/G1H2';              // 1500-1530
+        if (mins >= 480 && mins < 948) return 'Cub/O房/美好/Neg/ALG';      // 0800後其他時間
       } else if (norm === 'Ad') {
-        if (mins >= 420 && mins < 948) return 'R房';                 // 07:00 後一直顯示為 R房
+        if (mins >= 420 && mins < 948) return 'R房/Cub';                   // 0700後一直顯示
       } else if (norm === 'Ae') {
-        if (mins >= 420 && mins < 480) return 'G1';                  // 07:00 - 08:00
-        if (mins >= 510 && mins < 540) return 'Non24';               // 08:30 - 09:00
-        if (mins >= 600 && mins < 903) return 'G1/H2/診症格';        // 10:00 後
+        if (mins >= 420 && mins < 480) return 'G1';                        // 0700-0800
+        if (mins >= 510 && mins < 540) return 'Non24';                     // 0830-0900
+        if (mins >= 600 && mins < 903) return 'G1H2/Cub';                  // 1000後
+        if (mins >= 420 && mins < 903) return 'Cub/G1H2';                  // 其他時間 (0800-0830, 0900-1000)
+      } else if (norm === 'Pa') {
+        if (mins >= 825 && mins < 840) return 'G1';                        // 1345-1400
+        if (mins >= 840 && mins < 930) return '物資';                      // 1400-1530
+        if (mins >= 1200 && mins < 1353) return 'R房/Cub';                 // 2000後
+      } else if (norm === 'Ec') {
+        if (mins >= 930 && mins < 960) return '電話/Cub/美好/ALG/G1H2';    // 1530-1600
+        if (mins >= 855 && mins < 1383) return 'Cub/美好/ALG';             // 其他時間
+      } else if (norm === 'Pe') {
+        if (mins >= 825 && mins < 840) return 'H2';                        // 1345-1400
+        if (mins >= 840 && mins < 930) return '物資';                      // 1400-1530
+        if (mins >= 930 && mins < 1020) return 'G1H2/Cub';                 // 1530-1700
+        if (mins >= 1140 && mins < 1200) return 'G1H2';                    // 1900-2000
+        if (mins >= 825 && mins < 1353) return 'G1H2/Cub';                 // 其他時間
+      } else if (norm === 'Ed') {
+        if (mins >= 855 && mins < 1383) return 'R房/Cub';                  // 1415後
+      } else if (norm === 'Pu') {
+        if (mins >= 825 && mins < 1353) return 'Cub';                      // 顯示為Cub
+      } else if (norm === 'Na') {
+        if (mins >= 1350 || mins < 438) return '電話/Cub/R房';             // 2230後
+      } else if (norm === 'Ne') {
+        if (mins >= 1350 && mins < 1380) return 'G1H2/ALG';                // 2230-2300
+        if (mins >= 300 && mins < 438) return 'G1H2/ALG/Cub';              // 0500後
+        if (mins >= 1380 || mins < 300) return 'Cub/R房/G1H2';             // 2300後
+      } else if (norm === '9/5' || norm === '9-6') {
+        if (mins >= 540 && mins < 1068) return 'Cub';                      // 顯示為Cub
+      } else if (norm === '11/8' || norm === '11-8') {
+        if (mins >= 840 && mins < 900) return 'Cal機/清潔';                // 1400顯示為Cal機/清潔
+        if (mins >= 675 && mins < 1203) return 'Cub';                      // 其他時間顯示Cub
       }
       return '';
     }
 
-    // 判斷同事卡片在選取日期與目前時鐘時間下的即時狀態（未上班 / 食飯中 / 已放工 / 實時崗位）
+    // 1. 判斷同事在選取日期與目前時鐘時間下的即時狀態（未上班 / 食飯中 / 替食飯 / 工作位置 / 已放工）
     function evaluateStaffLiveStatus(code, selectedDateStr, isTonightNextNight = false) {
       const todayStr = getTodayLocalStr();
       const norm = normalizeDutyCode(code);
       const spec = DUTY_SPEC_MAP[norm];
-      if (!spec) return { state: 'normal', label: '', zoneLabel: '', cssClass: '' };
+      if (!spec) return { state: 'normal', label: '', reliefLabel: '', zoneLabel: '', cssClass: '' };
 
       const now = new Date();
       const nowMins = now.getHours() * 60 + now.getMinutes();
@@ -973,42 +1030,49 @@
       if (isTonightNextNight) {
         if (selectedDateStr === todayStr) {
           if (nowMins < spec.workStartMin) {
-            return { state: 'not-started', label: '未上班', zoneLabel: '', cssClass: 'st-not-started' };
+            return { state: 'not-started', label: '未上班', reliefLabel: '', zoneLabel: '', cssClass: 'st-not-started' };
           }
-          return { state: 'working', label: '', zoneLabel: '', cssClass: '' };
+          const zoneLabel = getRealtimeZoneLabel(code, selectedDateStr);
+          return { state: 'working', label: '', reliefLabel: '', zoneLabel, cssClass: '' };
         }
-        return { state: 'normal', label: '', zoneLabel: '', cssClass: '' };
+        return { state: 'not-started', label: '未上班', reliefLabel: '', zoneLabel: '', cssClass: 'st-not-started' };
       }
 
       if (selectedDateStr > todayStr) {
-        return { state: 'not-started', label: '未上班', zoneLabel: '', cssClass: 'st-not-started' };
+        return { state: 'not-started', label: '未上班', reliefLabel: '', zoneLabel: '', cssClass: 'st-not-started' };
       }
       if (selectedDateStr < todayStr) {
-        return { state: 'off-work', label: '已放工', zoneLabel: '', cssClass: 'st-off-work' };
+        return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', cssClass: 'st-off-work' };
       }
 
+      // 昨夜起更的 N Duty（當日凌晨 00:00 至 07:18 仍在當值，07:18 後已放工）
       if (isNightNCode(code)) {
-        if (nowMins >= spec.mealStartMin && nowMins < spec.mealEndMin) {
-          return { state: 'meal', label: '食飯中', zoneLabel: '', cssClass: 'st-meal' };
-        }
         if (nowMins >= spec.workEndMin) {
-          return { state: 'off-work', label: '已放工', zoneLabel: '', cssClass: 'st-off-work' };
+          return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', cssClass: 'st-off-work' };
         }
-        return { state: 'working', label: '', zoneLabel: '', cssClass: '' };
+        if (nowMins >= spec.mealStartMin && nowMins < spec.mealEndMin) {
+          // 食飯時不顯示工作位置
+          return { state: 'meal', label: '食飯中', reliefLabel: '', zoneLabel: '', cssClass: 'st-meal' };
+        }
+        const zoneLabel = getRealtimeZoneLabel(code, selectedDateStr);
+        return { state: 'working', label: '', reliefLabel: '', zoneLabel, cssClass: '' };
       }
 
       if (nowMins < spec.workStartMin) {
-        return { state: 'not-started', label: '未上班', zoneLabel: '', cssClass: 'st-not-started' };
+        return { state: 'not-started', label: '未上班', reliefLabel: '', zoneLabel: '', cssClass: 'st-not-started' };
       }
       if (nowMins >= spec.workEndMin) {
-        return { state: 'off-work', label: '已放工', zoneLabel: '', cssClass: 'st-off-work' };
+        return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', cssClass: 'st-off-work' };
       }
 
-      const zoneLabel = getRealtimeZoneLabel(code, selectedDateStr);
+      // 自己食飯時間：食飯時不顯示工作位置
       if (nowMins >= spec.mealStartMin && nowMins < spec.mealEndMin) {
-        return { state: 'meal', label: '食飯中', zoneLabel, cssClass: 'st-meal' };
+        return { state: 'meal', label: '食飯中', reliefLabel: '', zoneLabel: '', cssClass: 'st-meal' };
       }
-      return { state: 'working', label: '', zoneLabel, cssClass: '' };
+
+      const reliefLabel = getMealReliefLabel(norm, nowMins);
+      const zoneLabel = getRealtimeZoneLabel(code, selectedDateStr);
+      return { state: 'working', label: '', reliefLabel, zoneLabel, cssClass: '' };
     }
 
     function unwrapBracketDuty(code) {
@@ -1046,7 +1110,6 @@
       return /^[A-Za-z]$/.test(inner) && inner.toUpperCase() !== 'O';
     }
 
-    // 2. 整理週列表：當有 21 人（或以上）時，自動移除空白分隔列並重新連續編號；不足 21 人時保留完整輪轉
     function normalizeWeekRowsNoEmptyWhenFull(rows) {
       const validRows = (rows || []).filter(r => (r.name || '').trim() !== '');
       if (validRows.length >= 21) {
@@ -1152,7 +1215,7 @@
 
       const nowStr = getTodayLocalStr();
       const todayPicker = document.getElementById('today-date-picker');
-      todayPicker.value = appState.weeks[getMondayOfDate(nowStr)] ? nowStr : nowStr;
+      todayPicker.value = nowStr;
 
       updateLiveClockAndAutoSlot(true);
 
@@ -1183,7 +1246,6 @@
       } catch (e) {}
     }
 
-    // 4. 儲存時檢查「自動上傳雲端」開關狀態
     function saveState() {
       appState.lastCloudUpdatedAt = new Date().toISOString();
       saveLocalOnly();
@@ -1195,7 +1257,6 @@
       if (appState.autoBackup) performManualBackup(true);
     }
 
-    // 4. 自動上傳雲端開關：開啟時彈出確認詢問
     function toggleAutoCloudUpload(checkboxEl) {
       const wantEnable = checkboxEl.checked;
       if (wantEnable) {
@@ -1318,7 +1379,6 @@
     }
 
     function startRealtimeCloudSyncWatcher() {
-      // 每秒即時更新 OnDuty 頁面今日日期、實時時鐘，並在到點時自動切換 A / P / N Duty
       setInterval(() => {
         updateLiveClockAndAutoSlot(false);
       }, 1000);
@@ -1345,7 +1405,6 @@
         renderRosterTable();
       });
 
-      // 每 15 秒重新計算一次實時「未上班 / 食飯中 / 實時崗位 / 已放工」標籤
       setInterval(() => {
         const todayView = document.getElementById('view-today');
         if (todayView && !todayView.classList.contains('hidden')) {
@@ -1850,26 +1909,32 @@
       renderDutyScheduleDetails(activeWorkingStaff, allDayStaffPool, dateStr);
     }
 
-    // 7. 卡片內同時以最簡化徽章顯示「食飯中 / 未上班 / 已放工」以及 Aa / Ac / Ad / Ae 的即時崗位分工
-    function createDutyPersonChip(rowNum, name, code, theme, liveStatus = { state: 'normal', label: '', zoneLabel: '', cssClass: '' }) {
+    // 1 & 3. A / P / N / 中更卡片內自動分行顯示簡化工作位置、替食飯與未上班/食飯中/已放工（食飯時不顯示工作位置）
+    function createDutyPersonChip(rowNum, name, code, theme, liveStatus = { state: 'normal', label: '', reliefLabel: '', zoneLabel: '', cssClass: '' }) {
       const isHighlighted = appState.highlightedStaff === name;
       const statusBadgeHtml = liveStatus && liveStatus.label
         ? `<span class="status-mini-pill ${liveStatus.state}">${liveStatus.label}</span>`
         : '';
-      const zoneBadgeHtml = liveStatus && liveStatus.zoneLabel
+      const reliefBadgeHtml = liveStatus && liveStatus.reliefLabel
+        ? `<span class="status-mini-pill relief">${liveStatus.reliefLabel}</span>`
+        : '';
+      const zoneBadgeHtml = (liveStatus && liveStatus.state !== 'meal' && liveStatus.zoneLabel)
         ? `<span class="status-mini-pill zone">${liveStatus.zoneLabel}</span>`
         : '';
+      const hasSubRow = Boolean(statusBadgeHtml || reliefBadgeHtml || zoneBadgeHtml);
+
       return `
         <div onclick="highlightStaff('${name}')" class="person-chip ${liveStatus.cssClass || ''} ${isHighlighted ? 'hl' : ''}">
-          <div class="chip-name-wrap">
-            <span class="chip-row-num">${rowNum}</span>
-            <span class="chip-staff-name">${name}</span>
+          <div class="chip-top-row">
+            <div class="chip-name-wrap">
+              <span class="chip-row-num">${rowNum}</span>
+              <span class="chip-staff-name">${name}</span>
+            </div>
+            <div class="chip-badges-wrap">
+              <span class="duty-font code-badge ${theme}">${code}</span>
+            </div>
           </div>
-          <div class="chip-right-wrap">
-            ${zoneBadgeHtml}
-            ${statusBadgeHtml}
-            <span class="duty-font code-badge ${theme}">${code}</span>
-          </div>
+          ${hasSubRow ? `<div class="chip-sub-row">${statusBadgeHtml}${reliefBadgeHtml}${zoneBadgeHtml}</div>` : ''}
         </div>
       `;
     }
@@ -1987,8 +2052,9 @@
               <div>
                 <strong style="font-size:13px;">${person.name}</strong>
                 <span class="duty-font code-badge ${isIncompleteSingleLetter(person.code) ? 'warn' : 'teal'}" style="margin-left:4px;">${person.code}</span>
-                ${liveSt.zoneLabel ? `<span class="status-mini-pill zone" style="margin-left:4px;">${liveSt.zoneLabel}</span>` : ''}
                 ${liveSt.label ? `<span class="status-mini-pill ${liveSt.state}" style="margin-left:4px;">${liveSt.label}</span>` : ''}
+                ${liveSt.reliefLabel ? `<span class="status-mini-pill relief" style="margin-left:4px;">${liveSt.reliefLabel}</span>` : ''}
+                ${(liveSt.state !== 'meal' && liveSt.zoneLabel) ? `<span class="status-mini-pill zone" style="margin-left:4px;">${liveSt.zoneLabel}</span>` : ''}
                 <span style="font-size:11px;color:#334155;font-weight:700;margin-left:4px;">${spec.work}</span>
               </div>
               <div class="flex-row">
@@ -2135,7 +2201,6 @@
         const staffName = (r.name || '').trim();
         if (!staffName) tr.style.background = '#f8fafc';
 
-        // 1. 檢查該同事本週是否有 5 日 AL；若有，全星期都用同 AL 同色（st-al）
         const alCountInWeek = (r.duties || []).filter(d => unwrapBracketDuty(d).toUpperCase() === 'AL').length;
         const isFullWeekAl = (alCountInWeek >= 5);
 
@@ -2583,7 +2648,7 @@
       `;
     }
 
-    // ==================== AI 圖片辨析（嚴格跟從上傳圖片的行號，夠21人無空行） ====================
+    // ==================== AI 圖片辨析 ====================
     let pendingUploadFiles = [];
     let verifiedImportPayloads = [];
     const UNIQUE_SHIFT_CODES = new Set(['Aa', 'Ac', 'Ad', 'Ae', '9-6', '9/5', 'Pa', 'Pe', 'Pu', 'Ec', 'Ed', 'Na', 'Ne']);
@@ -2699,7 +2764,6 @@
           const cleanMonday = getMondayOfDate(extractedJson.monday);
           extractedJson.monday = cleanMonday;
 
-          // 2. 嚴格跟從上傳圖片的行號與順序提取；若滿 21 人則不保留任何空白列
           let orderedRows = extractedJson.rows
             .map((r, idx) => {
               const rName = (r.name || '').trim();
