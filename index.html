@@ -217,11 +217,9 @@
     .sticky-col-1 { position: sticky; left: 0; background: #fff; z-index: 2; width: 22px; color: #64748b; font-size: 10px; }
     .sticky-col-2 { position: sticky; left: 22px; background: #fff; z-index: 2; width: 64px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     th.sticky-col-1, th.sticky-col-2 { background: #f1f5f9; z-index: 3; }
-    .name-cell-flex {
-      display: flex; align-items: center; justify-content: center; gap: 1px; padding: 0 1px;
-    }
     .col-edge { background: #fffbeb !important; width: 36px; }
     .col-day { width: 36px; cursor: pointer; }
+    .col-day:hover { background: #f0fdfa; }
     th.col-today { background: #0f766e !important; color: #fff !important; }
     td.col-today { background: #ecfdf5 !important; border-left: 2px solid #0d9488 !important; border-right: 2px solid #0d9488 !important; }
     .cell-pill { display: inline-block; width: 100%; padding: 2px 0; border-radius: 4px; }
@@ -234,7 +232,7 @@
     .st-n { background: #eef2ff; color: #3730a3; }
     .st-single-warn { background: #fef3c7; color: #b45309; border: 1px dashed #f59e0b; }
 
-    /* 2. 21 行預測更期表（無 sticky 重繪延遲、全幅緊湊不需左右滑動、十字形 Highlight） */
+    /* 21 行預測更期表（十字形 Highlight） */
     table.pred-compact-tbl {
       width: 100%; border-collapse: collapse; text-align: center;
       font-size: 10px; table-layout: fixed; background: #fff;
@@ -255,7 +253,7 @@
       display: inline-block; width: 94%; padding: 1px 0; border-radius: 3px; font-size: 9.5px; line-height: 1.25;
     }
 
-    /* 十字形 Highlight（橫向選中行 ＋ 直向選中日期欄） */
+    /* 十字形 Highlight */
     tr.pred-row-hl td {
       background: #dcfce7 !important;
       border-top: 2px solid #0d9488 !important;
@@ -276,7 +274,6 @@
       border-left: 2px solid #0d9488 !important;
       border-right: 2px solid #0d9488 !important;
     }
-    /* 十字交叉中心格（選中行 × 選中日期） */
     tr.pred-row-hl td.pred-col-hl {
       background: #5eead4 !important;
       box-shadow: inset 0 0 0 1px #0f766e;
@@ -286,6 +283,23 @@
       color: #fff !important;
       font-weight: 800;
     }
+
+    /* 7. 唯讀規律樣本表細小縮圖卡片（置於21行預測更期表旁空白位置） */
+    .sample-mini-thumb-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #fff; border: 1px solid #5eead4; border-radius: 7px;
+      padding: 3px 7px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      transition: transform 0.1s, border-color 0.15s;
+    }
+    .sample-mini-thumb-btn:hover { border-color: #0f766e; background: #f0fdfa; }
+    .sample-mini-grid-icon {
+      display: grid; grid-template-columns: repeat(7, 3px); gap: 1px;
+      padding: 2px; background: #e2e8f0; border-radius: 3px;
+    }
+    .sample-mini-grid-icon span {
+      display: block; width: 3px; height: 2px; background: #0f766e;
+    }
+    .sample-mini-grid-icon span.off { background: #f59e0b; }
 
     /* 雲端原圖卡片 */
     .cloud-img-card {
@@ -326,6 +340,28 @@
     .day7-card { border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; padding: 5px 2px; }
     .day7-card.hol { border-color: #fda4af; background: #fff1f2; }
     .day7-card.target { border: 2px solid #0d9488; background: #f0fdfa; box-shadow: 0 1px 3px rgba(13,148,136,0.2); }
+
+    /* 5. 更期快速選擇器彈窗按鈕網格 */
+    .duty-picker-group-title {
+      font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;
+    }
+    .duty-picker-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+    }
+    .duty-opt-btn {
+      padding: 8px 4px; border-radius: 8px; border: 1px solid #cbd5e1;
+      background: #f8fafc; color: #0f172a; font-size: 13px; font-weight: 800;
+      display: flex; flex-direction: column; align-items: center; gap: 1px;
+    }
+    .duty-opt-btn:hover, .duty-opt-btn:active {
+      border-color: #0f766e; background: #ccfbf1; color: #115e59;
+    }
+    .duty-opt-btn.current-opt {
+      border: 2px solid #0f766e; background: #f0fdfa; color: #0f766e;
+    }
+    .duty-opt-btn small {
+      font-size: 9px; font-weight: 600; color: #64748b;
+    }
 
     /* 彈窗 */
     .modal-backdrop {
@@ -375,7 +411,7 @@
     </nav>
   </header>
 
-  <!-- 響鈴觸發橫幅（所有裝置通用） -->
+  <!-- 響鈴觸發橫幅 -->
   <div id="alarm-ringing-banner" class="alarm-banner hidden">
     <span id="alarm-ringing-text">⏰ 鬧鐘提醒！</span>
     <button onclick="stopAlarmSound()" class="btn-sm" style="background:#0f172a;color:#fff;">關閉鬧鐘</button>
@@ -385,7 +421,6 @@
     <!-- ==================== 分頁 1：OnDuty ==================== -->
     <section id="view-today" style="display:flex;flex-direction:column;gap:8px;">
       <div class="card card-pad" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-        <!-- 實時今日日期與每秒跳動時鐘 -->
         <div class="flex-center">
           <span id="live-today-clock-badge" style="font-size:11px;color:#0f766e;font-weight:800;background:#f0fdfa;border:1px solid #5eead4;padding:3px 9px;border-radius:6px;font-variant-numeric:tabular-nums;">今日：-- ｜ 現時：--:--:--</span>
           <button onclick="jumpToRealToday()" class="btn-sm" style="font-size:11px;padding:3px 7px;background:#ecfdf5;color:#065f46;border-color:#6ee7b7;">回今日</button>
@@ -414,7 +449,7 @@
         </div>
       </div>
 
-      <!-- 僅在 A Duty 頁面時，於 A / P Duty 上方顯示 Sleeping 同事卡片 -->
+      <!-- Sleeping 卡片（僅 A Duty 顯示） -->
       <div id="sleeping-shift-card" class="card hidden">
         <div class="panel-head bg-indigo">
           <div>Sleeping<span id="sleeping-shift-count" class="pill-count">0人</span></div>
@@ -423,7 +458,7 @@
         <div id="sleeping-shift-list" class="mid-grid"></div>
       </div>
 
-      <!-- 雙欄卡片：A Duty / P Duty / N Duty -->
+      <!-- 雙欄卡片 -->
       <div class="grid-2">
         <div class="card">
           <div class="panel-head bg-teal">
@@ -450,16 +485,16 @@
         </div>
       </div>
 
-      <!-- 1. 中更卡片（僅在 A Duty 與 P Duty 顯示，N Duty 自動隱藏） -->
+      <!-- 2. 中更卡片（僅 A/P Duty 顯示；11-8 在左、9-6 在右） -->
       <div id="mid-shift-card" class="card">
         <div class="panel-head bg-cyan">
-          <div>中更（9/5 / 11/8）<span id="mid-shift-count" class="pill-count">0人</span></div>
+          <div>中更（11-8 / 9-6）<span id="mid-shift-count" class="pill-count">0人</span></div>
           <span class="tag-mini">中更</span>
         </div>
         <div id="mid-shift-list" class="mid-grid"></div>
       </div>
 
-      <!-- 當日返放工、食飯、交接、未來7日更期與跨平台鬧鐘 -->
+      <!-- 當日返放工、食飯、交接與未來7日更期 -->
       <div class="card card-pad" style="display:flex;flex-direction:column;gap:8px;">
         <div class="toolbar" style="border-bottom:1px solid #f1f5f9;padding-bottom:6px;">
           <strong style="color:#115e59;font-size:13px;">當日返放工、食飯、交接與未來 7 日更期</strong>
@@ -478,11 +513,11 @@
         </div>
         <div class="flex-center">
           <button onclick="openUploadModal()" class="btn-sm btn-emerald">⬆ 上載更期</button>
-          <a href="https://docs.google.com/spreadsheets/d/17wae7UwtU93GSEDcq-tZUptj3mL2hEaxYcKSTvePD4/edit?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="btn-sm btn-blue">調更</a>
+          <!-- 3. 更新調更連結 -->
+          <a href="https://docs.google.com/spreadsheets/d/17wae7UwtU93GSEDcq-tZ1Uptj3mL2hEaxYcKSTvePD4/edit?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="btn-sm btn-blue">調更</a>
         </div>
       </div>
 
-      <!-- 支援左右滑動切換週次 -->
       <div id="roster-swipe-container" class="card table-wrap">
         <table class="roster-tbl">
           <thead>
@@ -550,13 +585,25 @@
         <!-- 預測結果與申請更期按鈕 -->
         <div id="predict-single-result" class="result-banner"></div>
 
-        <!-- 2. 21 行預測更期表（十字形 Highlight ＋ 緊湊全覽無需滑動 ＋ 流暢渲染） -->
+        <!-- 21 行預測更期表 ＋ 7. 規律樣本表細小縮圖放在右側空白位置 -->
         <div class="sub-box" style="background:#f8fafc;padding:6px;">
-          <div class="toolbar" style="margin-bottom:5px;">
-            <div>
+          <div class="toolbar" style="margin-bottom:5px;align-items:flex-start;">
+            <div style="flex:1;min-width:180px;">
               <strong id="predict-colleagues-title" style="color:#115e59;font-size:12px;">21 行預測更期表</strong>
               <div style="font-size:10px;color:#64748b;margin-top:1px;">十字亮綠標示所屬行數與目標日更期 · 點擊日期或行數即時切換</div>
             </div>
+            <!-- 7. 規律樣本表細小縮圖按鈕 -->
+            <button onclick="openSamplePatternViewerModal()" class="sample-mini-thumb-btn" title="點擊放大查看 21 行規律樣本表（唯讀）">
+              <div class="sample-mini-grid-icon" aria-hidden="true">
+                <span></span><span class="off"></span><span></span><span></span><span></span><span></span><span class="off"></span>
+                <span class="off"></span><span></span><span></span><span class="off"></span><span></span><span></span><span></span>
+                <span></span><span></span><span class="off"></span><span></span><span></span><span class="off"></span><span></span>
+              </div>
+              <div style="text-align:left;line-height:1.15;">
+                <div style="font-size:10px;font-weight:800;color:#115e59;">規律樣本表</div>
+                <div style="font-size:9px;color:#64748b;">點擊放大</div>
+              </div>
+            </button>
           </div>
           <div style="border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;background:#fff;">
             <table class="pred-compact-tbl">
@@ -580,7 +627,7 @@
           </div>
         </div>
 
-        <!-- 4. 兩星期更期月曆（卡片內刪除星期幾文字） -->
+        <!-- 兩星期更期月曆 -->
         <div id="predict-two-weeks-wrapper" class="two-week-cal-wrap">
           <div class="toolbar" style="margin-bottom:6px;">
             <strong id="predict-two-weeks-title" style="color:#115e59;font-size:12px;">兩星期更期月曆</strong>
@@ -591,27 +638,113 @@
           </div>
           <div id="predict-two-weeks-calendar" style="display:flex;flex-direction:column;gap:4px;"></div>
         </div>
-
-        <div>
-          <div class="toolbar" style="margin-bottom:4px;">
-            <strong style="font-size:12px;">可編輯規律樣本表（點擊直接修改 · 總共 21 行）</strong>
-            <span style="font-size:10px;color:#0f766e;font-weight:600;">1–17行循環 / 18–21行替位</span>
-          </div>
-          <div class="table-wrap" style="max-height:280px;border:1px solid #cbd5e1;border-radius:8px;">
-            <table class="roster-tbl">
-              <thead>
-                <tr>
-                  <th style="width:34px;">行</th>
-                  <th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th>
-                </tr>
-              </thead>
-              <tbody id="sample-pattern-tbody"></tbody>
-            </table>
-          </div>
-        </div>
       </div>
     </section>
   </main>
+
+  <!-- ==================== 彈窗 5：DutyList 格子更期選擇器（支援防重複自動互換） ==================== -->
+  <div id="duty-picker-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeDutyPickerModal()">
+    <div class="modal-box" style="max-width:440px;" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <span id="duty-picker-title">選擇更期</span>
+        <button onclick="closeDutyPickerModal()" style="background:none;color:#fff;font-size:20px;">&times;</button>
+      </div>
+      <div class="modal-body" style="gap:8px;">
+        <div id="duty-picker-subtitle" style="font-size:11px;color:#0f766e;font-weight:700;background:#f0fdfa;border:1px solid #99f6e4;padding:5px 8px;border-radius:6px;"></div>
+
+        <div class="toolbar" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:5px 8px;">
+          <label style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#334155;cursor:pointer;">
+            <input type="checkbox" id="duty-picker-bracket-chk" style="width:15px;height:15px;" />
+            <span>加上方括號 [ ]</span>
+          </label>
+          <span style="font-size:10px;color:#64748b;">同日重複崗位將自動與原同事互換</span>
+        </div>
+
+        <div>
+          <div class="duty-picker-group-title">🌅 早更 (A Duty)</div>
+          <div class="duty-picker-grid">
+            <button type="button" onclick="applySelectedDutyFromPicker('Aa')" class="duty-opt-btn duty-font">Aa<small>0700-1503</small></button>
+            <button type="button" onclick="applySelectedDutyFromPicker('Ac')" class="duty-opt-btn duty-font">Ac<small>0700-1548</small></button>
+            <button type="button" onclick="applySelectedDutyFromPicker('Ad')" class="duty-opt-btn duty-font">Ad<small>0700-1548</small></button>
+            <button type="button" onclick="applySelectedDutyFromPicker('Ae')" class="duty-opt-btn duty-font">Ae<small>0700-1503</small></button>
+          </div>
+        </div>
+
+        <div>
+          <div class="duty-picker-group-title">☀️ 中更 (Mid Duty)</div>
+          <div class="duty-picker-grid">
+            <button type="button" onclick="applySelectedDutyFromPicker('11-8')" class="duty-opt-btn duty-font">11-8<small>1115-2003</small></button>
+            <button type="button" onclick="applySelectedDutyFromPicker('9-6')" class="duty-opt-btn duty-font">9-6<small>0900-1748</small></button>
+          </div>
+        </div>
+
+        <div>
+          <div class="duty-picker-group-title">🌇 午更 (P / E Duty)</div>
+          <div class="duty-picker-grid" style="grid-template-columns:repeat(5, 1fr);">
+            <button type="button" onclick="applySelectedDutyFromPicker('Pa')" class="duty-opt-btn duty-font">Pa<small>1345-2233</small></button>
+            <button type="button" onclick="applySelectedDutyFromPicker('Pe')" class="duty-opt-btn duty-font">Pe<small>1345-2233</small></button>
+            <button type="button" onclick="applySelectedDutyFromPicker('Pu')" class="duty-opt-btn duty-font">Pu<small>1345-2233</small></button>
+            <button type="button" onclick="applySelectedDutyFromPicker('Ec')" class="duty-opt-btn duty-font">Ec<small>1415-2303</small></button>
+            <button type="button" onclick="applySelectedDutyFromPicker('Ed')" class="duty-opt-btn duty-font">Ed<small>1415-2303</small></button>
+          </div>
+        </div>
+
+        <div>
+          <div class="duty-picker-group-title">🌙 夜更 (N Duty)</div>
+          <div class="duty-picker-grid">
+            <button type="button" onclick="applySelectedDutyFromPicker('Na')" class="duty-opt-btn duty-font">Na<small>2230-0718</small></button>
+            <button type="button" onclick="applySelectedDutyFromPicker('Ne')" class="duty-opt-btn duty-font">Ne<small>2230-0718</small></button>
+          </div>
+        </div>
+
+        <div>
+          <div class="duty-picker-group-title">🏖️ 假期 / 休假 / 替位</div>
+          <div class="duty-picker-grid">
+            <button type="button" onclick="applySelectedDutyFromPicker('O')" class="duty-opt-btn duty-font">O<small>例休</small></button>
+            <button type="button" onclick="applySelectedDutyFromPicker('WO')" class="duty-opt-btn duty-font">WO<small>週休</small></button>
+            <button type="button" onclick="applySelectedDutyFromPicker('OW')" class="duty-opt-btn duty-font">OW<small>補假</small></button>
+            <button type="button" onclick="applySelectedDutyFromPicker('AL')" class="duty-opt-btn duty-font">AL<small>年假</small></button>
+            <button type="button" onclick="applySelectedDutyFromPicker('SH')" class="duty-opt-btn duty-font">SH<small>勞工假</small></button>
+            <button type="button" onclick="applySelectedDutyFromPicker('SH/替')" class="duty-opt-btn duty-font">SH/替<small>假/替位</small></button>
+            <button type="button" onclick="applySelectedDutyFromPicker('PH')" class="duty-opt-btn duty-font">PH<small>公眾假</small></button>
+            <button type="button" onclick="applySelectedDutyFromPicker('SL')" class="duty-opt-btn duty-font">SL<small>病假</small></button>
+          </div>
+        </div>
+
+        <div class="flex-row" style="padding-top:4px;border-top:1px solid #e2e8f0;">
+          <input type="text" id="duty-picker-custom-input" placeholder="自訂更期代碼（如 SH/Ac）" class="input-box" style="flex:1;" />
+          <button type="button" onclick="applyCustomDutyFromPicker()" class="btn-sm btn-teal">套用自訂</button>
+          <button type="button" onclick="applySelectedDutyFromPicker('')" class="btn-sm btn-rose">清空</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 彈窗 6：規律樣本表放大唯讀檢視 ==================== -->
+  <div id="sample-viewer-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeSamplePatternViewerModal()">
+    <div class="modal-box" style="max-width:480px;" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <span>21 行規律樣本表（唯讀檢視 · 1–17行循環 / 18–21行替假）</span>
+        <button onclick="closeSamplePatternViewerModal()" style="background:none;color:#fff;font-size:20px;">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:8px;">
+        <div class="table-wrap" style="border:1px solid #cbd5e1;border-radius:8px;">
+          <table class="roster-tbl">
+            <thead>
+              <tr>
+                <th style="width:32px;">行</th>
+                <th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th><th>日</th>
+              </tr>
+            </thead>
+            <tbody id="sample-pattern-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button onclick="closeSamplePatternViewerModal()" class="btn-sm btn-teal">關閉</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ==================== 彈窗 1：多圖片上載 + AI辨析 ==================== -->
   <div id="upload-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeUploadModal()">
@@ -768,15 +901,14 @@
 
     const APPLY_SHIFT_FORM_URL = "https://docs.google.com/forms/d/1wZFdmvXap07wmI2nzzdco4ercp5eYPI82yml-tlhkS8/viewform?edit_requested=true&pli=1&authuser=0";
 
-    const STORAGE_KEY = 'qeh_aed_duty_v18';
-    const BACKUP_KEY = 'qeh_aed_duty_backup_v18';
+    const STORAGE_KEY = 'qeh_aed_duty_v19';
+    const BACKUP_KEY = 'qeh_aed_duty_backup_v19';
     const BACKUP_FLAG_KEY = 'qeh_aed_auto_backup_enabled';
     const AUTO_CLOUD_FLAG_KEY = 'qeh_aed_auto_cloud_upload_enabled';
-    const DICT_STORAGE_KEY = 'qeh_aed_ocr_dictionary_v10';
+    const DICT_STORAGE_KEY = 'qeh_aed_ocr_dictionary_v11';
     const ALARM_STORAGE_KEY = 'qeh_aed_alarms_v7';
     const CLOUD_DB_ENDPOINT = '/api/duty-db';
 
-    // 2. 更新李嘉琪電話 +852 9222 9202
     const STAFF_PHONE_MAP = {
       '黃詩琪': '+852 6033 0313',
       '李嘉琪': '+852 9222 9202',
@@ -880,24 +1012,25 @@
       'Ne':   { work: '2230-0718', workStart: '22:30', workStartMin: 1350, workEndMin: 438,  mealStart: '03:30', mealStartMin: 210,  mealEndMin: 300,  mealText: '0330-0500', takeOverFromCodes: ['Pe', 'Ec'], handoverToCodes: ['Ae', 'Ac'] }
     };
 
+    // 1. 將所有 SH/替位 改成 SH/替
     const IMAGE3_DEFAULT_PATTERN = [
-      { row: 1,  days: ['SH/替位', 'Ec', 'Pu', 'O', 'WO', 'Ad', 'Ae/N'] },
+      { row: 1,  days: ['SH/替', 'Ec', 'Pu', 'O', 'WO', 'Ad', 'Ae/N'] },
       { row: 2,  days: ['Na', 'O', 'Ec', '11-8', 'Ad', 'WO', 'Ac'] },
-      { row: 3,  days: ['Aa', 'Ne', 'O', 'SH/替位', 'Pe', 'Ec', 'WO'] },
-      { row: 4,  days: ['Ad', 'Aa', 'Ne', 'WO', 'O', 'SH/替位', 'Pa'] },
+      { row: 3,  days: ['Aa', 'Ne', 'O', 'SH/替', 'Pe', 'Ec', 'WO'] },
+      { row: 4,  days: ['Ad', 'Aa', 'Ne', 'WO', 'O', 'SH/替', 'Pa'] },
       { row: 5,  days: ['11-8', 'WO', 'Aa', 'Ne', 'O', 'Ac', 'Pe'] },
-      { row: 6,  days: ['Ed', 'SH/替位', 'O', 'Aa', 'Ne', 'WO', 'Ad'] },
-      { row: 7,  days: ['Pa', 'Ed', 'SH/替位', 'WO', 'Aa', 'Ne', 'O'] },
+      { row: 6,  days: ['Ed', 'SH/替', 'O', 'Aa', 'Ne', 'WO', 'Ad'] },
+      { row: 7,  days: ['Pa', 'Ed', 'SH/替', 'WO', 'Aa', 'Ne', 'O'] },
       { row: 8,  days: ['WO', 'O', 'Ad', 'Ed', '11-8', 'Aa', 'Ne'] },
       { row: 9,  days: ['O', 'Pa', '11-8', 'Ad', 'SH/Ac', 'WO', 'Aa/N'] },
       { row: 10, days: ['Ne', 'O', 'WO', 'Pe', 'Pa', 'Ed', 'SH/11-8'] },
       { row: 11, days: ['Ae', 'Na', 'O', 'Pa', 'Ec', '11-8', 'WO'] },
       { row: 12, days: ['WO', 'Ae', 'Na', 'O', 'Ed', 'Pe', 'Pu'] },
-      { row: 13, days: ['SH/替位', '11-8', 'Ae', 'Na', 'O', 'WO', 'Ec'] },
-      { row: 14, days: ['Pe', 'Pu', 'SH/替位', 'Ae', 'Na', 'O', 'WO'] },
+      { row: 13, days: ['SH/替', '11-8', 'Ae', 'Na', 'O', 'WO', 'Ec'] },
+      { row: 14, days: ['Pe', 'Pu', 'SH/替', 'Ae', 'Na', 'O', 'WO'] },
       { row: 15, days: ['Pu', 'Pe', 'Pe', 'WO', 'Ae', 'Na', 'O'] },
       { row: 16, days: ['Ac', 'Ad', 'Ed', 'WO', 'O', 'Ae', 'Na'] },
-      { row: 17, days: ['O', 'SH/替位', 'Pa', 'Pu', 'Pu', 'WO', 'Ed'] },
+      { row: 17, days: ['O', 'SH/替', 'Pa', 'Pu', 'Pu', 'WO', 'Ed'] },
       { row: 18, days: ['替假', '替假', '替假', '替假', '替假', '替假', '替假'] },
       { row: 19, days: ['替假', '替假', '替假', '替假', '替假', '替假', '替假'] },
       { row: 20, days: ['替假', '替假', '替假', '替假', '替假', '替假', '替假'] },
@@ -936,7 +1069,7 @@
 
     const DEFAULT_DICTIONARY = {
       names: ALL_KNOWN_STAFF.map(x => x.name),
-      leaveCodes: ['AL', 'SH', 'PH', 'WO', 'OW', 'SL', 'CL', 'O', '替位', '替假']
+      leaveCodes: ['AL', 'SH', 'SH/替', 'PH', 'WO', 'OW', 'SL', 'CL', 'O', '替假']
     };
 
     let appState = {
@@ -1197,11 +1330,14 @@
       return c;
     }
 
+    // 1. 統一將 SH/替位 轉換為 SH/替
     function sanitizeTwoLetterDutyCode(raw) {
       let c = (raw || '').trim();
       if (!c) return '';
       const hasBrackets = c.startsWith('[') && c.endsWith(']') && c.length >= 3;
       let inner = hasBrackets ? c.slice(1, -1).trim() : c;
+
+      inner = inner.replace(/SH\/替位/g, 'SH/替');
 
       const upper = inner.toUpperCase();
       if (upper === 'WO OWING' || upper.includes('OWING')) {
@@ -1269,7 +1405,7 @@
     }
 
     function closeAllModals() {
-      ['upload-modal', 'alarm-modal', 'settings-modal', 'cloud-image-viewer-modal'].forEach(id => {
+      ['upload-modal', 'alarm-modal', 'settings-modal', 'cloud-image-viewer-modal', 'duty-picker-modal', 'sample-viewer-modal'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
       });
@@ -1293,7 +1429,7 @@
 
     function initApp() {
       try {
-        const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('qeh_aed_duty_v17') || localStorage.getItem('qeh_aed_duty_v16');
+        const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('qeh_aed_duty_v18') || localStorage.getItem('qeh_aed_duty_v17');
         const backupFlag = localStorage.getItem(BACKUP_FLAG_KEY);
         const autoCloudFlag = localStorage.getItem(AUTO_CLOUD_FLAG_KEY);
         const savedDict = localStorage.getItem(DICT_STORAGE_KEY);
@@ -1305,7 +1441,8 @@
         if (savedDict) {
           const parsedDict = JSON.parse(savedDict);
           const mergedNames = Array.from(new Set([...(parsedDict.names || []), ...ALL_KNOWN_STAFF.map(x => x.name)]));
-          appState.dictionary = { ...parsedDict, names: mergedNames };
+          const cleanedLeave = Array.from(new Set((parsedDict.leaveCodes || []).map(c => c.replace(/SH\/替位/g, 'SH/替').replace(/^替位$/, '替假'))));
+          appState.dictionary = { ...parsedDict, names: mergedNames, leaveCodes: cleanedLeave };
         }
         if (savedAlarms) appState.alarms = JSON.parse(savedAlarms);
 
@@ -1317,6 +1454,11 @@
           });
           appState.currentWeekMonday = parsed.currentWeekMonday || Object.keys(appState.weeks)[0];
           const loadedPattern = Array.isArray(parsed.patternSample) ? parsed.patternSample.slice(0, 21) : JSON.parse(JSON.stringify(IMAGE3_DEFAULT_PATTERN));
+          loadedPattern.forEach(r => {
+            if (Array.isArray(r.days)) {
+              r.days = r.days.map(d => (d || '').replace(/SH\/替位/g, 'SH/替'));
+            }
+          });
           appState.patternSample = loadedPattern;
           appState.cloudImages = parsed.cloudImages || [];
           appState.lastCloudUpdatedAt = parsed.lastCloudUpdatedAt || '';
@@ -1360,11 +1502,12 @@
       } catch (e) {}
     }
 
-    function saveState() {
+    // 4. 支援 forceCloudPush：DutyList 更新時即時同步至雲端並分發至其他裝置
+    function saveState(forceCloudPush = false) {
       appState.lastCloudUpdatedAt = new Date().toISOString();
       saveLocalOnly();
-      if (appState.autoCloudUpload) {
-        syncAllToCloud(true);
+      if (forceCloudPush || appState.autoCloudUpload) {
+        syncAllToCloud(true, forceCloudPush);
       } else {
         updateCloudStatusUI(false, '☁ 自動上傳已關', '自動上傳雲端已關閉（可於設定開啟或手動上傳）');
       }
@@ -1385,7 +1528,7 @@
         appState.autoCloudUpload = true;
         localStorage.setItem(AUTO_CLOUD_FLAG_KEY, 'true');
         updateBackupUI();
-        syncAllToCloud(true);
+        syncAllToCloud(true, true);
       } else {
         appState.autoCloudUpload = false;
         localStorage.setItem(AUTO_CLOUD_FLAG_KEY, 'false');
@@ -1395,11 +1538,16 @@
     }
 
     let isCloudRequestRunning = false;
+    let pendingCloudPushQueued = false;
 
-    async function syncAllToCloud(silent = false) {
-      if (isCloudRequestRunning && silent) return;
+    async function syncAllToCloud(silent = false, bypassBusy = false) {
+      if (isCloudRequestRunning) {
+        if (bypassBusy) pendingCloudPushQueued = true;
+        if (silent) return;
+      }
       isCloudRequestRunning = true;
-      updateCloudStatusUI(true, '☁ 上傳中...', '正在上傳至雲端資料庫...');
+      pendingCloudPushQueued = false;
+      updateCloudStatusUI(true, '☁ 即時同步中...', '正在將 DutyList 更新同步至雲端...');
 
       const nowIso = appState.lastCloudUpdatedAt || new Date().toISOString();
       const corePayload = {
@@ -1420,7 +1568,7 @@
           appState.lastCloudUpdatedAt = data.updatedAt || nowIso;
           saveLocalOnly();
           const timeText = new Date().toLocaleTimeString('zh-HK');
-          updateCloudStatusUI(true, '☁ 雲端已同步', `已同步至雲端 (${timeText})`);
+          updateCloudStatusUI(true, '☁ 雲端已同步', `已即時同步至雲端 (${timeText})`);
           if (!silent) alert('已成功將最新更期上傳至雲端資料庫！');
           return;
         }
@@ -1432,6 +1580,10 @@
         if (!silent) alert('無法連線至雲端資料庫：' + err.message);
       } finally {
         isCloudRequestRunning = false;
+        if (pendingCloudPushQueued) {
+          pendingCloudPushQueued = false;
+          syncAllToCloud(true, true);
+        }
       }
     }
 
@@ -1469,7 +1621,10 @@
           });
           appState.weeks = remoteWeeks;
           if (Array.isArray(data.patternSample) && data.patternSample.length > 0) {
-            appState.patternSample = data.patternSample.slice(0, 21);
+            appState.patternSample = data.patternSample.slice(0, 21).map(r => ({
+              ...r,
+              days: (r.days || []).map(d => (d || '').replace(/SH\/替位/g, 'SH/替'))
+            }));
           }
           if (!appState.weeks[appState.currentWeekMonday]) {
             appState.currentWeekMonday = Object.keys(appState.weeks).sort()[0];
@@ -1497,11 +1652,12 @@
         updateLiveClockAndAutoSlot(false);
       }, 1000);
 
+      // 每 4 秒自動輪詢雲端，其他裝置可快速接收最新 DutyList 變更
       setInterval(() => {
         if (document.visibilityState === 'visible') {
           pullAllFromCloud(true);
         }
-      }, 8000);
+      }, 4000);
 
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
@@ -1565,7 +1721,7 @@
       appState.weeks = parsed.data.weeks;
       appState.currentWeekMonday = parsed.data.currentWeekMonday;
       appState.patternSample = (parsed.data.patternSample || IMAGE3_DEFAULT_PATTERN).slice(0, 21);
-      saveState();
+      saveState(true);
       renderAll();
       alert('已還原至備份版本（' + parsed.timestamp + '）');
     }
@@ -1797,8 +1953,8 @@
     function isLeaveOrOffCode(code) {
       const upper = unwrapBracketDuty(code).toUpperCase();
       if (!upper) return true;
-      const leaveTokens = ['AL', 'SH', 'PH', 'WO', 'WO OWING', 'OW', 'SL', 'CL', 'O', '替位', '替假'];
-      return leaveTokens.some(tok => upper === tok || upper.startsWith(tok + '/') || upper.includes('OWING') || upper.includes('替位') || upper.includes('替假'));
+      const leaveTokens = ['AL', 'SH', 'PH', 'WO', 'WO OWING', 'OW', 'SL', 'CL', 'O', '替假'];
+      return leaveTokens.some(tok => upper === tok || upper.startsWith(tok + '/') || upper.includes('OWING') || upper.includes('替'));
     }
 
     function isMorningACode(code) {
@@ -1817,6 +1973,10 @@
       const c = unwrapBracketDuty(code);
       return !isLeaveOrOffCode(c) && (c.startsWith('9-6') || c.startsWith('9/5') || c.startsWith('11-8') || c.startsWith('11/8'));
     }
+    function is118Code(code) {
+      const c = unwrapBracketDuty(code);
+      return c.startsWith('11-8') || c.startsWith('11/8');
+    }
 
     function renderTodayView() {
       const dateStr = document.getElementById('today-date-picker').value;
@@ -1832,7 +1992,6 @@
 
       const nextDateStr = addDaysToDateStr(dateStr, 1);
 
-      // 1. 中更卡片只在 A Duty 與 P Duty 顯示，N Duty 隱藏
       if (appState.selectedSlot === 'A') {
         sleepingCardEl.classList.remove('hidden');
         midCardEl.classList.remove('hidden');
@@ -1920,6 +2079,7 @@
       let upCount = 0, downCount = 0, midCount = 0, sleepingCount = 0;
       let activeWorkingStaff = [];
       let allDayStaffPool = [];
+      let midStaffItems = [];
       let todayACodesPresent = new Set();
       let todayPCodesPresent = new Set();
 
@@ -1947,7 +2107,11 @@
         if (isMidCode(todaySheetCode)) {
           midCount++;
           const midStatus = evaluateStaffLiveStatus(todaySheetCode, dateStr, false);
-          midListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, todaySheetCode, 'cyan', midStatus);
+          midStaffItems.push({
+            is118: is118Code(todaySheetCode),
+            row: staff.row,
+            html: createDutyPersonChip(staff.row, staff.name, todaySheetCode, 'cyan', midStatus)
+          });
           if (appState.selectedSlot !== 'N') {
             activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
           }
@@ -1996,6 +2160,13 @@
           }
         }
       });
+
+      // 2. 中更卡片中 11-8 在左、9-6 在右
+      midStaffItems.sort((a, b) => {
+        if (a.is118 !== b.is118) return a.is118 ? -1 : 1;
+        return a.row - b.row;
+      });
+      midListEl.innerHTML = midStaffItems.map(x => x.html).join('');
 
       const reqASlots = ['Aa', 'Ac', 'Ad', 'Ae'];
       const missingASlots = reqASlots.filter(s => !todayACodesPresent.has(s));
@@ -2246,7 +2417,7 @@
         };
         appState.currentWeekMonday = fallbackMon;
       }
-      saveState();
+      saveState(true);
       renderAll();
     }
 
@@ -2363,7 +2534,7 @@
           const cleanD = sanitizeTwoLetterDutyCode(duty);
           const badgeCls = isFullWeekAl && cleanD ? 'st-al' : getDutyBadgeClass(cleanD);
           const todayCellCls = dayIsTodayFlags[dIdx] ? 'col-today' : '';
-          html += `<td class="col-day ${todayCellCls}" onclick="editRosterCell(${rIdx}, ${dIdx})"><span class="duty-font cell-pill ${badgeCls}">${cleanD || ''}</span></td>`;
+          html += `<td class="col-day ${todayCellCls}" onclick="openDutyPickerModal(${rIdx}, ${dIdx})"><span class="duty-font cell-pill ${badgeCls}">${cleanD || ''}</span></td>`;
         });
         html += `<td class="col-edge" title="${staffName ? staffName + ' 下星期一 (' + nextMonStr + ')' : ''}"><span class="duty-font cell-pill ${getDutyBadgeClass(nextMonDuty)}">${nextMonDuty || '-'}</span></td>`;
         tr.innerHTML = html;
@@ -2377,7 +2548,7 @@
       if (isIncompleteSingleLetter(c)) return 'st-single-warn';
       const inner = unwrapBracketDuty(c);
       if (isLeaveOrOffCode(inner)) {
-        if (inner.toUpperCase().includes('SH') || inner.includes('替位') || inner.includes('替假')) return 'st-sh';
+        if (inner.toUpperCase().includes('SH') || inner.includes('替')) return 'st-sh';
         if (inner.toUpperCase().includes('AL') || inner.toUpperCase().includes('PH')) return 'st-al';
         return 'st-leave';
       }
@@ -2386,6 +2557,88 @@
       if (isAfternoonPECode(c)) return 'st-p';
       if (isNightNCode(c)) return 'st-n';
       return '';
+    }
+
+    // ==================== 5 & 6. DutyList 彈出更期選擇器 ＋ 防重複自動互換 ====================
+    let activePickerTarget = null;
+    const UNIQUE_SHIFT_CODES = new Set(['Aa', 'Ac', 'Ad', 'Ae', '9-6', '9/5', '11-8', '11/8', 'Pa', 'Pe', 'Pu', 'Ec', 'Ed', 'Na', 'Ne']);
+
+    function openDutyPickerModal(rIdx, dIdx) {
+      const weekObj = appState.weeks[appState.currentWeekMonday];
+      if (!weekObj || !weekObj.rows[rIdx]) return;
+
+      activePickerTarget = { rIdx, dIdx };
+      const rowObj = weekObj.rows[rIdx];
+      const staffName = rowObj.name || `第 ${rowObj.row} 行`;
+      const dayLabels = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
+      const dateStr = addDaysToDateStr(weekObj.monday, dIdx);
+      const curCode = sanitizeTwoLetterDutyCode(rowObj.duties[dIdx] || '');
+      const hasBrackets = curCode.startsWith('[') && curCode.endsWith(']');
+      const coreCode = unwrapBracketDuty(curCode);
+
+      document.getElementById('duty-picker-title').textContent = `更改更期：${staffName}`;
+      document.getElementById('duty-picker-subtitle').textContent = `${dateStr}（${dayLabels[dIdx]}）｜ 目前更期：${curCode || '空白'}`;
+      document.getElementById('duty-picker-bracket-chk').checked = hasBrackets;
+      document.getElementById('duty-picker-custom-input').value = coreCode;
+
+      document.querySelectorAll('#duty-picker-modal .duty-opt-btn').forEach(btn => {
+        const btnCode = btn.firstChild ? btn.firstChild.textContent.trim() : '';
+        btn.classList.toggle('current-opt', btnCode === coreCode);
+      });
+
+      document.getElementById('duty-picker-modal').classList.remove('hidden');
+    }
+
+    function closeDutyPickerModal() {
+      document.getElementById('duty-picker-modal').classList.add('hidden');
+      activePickerTarget = null;
+    }
+
+    function applyCustomDutyFromPicker() {
+      const val = document.getElementById('duty-picker-custom-input').value.trim();
+      applySelectedDutyFromPicker(val);
+    }
+
+    function applySelectedDutyFromPicker(selectedRawCode) {
+      if (!activePickerTarget) return;
+      const { rIdx, dIdx } = activePickerTarget;
+      const weekObj = appState.weeks[appState.currentWeekMonday];
+      if (!weekObj || !weekObj.rows[rIdx]) return;
+
+      const useBrackets = document.getElementById('duty-picker-bracket-chk').checked;
+      let cleanCore = unwrapBracketDuty(sanitizeTwoLetterDutyCode(selectedRawCode));
+      let finalNewCode = cleanCore ? (useBrackets && !cleanCore.startsWith('[') ? `[${cleanCore}]` : cleanCore) : '';
+      finalNewCode = sanitizeTwoLetterDutyCode(finalNewCode);
+
+      const originalTargetCode = sanitizeTwoLetterDutyCode(weekObj.rows[rIdx].duties[dIdx] || '');
+      const newCoreNorm = normalizeDutyCode(finalNewCode);
+
+      // 6. 自動防重複與互換：同一日內不能有重複唯一崗位更期（如兩個 Ec），自動將另一位同事的 Ec 改為剛改動同事的原本更期（如 Ad）
+      if (newCoreNorm && UNIQUE_SHIFT_CODES.has(newCoreNorm)) {
+        weekObj.rows.forEach((otherRow, otherIdx) => {
+          if (otherIdx === rIdx) return;
+          const otherDuty = sanitizeTwoLetterDutyCode(otherRow.duties[dIdx] || '');
+          const otherCoreNorm = normalizeDutyCode(otherDuty);
+          if (otherCoreNorm === newCoreNorm) {
+            const otherHasBrackets = otherDuty.startsWith('[') && otherDuty.endsWith(']');
+            const origCore = unwrapBracketDuty(originalTargetCode);
+            let swappedCode = '';
+            if (origCore) {
+              swappedCode = otherHasBrackets ? `[${origCore}]` : origCore;
+            }
+            otherRow.duties[dIdx] = sanitizeTwoLetterDutyCode(swappedCode);
+          }
+        });
+      }
+
+      weekObj.rows[rIdx].duties[dIdx] = finalNewCode;
+
+      learnFromVerifiedWeek(weekObj.rows);
+      closeDutyPickerModal();
+      renderRosterTable();
+      renderTodayView();
+      // 4. 立即同步至雲端並分發至其他裝置
+      saveState(true);
     }
 
     function renderCloudImagesStrip() {
@@ -2463,18 +2716,6 @@
       renderCloudImagesStrip();
     }
 
-    function editRosterCell(rIdx, dIdx) {
-      const weekObj = appState.weeks[appState.currentWeekMonday];
-      const next = prompt(`修改第 ${rIdx + 1} 行 (${weekObj.rows[rIdx].name || '空白列'}) 更期（僅在原圖有括號才需加 []；WO OWING 自動轉為 OW）：`, weekObj.rows[rIdx].duties[dIdx] || '');
-      if (next !== null) {
-        weekObj.rows[rIdx].duties[dIdx] = sanitizeTwoLetterDutyCode(next.trim());
-        learnFromVerifiedWeek(weekObj.rows);
-        saveState();
-        renderRosterTable();
-        renderTodayView();
-      }
-    }
-
     function editStaffName(rIdx) {
       const weekObj = appState.weeks[appState.currentWeekMonday];
       const next = prompt(`修改第 ${rIdx + 1} 行同事姓名：`, weekObj.rows[rIdx].name || '');
@@ -2482,12 +2723,12 @@
         weekObj.rows[rIdx].name = next.trim();
         weekObj.rows = normalizeWeekRowsNoEmptyWhenFull(weekObj.rows);
         learnFromVerifiedWeek(weekObj.rows);
-        saveState();
+        saveState(true);
         renderAll();
       }
     }
 
-    // ==================== 更期預測（十字形 Highlight ＋ 緊湊全覽 ＋ 簡化月曆） ====================
+    // ==================== 更期預測 ====================
     function initSwipeGestureOnPredictCalendar() {
       const el = document.getElementById('predict-cal-swipe-box');
       let startX = 0, startY = 0;
@@ -2640,7 +2881,6 @@
       renderTwoWeeksCalendar(targetWeekMon, nextWeekMon, startRow, baseMonday, targetDate);
     }
 
-    // 4. 兩星期更期月曆卡片刪除星期幾文字，僅保留乾淨日期與更期
     function renderTwoWeeksCalendar(week1Mon, week2Mon, startRow, baseMonday, highlightDate) {
       const calContainer = document.getElementById('predict-two-weeks-calendar');
       calContainer.innerHTML = '';
@@ -2677,7 +2917,6 @@
       runRowCyclePrediction();
     }
 
-    // 2. 21 行預測更期表（十字形 Highlight ＋ 緊湊全覽無需滑動 ＋ 流暢渲染）
     function renderPredict21RowsRoster(baseMonday, targetDate, highlightedProjectedRow1Based) {
       const targetWeekMon = getMondayOfDate(targetDate);
       const prevSunStr = addDaysToDateStr(targetWeekMon, -1);
@@ -2745,38 +2984,36 @@
       document.getElementById('predict-21rows-tbody').innerHTML = rowsHtmlArr.join('');
     }
 
+    // 7. 唯讀規律樣本表（點擊缩圖放大觀看，取消點擊更改功能）
+    function openSamplePatternViewerModal() {
+      renderSamplePatternTable();
+      document.getElementById('sample-viewer-modal').classList.remove('hidden');
+    }
+    function closeSamplePatternViewerModal() {
+      document.getElementById('sample-viewer-modal').classList.add('hidden');
+    }
+
     function renderSamplePatternTable() {
       const tbody = document.getElementById('sample-pattern-tbody');
+      if (!tbody) return;
       tbody.innerHTML = '';
-      appState.patternSample.slice(0, 21).forEach((item, rIdx) => {
+      appState.patternSample.slice(0, 21).forEach(item => {
         const isCycleRow = item.row <= 17;
         const tr = document.createElement('tr');
         tr.style.background = isCycleRow ? '#fff' : '#fffbeb';
         let html = `<td style="font-weight:700;color:${isCycleRow ? '#115e59' : '#b45309'};">${item.row}</td>`;
-        item.days.forEach((code, dIdx) => {
-          html += `<td style="cursor:pointer;" onclick="editSamplePatternCell(${rIdx}, ${dIdx})"><span class="duty-font cell-pill ${isLeaveOrOffCode(code) ? 'st-sh' : ''}">${code}</span></td>`;
+        item.days.forEach(code => {
+          const cleanC = (code || '').replace(/SH\/替位/g, 'SH/替');
+          html += `<td><span class="duty-font cell-pill ${isLeaveOrOffCode(cleanC) ? 'st-sh' : ''}">${cleanC}</span></td>`;
         });
         tr.innerHTML = html;
         tbody.appendChild(tr);
       });
     }
 
-    function editSamplePatternCell(rIdx, dIdx) {
-      const rowObj = appState.patternSample[rIdx];
-      const weekdays = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
-      const next = prompt(`修改樣本表 第 ${rowObj.row} 行 (${weekdays[dIdx]})：`, rowObj.days[dIdx]);
-      if (next !== null && next.trim() !== '') {
-        rowObj.days[dIdx] = next.trim();
-        saveState();
-        renderSamplePatternTable();
-        runRowCyclePrediction();
-      }
-    }
-
     // ==================== AI 圖片辨析 ====================
     let pendingUploadFiles = [];
     let verifiedImportPayloads = [];
-    const UNIQUE_SHIFT_CODES = new Set(['Aa', 'Ac', 'Ad', 'Ae', '9-6', '9/5', 'Pa', 'Pe', 'Pu', 'Ec', 'Ed', 'Na', 'Ne']);
 
     function safeExtractJsonFromText(rawText) {
       if (!rawText) throw new Error('AI 未回傳文字內容');
@@ -2960,7 +3197,7 @@
      * 午更（每日最少 4 人）：Pa, Pe, Pu, Ec, Ed
      * 夜更（每日 2 人）：Na, Ne（第二個字母是小寫 a 或 e）
      * 中更：9-6（或 9/5）、11-8（或 11/8）
-     * 假期：O（單字母休假）、WO、OW、AL、SH、PH、SL、CL
+     * 假期：O（單字母休假）、WO、OW、AL、SH、SH/替、PH、SL、CL
 6. 忽略右上角小字上標（如 U, D, C, E, T, RAT, (1) 等）。
 只輸出純 JSON：{"monday":"2026-11-23","rows":[{"row":1,"name":"黃雅倩","duties":["Ac","Pa","Pu","O","WO","11-8","Ae"]}]}`;
 
@@ -3024,11 +3261,10 @@
           appState.cloudImages.push({ monday, uploadedAt: new Date().toISOString(), base64: payload._cloudImageBase64 });
         }
       });
-      saveState();
+      saveState(true);
       renderAll();
       closeUploadModal();
-      const cloudNote = appState.autoCloudUpload ? '並已自動上傳至雲端！' : '（目前自動上傳雲端已關閉，如需備份可於設定開啟或按立即上傳）';
-      alert(`已成功匯入 ${verifiedImportPayloads.length} 張更期表至 DutyList ${cloudNote}`);
+      alert(`已成功匯入 ${verifiedImportPayloads.length} 張更期表至 DutyList 並即時同步至雲端！`);
     }
 
     function resizeImageToBase64(file, maxDim, quality) {
