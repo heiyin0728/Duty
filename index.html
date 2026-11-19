@@ -88,6 +88,21 @@
       font-weight: 600; color: #1e293b; background: #fff;
     }
 
+    /* WhatsApp 專屬按鈕樣式 */
+    .wa-link-inline {
+      display: inline-flex; align-items: center; justify-content: center; gap: 2px;
+      background: #dcfce7; color: #15803d; border: 1px solid #86efac;
+      border-radius: 4px; padding: 0px 4px; font-size: 10px; font-weight: 800;
+      text-decoration: none; flex-shrink: 0; line-height: 1.3;
+    }
+    .wa-link-inline:active { background: #bbf7d0; }
+    .wa-card-link {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #16a34a; color: #fff; border-radius: 6px; padding: 3px 7px;
+      font-size: 12px; font-weight: 700; text-decoration: none;
+    }
+    .wa-card-link:active { background: #15803d; }
+
     /* 三更切換器 */
     .slot-group { display: flex; background: #f1f5f9; padding: 2px; border-radius: 8px; border: 1px solid #e2e8f0; }
     .slot-btn { padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; color: #475569; background: transparent; }
@@ -196,7 +211,7 @@
     }
     .swap-meal-card {
       background: #fffbeb; border: 1px solid #fcd34d; border-radius: 6px; padding: 5px 8px;
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between; gap: 4px;
     }
     .next7-strip {
       display: flex; gap: 4px; overflow-x: auto; padding-top: 3px;
@@ -205,14 +220,20 @@
       flex-shrink: 0; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 5px; text-align: center; background: #f8fafc; min-width: 38px;
     }
 
-    /* DutyList 表格與即日標示 */
+    /* DutyList 與 9 天預測更期表格 */
     .table-wrap { overflow-x: auto; width: 100%; }
     table.roster-tbl { width: 100%; border-collapse: collapse; text-align: center; font-size: 11px; table-layout: fixed; }
     table.roster-tbl th, table.roster-tbl td { border: 1px solid #cbd5e1; padding: 3px 1px; }
     table.roster-tbl th { background: #f1f5f9; color: #334155; font-weight: 700; }
     .sticky-col-1 { position: sticky; left: 0; background: #fff; z-index: 2; width: 22px; color: #94a3b8; font-size: 10px; }
-    .sticky-col-2 { position: sticky; left: 22px; background: #fff; z-index: 2; width: 52px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+    .sticky-col-2 { position: sticky; left: 22px; background: #fff; z-index: 2; width: 64px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     th.sticky-col-1, th.sticky-col-2 { background: #f1f5f9; z-index: 3; }
+    .name-cell-flex {
+      display: flex; align-items: center; justify-content: space-between; gap: 2px; padding: 0 2px;
+    }
+    .name-text-click {
+      cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; text-align: left;
+    }
     .col-edge { background: #fffbeb !important; width: 36px; }
     .col-day { width: 36px; cursor: pointer; }
     th.col-today { background: #0f766e !important; color: #fff !important; }
@@ -288,7 +309,6 @@
       display: flex; align-items: center; justify-content: space-between; animation: pulseBg 1s infinite alternate;
     }
     @keyframes pulseBg { from { background: #f59e0b; } to { background: #fde047; } }
-    .badge-tag { display: inline-flex; align-items: center; gap: 3px; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; margin: 2px; }
   </style>
 </head>
 <body>
@@ -336,7 +356,7 @@
 
         <div class="flex-center">
           <input type="date" id="today-date-picker" onchange="renderTodayView()" class="input-box" />
-          <span id="today-weekday-badge" class="btn-sm" style="background:#f0fdfa;color:#115e59;border-color:#99f6e4;">星期三</span>
+          <span id="today-weekday-badge" class="btn-sm" style="background:#f0fdfa;color:#115e59;border-color:#99f6e4;">星期四</span>
           <span id="today-hk-holiday-badge" class="btn-sm hidden" style="background:#ffe4e6;color:#9f1239;border-color:#fecdd3;"></span>
         </div>
 
@@ -431,7 +451,7 @@
           <thead>
             <tr>
               <th class="sticky-col-1">#</th>
-              <th class="sticky-col-2">姓名</th>
+              <th class="sticky-col-2">姓名 / WA</th>
               <th id="th-prev-sun" class="col-edge">上日</th>
               <th id="th-day-0" class="col-day">一</th>
               <th id="th-day-1" class="col-day">二</th>
@@ -493,44 +513,33 @@
         <!-- 預測結果與申請更期按鈕 -->
         <div id="predict-single-result" class="result-banner"></div>
 
-        <!-- 預測同日可確定預測同事：A Duty / P Duty / N Duty / Sleeping -->
+        <!-- 2. 完整 21 行 9 天預測更期表（包含前一星期日＋星期一至日＋後一星期一） -->
         <div class="sub-box" style="background:#f8fafc;padding:8px;">
-          <div class="toolbar" style="margin-bottom:6px;border-bottom:1px solid #e2e8f0;padding-bottom:4px;">
-            <strong id="predict-colleagues-title" style="color:#115e59;font-size:12px;">同日可確定預測同事</strong>
+          <div class="toolbar" style="margin-bottom:6px;">
+            <div>
+              <strong id="predict-colleagues-title" style="color:#115e59;font-size:12px;">21 行預測更期表（9 天完整輪轉）</strong>
+              <div id="predict-roster-week-sub" style="font-size:10px;color:#64748b;margin-top:1px;">每星期同事向下移動一行 · 第 18–21 行為替假</div>
+            </div>
           </div>
-
-          <div class="grid-2-sm" style="margin-bottom:6px;">
-            <div class="sub-box" style="border-color:#99f6e4;">
-              <div class="toolbar" style="margin-bottom:4px;">
-                <strong style="color:#0f766e;">A Duty</strong>
-                <span id="predict-a-count" style="background:#ccfbf1;color:#115e59;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:700;">0人</span>
-              </div>
-              <div id="predict-a-colleagues"></div>
-            </div>
-
-            <div class="sub-box" style="border-color:#bae6fd;">
-              <div class="toolbar" style="margin-bottom:4px;">
-                <strong style="color:#0369a1;">P Duty</strong>
-                <span id="predict-p-count" style="background:#e0f2fe;color:#075985;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:700;">0人</span>
-              </div>
-              <div id="predict-p-colleagues"></div>
-            </div>
-
-            <div class="sub-box" style="border-color:#c7d2fe;">
-              <div class="toolbar" style="margin-bottom:4px;">
-                <strong style="color:#3730a3;">N Duty</strong>
-                <span id="predict-n-count" style="background:#e0e7ff;color:#3730a3;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:700;">0人</span>
-              </div>
-              <div id="predict-n-colleagues"></div>
-            </div>
-
-            <div class="sub-box" style="border-color:#fecdd3;">
-              <div class="toolbar" style="margin-bottom:4px;">
-                <strong style="color:#be123c;">Sleeping / 放假</strong>
-                <span id="predict-off-count" style="background:#ffe4e6;color:#9f1239;padding:1px 5px;border-radius:4px;font-size:10px;font-weight:700;">0人</span>
-              </div>
-              <div id="predict-off-colleagues"></div>
-            </div>
+          <div class="table-wrap" style="border:1px solid #cbd5e1;border-radius:8px;background:#fff;">
+            <table class="roster-tbl">
+              <thead>
+                <tr>
+                  <th class="sticky-col-1">#</th>
+                  <th class="sticky-col-2">姓名 / WA</th>
+                  <th id="pred-th-prev-sun" class="col-edge">上日</th>
+                  <th id="pred-th-day-0" class="col-day">一</th>
+                  <th id="pred-th-day-1" class="col-day">二</th>
+                  <th id="pred-th-day-2" class="col-day">三</th>
+                  <th id="pred-th-day-3" class="col-day">四</th>
+                  <th id="pred-th-day-4" class="col-day">五</th>
+                  <th id="pred-th-day-5" class="col-day">六</th>
+                  <th id="pred-th-day-6" class="col-day" style="color:#be123c;">日</th>
+                  <th id="pred-th-next-mon" class="col-edge">下一</th>
+                </tr>
+              </thead>
+              <tbody id="predict-21rows-tbody"></tbody>
+            </table>
           </div>
         </div>
 
@@ -663,7 +672,6 @@
         <button onclick="closeSettingsModal()" style="background:none;color:#fff;font-size:20px;">&times;</button>
       </div>
       <div class="modal-body">
-        <!-- 自動上傳雲端開關（開啟時彈出詢問） -->
         <div class="toolbar sub-box" style="background:#f0f9ff;border-color:#bae6fd;padding:8px;">
           <div>
             <strong style="color:#0369a1;">自動上傳雲端</strong>
@@ -740,6 +748,58 @@
     const ALARM_STORAGE_KEY = 'qeh_aed_alarms_v7';
     const CLOUD_DB_ENDPOINT = '/api/duty-db';
 
+    // 3 & 4. 同事電話列表（用於 WhatsApp 調食飯及 DutyList 調更外連）
+    const STAFF_PHONE_MAP = {
+      '黃詩琪': '+852 6033 0313',
+      '李嘉琪': '',
+      '梅潔瑜': '+852 6795 3121',
+      '陳曦彥': '+852 63796160',
+      '關鉦':   '+852 9813 7536',
+      '吳愷欣': '+852 9552 6943',
+      '吳媛':   '+852 6806 6220',
+      '吳珈翹': '+852 5127 7784',
+      '黃愛萍': '+852 9836 7974',
+      '王曉雯': '+852 9673 0657',
+      '丘飛鵬': '+852 5631 3148',
+      '謝玉連': '+852 9371 8436',
+      '朱翠君': '+852 9286 5354',
+      '張麗':   '+852 9210 9635',
+      '謝小曼': '',
+      '侯嘉敏': '+852 5373 8048',
+      '馮玉琼': '+852 9462 3966',
+      '馮嘉錂': '+852 9075 5563',
+      '蘇靖珊': '+852 6579 0066',
+      '葉曉彤': '+852 9533 5143',
+      '黃雅倩': '+852 6748 4066'
+    };
+
+    function getCleanWaNumber(name) {
+      const raw = STAFF_PHONE_MAP[(name || '').trim()] || '';
+      const digits = raw.replace(/\D/g, '');
+      return digits.length >= 8 ? digits : '';
+    }
+
+    function buildWhatsAppUrl(name, messageText = '') {
+      const num = getCleanWaNumber(name);
+      if (!num) return '';
+      const encoded = messageText ? `?text=${encodeURIComponent(messageText)}` : '';
+      return `https://wa.me/${num}${encoded}`;
+    }
+
+    // 格式化 11-8 調食飯訊息中的日期：
+    // 若為實時日期後一日顯示「聽日」，若為今日顯示「今日」，若超過一日顯示「dd/mm 星期幾」
+    function format118SwapDatePhrase(targetDateStr) {
+      const todayStr = getTodayLocalStr();
+      const tomorrowStr = addDaysToDateStr(todayStr, 1);
+      if (targetDateStr === tomorrowStr) return '聽日';
+      if (targetDateStr === todayStr) return '今日';
+      const d = parseLocalDate(targetDateStr);
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const wDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+      return `${dd}/${mm} ${wDays[d.getDay()]}`;
+    }
+
     const MASTER_21_ROTATION = [
       { id: '175542', name: '黃詩琪' },
       { id: '162684', name: '李嘉琪' },
@@ -812,10 +872,10 @@
       { row: 15, days: ['Pu', 'Pe', 'Pe', 'WO', 'Ae', 'Na', 'O'] },
       { row: 16, days: ['Ac', 'Ad', 'Ed', 'WO', 'O', 'Ae', 'Na'] },
       { row: 17, days: ['O', 'SH/替位', 'Pa', 'Pu', 'Pu', 'WO', 'Ed'] },
-      { row: 18, days: ['替位', '替位', '替位', '替位', '替位', '替位', '替位'] },
-      { row: 19, days: ['替位', '替位', '替位', '替位', '替位', '替位', '替位'] },
-      { row: 20, days: ['替位', '替位', '替位', '替位', '替位', '替位', '替位'] },
-      { row: 21, days: ['替位', '替位', '替位', '替位', '替位', '替位', '替位'] }
+      { row: 18, days: ['替假', '替假', '替假', '替假', '替假', '替假', '替假'] },
+      { row: 19, days: ['替假', '替假', '替假', '替假', '替假', '替假', '替假'] },
+      { row: 20, days: ['替假', '替假', '替假', '替假', '替假', '替假', '替假'] },
+      { row: 21, days: ['替假', '替假', '替假', '替假', '替假', '替假', '替假'] }
     ];
 
     const DEFAULT_WEEK_DATA = {
@@ -850,7 +910,7 @@
 
     const DEFAULT_DICTIONARY = {
       names: ALL_KNOWN_STAFF.map(x => x.name),
-      leaveCodes: ['AL', 'SH', 'PH', 'WO', 'OW', 'SL', 'CL', 'O', '替位']
+      leaveCodes: ['AL', 'SH', 'PH', 'WO', 'OW', 'SL', 'CL', 'O', '替位', '替假']
     };
 
     let appState = {
@@ -898,15 +958,25 @@
       return formatLocalDate(d);
     }
 
-    // 2. 根據實時鐘點自動判斷屬於哪一個 Duty 頁面：
+    // 1. 根據實時鐘點自動判斷屬於哪一個 Duty 頁面，以及 N Duty 跨夜延續歸屬日：
     // A Duty: 07:00 - 15:48 (420 - 948)
-    // P Duty: 15:48 - 23:03 (948 - 1383)
-    // N Duty: 23:03 - 07:00 (1383 - 1440 及 0 - 420)
+    // P Duty: 15:48 - 22:30 (948 - 1350)
+    // N Duty: 22:30 - 07:00 (22:30-24:00 屬於當日 N Duty；00:00-07:00 延續前一晚 N Duty)
     function getSlotByCurrentClockTime(dateObj = new Date()) {
       const mins = dateObj.getHours() * 60 + dateObj.getMinutes();
       if (mins >= 420 && mins < 948) return 'A';
-      if (mins >= 948 && mins < 1383) return 'P';
+      if (mins >= 948 && mins < 1350) return 'P';
       return 'N';
+    }
+
+    // 取得實時 OnDuty 應顯示的基準日期（若在凌晨 00:00-07:00 且處於 N Duty，則延續前一晚的日期）
+    function getEffectiveOnDutyDateStr(dateObj = new Date()) {
+      const mins = dateObj.getHours() * 60 + dateObj.getMinutes();
+      const todayStr = formatLocalDate(dateObj);
+      if (mins < 420) {
+        return addDaysToDateStr(todayStr, -1);
+      }
+      return todayStr;
     }
 
     function updateLiveClockAndAutoSlot(forceAutoSlot = false) {
@@ -917,19 +987,30 @@
       const mm = String(now.getMinutes()).padStart(2, '0');
       const ss = String(now.getSeconds()).padStart(2, '0');
       const autoSlot = getSlotByCurrentClockTime(now);
+      const mins = now.getHours() * 60 + now.getMinutes();
 
       const liveBadge = document.getElementById('live-today-clock-badge');
       if (liveBadge) {
-        liveBadge.textContent = `今日：${todayStr} (${dayNames[now.getDay()]}) ｜ 現時：${hh}:${mm}:${ss} (${autoSlot} Duty)`;
+        const overnightNote = (autoSlot === 'N' && mins < 420) ? ` · 延續${addDaysToDateStr(todayStr, -1).slice(5)} N` : '';
+        liveBadge.textContent = `今日：${todayStr} (${dayNames[now.getDay()]}) ｜ 現時：${hh}:${mm}:${ss} (${autoSlot} Duty${overnightNote})`;
       }
 
       if (forceAutoSlot || !appState.manualSlotOverride) {
-        if (appState.selectedSlot !== autoSlot || forceAutoSlot) {
+        const slotChanged = (appState.selectedSlot !== autoSlot);
+        if (slotChanged || forceAutoSlot) {
           appState.selectedSlot = autoSlot;
           ['A', 'P', 'N'].forEach(s => {
             const btn = document.getElementById('slot-' + s);
             if (btn) btn.classList.toggle('active', s === autoSlot);
           });
+          // 若自動切換到 N Duty 且目前在凌晨 00:00-07:00，自動將日期對齊至前一晚（例如 19日凌晨對齊 18日 N Duty）
+          if (autoSlot === 'N' && mins < 420) {
+            const picker = document.getElementById('today-date-picker');
+            const prevNightDate = addDaysToDateStr(todayStr, -1);
+            if (picker && picker.value === todayStr) {
+              picker.value = prevNightDate;
+            }
+          }
           const todayView = document.getElementById('view-today');
           if (todayView && !todayView.classList.contains('hidden')) {
             renderTodayView();
@@ -941,15 +1022,11 @@
     function jumpToRealToday() {
       appState.manualSlotOverride = false;
       const picker = document.getElementById('today-date-picker');
-      if (picker) picker.value = getTodayLocalStr();
+      if (picker) picker.value = getEffectiveOnDutyDateStr(new Date());
       updateLiveClockAndAutoSlot(true);
       renderTodayView();
     }
 
-    // 1. 替食飯時段判斷：
-    // 11-8: 1200-1300 替 Ac, 1900-2000 替 Ec
-    // Aa: 1300-1400 替 Ad
-    // Pa: 2000-2100 替 Ed
     function getMealReliefLabel(normCode, mins) {
       if (normCode === '11/8' || normCode === '11-8') {
         if (mins >= 720 && mins < 780) return '替 Ac';
@@ -962,64 +1039,73 @@
       return '';
     }
 
-    // 3. 取得各更種簡化工作位置先後次序（食飯時不顯示工作位置）
-    function getRealtimeZoneLabel(code, selectedDateStr) {
+    function getRealtimeZoneLabel(code, selectedDateStr, isTonightNextNight = false) {
       const todayStr = getTodayLocalStr();
-      if (selectedDateStr !== todayStr) return '';
+      const yesterdayStr = addDaysToDateStr(todayStr, -1);
       const norm = normalizeDutyCode(code);
       const now = new Date();
       const mins = now.getHours() * 60 + now.getMinutes();
 
-      if (norm === 'Aa') {
-        if (mins >= 420 && mins < 480) return '加O房/物資';                // 0700-0800
-        if (mins >= 780 && mins < 840) return 'R房/Cub';                   // 1300-1400
-        if (mins >= 420 && mins < 903) return 'Cub/R房';                   // 其他時間
-      } else if (norm === 'Ac') {
-        if (mins >= 420 && mins < 480) return '電話/H2/ALG';               // 0700-0800
-        if (mins >= 900 && mins < 930) return 'Cub/ALG/G1H2';              // 1500-1530
-        if (mins >= 480 && mins < 948) return 'Cub/O房/美好/Neg/ALG';      // 0800後其他時間
-      } else if (norm === 'Ad') {
-        if (mins >= 420 && mins < 948) return 'R房/Cub';                   // 0700後一直顯示
-      } else if (norm === 'Ae') {
-        if (mins >= 420 && mins < 480) return 'G1';                        // 0700-0800
-        if (mins >= 510 && mins < 540) return 'Non24';                     // 0830-0900
-        if (mins >= 600 && mins < 903) return 'G1H2/Cub';                  // 1000後
-        if (mins >= 420 && mins < 903) return 'Cub/G1H2';                  // 其他時間 (0800-0830, 0900-1000)
-      } else if (norm === 'Pa') {
-        if (mins >= 825 && mins < 840) return 'G1';                        // 1345-1400
-        if (mins >= 840 && mins < 930) return '物資';                      // 1400-1530
-        if (mins >= 1200 && mins < 1353) return 'R房/Cub';                 // 2000後
-      } else if (norm === 'Ec') {
-        if (mins >= 930 && mins < 960) return '電話/Cub/美好/ALG/G1H2';    // 1530-1600
-        if (mins >= 855 && mins < 1383) return 'Cub/美好/ALG';             // 其他時間
-      } else if (norm === 'Pe') {
-        if (mins >= 825 && mins < 840) return 'H2';                        // 1345-1400
-        if (mins >= 840 && mins < 930) return '物資';                      // 1400-1530
-        if (mins >= 930 && mins < 1020) return 'G1H2/Cub';                 // 1530-1700
-        if (mins >= 1140 && mins < 1200) return 'G1H2';                    // 1900-2000
-        if (mins >= 825 && mins < 1353) return 'G1H2/Cub';                 // 其他時間
-      } else if (norm === 'Ed') {
-        if (mins >= 855 && mins < 1383) return 'R房/Cub';                  // 1415後
-      } else if (norm === 'Pu') {
-        if (mins >= 825 && mins < 1353) return 'Cub';                      // 顯示為Cub
-      } else if (norm === 'Na') {
-        if (mins >= 1350 || mins < 438) return '電話/Cub/R房';             // 2230後
+      // N Duty 跨夜：今晚 22:30-24:00 (selectedDateStr === todayStr) 或 昨夜起更延續至今日凌晨 00:00-07:18 (selectedDateStr === yesterdayStr)
+      if (norm === 'Na') {
+        const isActiveNight = (isTonightNextNight && selectedDateStr === todayStr && mins >= 1350) ||
+                              (isTonightNextNight && selectedDateStr === yesterdayStr && mins < 438);
+        if (isActiveNight) return '電話/Cub/R房';
+        return '';
       } else if (norm === 'Ne') {
-        if (mins >= 1350 && mins < 1380) return 'G1H2/ALG';                // 2230-2300
-        if (mins >= 300 && mins < 438) return 'G1H2/ALG/Cub';              // 0500後
-        if (mins >= 1380 || mins < 300) return 'Cub/R房/G1H2';             // 2300後
+        if (isTonightNextNight && selectedDateStr === todayStr && mins >= 1350 && mins < 1380) return 'G1H2/ALG'; // 2230-2300
+        if (isTonightNextNight && selectedDateStr === todayStr && mins >= 1380) return 'Cub/R房/G1H2'; // 2300-2400
+        if (isTonightNextNight && selectedDateStr === yesterdayStr && mins < 300) return 'Cub/R房/G1H2'; // 0000-0500
+        if (isTonightNextNight && selectedDateStr === yesterdayStr && mins >= 300 && mins < 438) return 'G1H2/ALG/Cub'; // 0500-0718
+        return '';
+      }
+
+      if (selectedDateStr !== todayStr) return '';
+
+      if (norm === 'Aa') {
+        if (mins >= 420 && mins < 480) return '加O房/物資';
+        if (mins >= 780 && mins < 840) return 'R房/Cub';
+        if (mins >= 420 && mins < 903) return 'Cub/R房';
+      } else if (norm === 'Ac') {
+        if (mins >= 420 && mins < 480) return '電話/H2/ALG';
+        if (mins >= 900 && mins < 930) return 'Cub/ALG/G1H2';
+        if (mins >= 480 && mins < 948) return 'Cub/O房/美好/Neg/ALG';
+      } else if (norm === 'Ad') {
+        if (mins >= 420 && mins < 948) return 'R房/Cub';
+      } else if (norm === 'Ae') {
+        if (mins >= 420 && mins < 480) return 'G1';
+        if (mins >= 510 && mins < 540) return 'Non24';
+        if (mins >= 600 && mins < 903) return 'G1H2/Cub';
+        if (mins >= 420 && mins < 903) return 'Cub/G1H2';
+      } else if (norm === 'Pa') {
+        if (mins >= 825 && mins < 840) return 'G1';
+        if (mins >= 840 && mins < 930) return '物資';
+        if (mins >= 1200 && mins < 1353) return 'R房/Cub';
+      } else if (norm === 'Ec') {
+        if (mins >= 930 && mins < 960) return '電話/Cub/美好/ALG/G1H2';
+        if (mins >= 855 && mins < 1383) return 'Cub/美好/ALG';
+      } else if (norm === 'Pe') {
+        if (mins >= 825 && mins < 840) return 'H2';
+        if (mins >= 840 && mins < 930) return '物資';
+        if (mins >= 930 && mins < 1020) return 'G1H2/Cub';
+        if (mins >= 1140 && mins < 1200) return 'G1H2';
+        if (mins >= 825 && mins < 1353) return 'G1H2/Cub';
+      } else if (norm === 'Ed') {
+        if (mins >= 855 && mins < 1383) return 'R房/Cub';
+      } else if (norm === 'Pu') {
+        if (mins >= 825 && mins < 1353) return 'Cub';
       } else if (norm === '9/5' || norm === '9-6') {
-        if (mins >= 540 && mins < 1068) return 'Cub';                      // 顯示為Cub
+        if (mins >= 540 && mins < 1068) return 'Cub';
       } else if (norm === '11/8' || norm === '11-8') {
-        if (mins >= 840 && mins < 900) return 'Cal機/清潔';                // 1400顯示為Cal機/清潔
-        if (mins >= 675 && mins < 1203) return 'Cub';                      // 其他時間顯示Cub
+        if (mins >= 840 && mins < 900) return 'Cal機/清潔';
+        if (mins >= 675 && mins < 1203) return 'Cub';
       }
       return '';
     }
 
-    // 1. 判斷同事在選取日期與目前時鐘時間下的即時狀態（未上班 / 食飯中 / 替食飯 / 工作位置 / 已放工）
     function evaluateStaffLiveStatus(code, selectedDateStr, isTonightNextNight = false) {
       const todayStr = getTodayLocalStr();
+      const yesterdayStr = addDaysToDateStr(todayStr, -1);
       const norm = normalizeDutyCode(code);
       const spec = DUTY_SPEC_MAP[norm];
       if (!spec) return { state: 'normal', label: '', reliefLabel: '', zoneLabel: '', cssClass: '' };
@@ -1027,15 +1113,29 @@
       const now = new Date();
       const nowMins = now.getHours() * 60 + now.getMinutes();
 
+      // 1. 跨夜 N Duty（例如 11月18日 22:30 直到 19日早上 07:00 都顯示為 11月18日的 N Duty）
       if (isTonightNextNight) {
         if (selectedDateStr === todayStr) {
           if (nowMins < spec.workStartMin) {
             return { state: 'not-started', label: '未上班', reliefLabel: '', zoneLabel: '', cssClass: 'st-not-started' };
           }
-          const zoneLabel = getRealtimeZoneLabel(code, selectedDateStr);
+          const zoneLabel = getRealtimeZoneLabel(code, selectedDateStr, true);
           return { state: 'working', label: '', reliefLabel: '', zoneLabel, cssClass: '' };
         }
-        return { state: 'not-started', label: '未上班', reliefLabel: '', zoneLabel: '', cssClass: 'st-not-started' };
+        if (selectedDateStr === yesterdayStr) {
+          if (nowMins >= spec.workEndMin) {
+            return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', cssClass: 'st-off-work' };
+          }
+          if (nowMins >= spec.mealStartMin && nowMins < spec.mealEndMin) {
+            return { state: 'meal', label: '食飯中', reliefLabel: '', zoneLabel: '', cssClass: 'st-meal' };
+          }
+          const zoneLabel = getRealtimeZoneLabel(code, selectedDateStr, true);
+          return { state: 'working', label: '', reliefLabel: '', zoneLabel, cssClass: '' };
+        }
+        if (selectedDateStr > todayStr) {
+          return { state: 'not-started', label: '未上班', reliefLabel: '', zoneLabel: '', cssClass: 'st-not-started' };
+        }
+        return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', cssClass: 'st-off-work' };
       }
 
       if (selectedDateStr > todayStr) {
@@ -1045,17 +1145,15 @@
         return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', cssClass: 'st-off-work' };
       }
 
-      // 昨夜起更的 N Duty（當日凌晨 00:00 至 07:18 仍在當值，07:18 後已放工）
+      // Sleeping 卡片（昨夜起更，當日早上 07:18 放工）
       if (isNightNCode(code)) {
         if (nowMins >= spec.workEndMin) {
           return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', cssClass: 'st-off-work' };
         }
         if (nowMins >= spec.mealStartMin && nowMins < spec.mealEndMin) {
-          // 食飯時不顯示工作位置
           return { state: 'meal', label: '食飯中', reliefLabel: '', zoneLabel: '', cssClass: 'st-meal' };
         }
-        const zoneLabel = getRealtimeZoneLabel(code, selectedDateStr);
-        return { state: 'working', label: '', reliefLabel: '', zoneLabel, cssClass: '' };
+        return { state: 'working', label: '', reliefLabel: '', zoneLabel: '', cssClass: '' };
       }
 
       if (nowMins < spec.workStartMin) {
@@ -1065,13 +1163,12 @@
         return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', cssClass: 'st-off-work' };
       }
 
-      // 自己食飯時間：食飯時不顯示工作位置
       if (nowMins >= spec.mealStartMin && nowMins < spec.mealEndMin) {
         return { state: 'meal', label: '食飯中', reliefLabel: '', zoneLabel: '', cssClass: 'st-meal' };
       }
 
       const reliefLabel = getMealReliefLabel(norm, nowMins);
-      const zoneLabel = getRealtimeZoneLabel(code, selectedDateStr);
+      const zoneLabel = getRealtimeZoneLabel(code, selectedDateStr, false);
       return { state: 'working', label: '', reliefLabel, zoneLabel, cssClass: '' };
     }
 
@@ -1213,9 +1310,9 @@
         appState.weeks = JSON.parse(JSON.stringify(DEFAULT_WEEK_DATA));
       }
 
-      const nowStr = getTodayLocalStr();
+      const effectiveTodayStr = getEffectiveOnDutyDateStr(new Date());
       const todayPicker = document.getElementById('today-date-picker');
-      todayPicker.value = nowStr;
+      todayPicker.value = effectiveTodayStr;
 
       updateLiveClockAndAutoSlot(true);
 
@@ -1685,8 +1782,8 @@
     function isLeaveOrOffCode(code) {
       const upper = unwrapBracketDuty(code).toUpperCase();
       if (!upper) return true;
-      const leaveTokens = ['AL', 'SH', 'PH', 'WO', 'WO OWING', 'OW', 'SL', 'CL', 'O', '替位'];
-      return leaveTokens.some(tok => upper === tok || upper.startsWith(tok + '/') || upper.includes('OWING') || upper.includes('替位'));
+      const leaveTokens = ['AL', 'SH', 'PH', 'WO', 'WO OWING', 'OW', 'SL', 'CL', 'O', '替位', '替假'];
+      return leaveTokens.some(tok => upper === tok || upper.startsWith(tok + '/') || upper.includes('OWING') || upper.includes('替位') || upper.includes('替假'));
     }
 
     function isMorningACode(code) {
@@ -1717,6 +1814,8 @@
       const sleepingCardEl = document.getElementById('sleeping-shift-card');
       const sleepingListEl = document.getElementById('sleeping-shift-list');
 
+      const nextDateStr = addDaysToDateStr(dateStr, 1);
+
       if (appState.selectedSlot === 'A') {
         sleepingCardEl.classList.remove('hidden');
         curTitleEl.textContent = 'A Duty'; curTagEl.textContent = 'A Duty';
@@ -1724,11 +1823,13 @@
       } else if (appState.selectedSlot === 'P') {
         sleepingCardEl.classList.add('hidden');
         curTitleEl.textContent = 'P Duty'; curTagEl.textContent = 'P Duty';
-        nextTitleEl.textContent = 'N Duty'; nextTagEl.textContent = 'N Duty';
+        nextTitleEl.textContent = 'N Duty'; nextTagEl.textContent = `${dateStr.slice(5)} N`;
       } else {
         sleepingCardEl.classList.add('hidden');
-        curTitleEl.textContent = 'N Duty'; curTagEl.textContent = 'N Duty';
-        nextTitleEl.textContent = 'A Duty'; nextTagEl.textContent = 'A Duty';
+        curTitleEl.textContent = `N Duty (${dateStr.slice(5)} 22:30–${nextDateStr.slice(5)} 07:00)`;
+        curTagEl.textContent = `${dateStr.slice(5)} N`;
+        nextTitleEl.textContent = `A Duty (${nextDateStr.slice(5)})`;
+        nextTagEl.textContent = `${nextDateStr.slice(5)} A`;
       }
 
       const d = parseLocalDate(dateStr);
@@ -1743,7 +1844,6 @@
         holBadge.classList.add('hidden');
       }
 
-      const nextDateStr = addDaysToDateStr(dateStr, 1);
       const mondayStr = getMondayOfDate(dateStr);
       const nextMondayStr = getMondayOfDate(nextDateStr);
 
@@ -1821,7 +1921,7 @@
           sleepingListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, todaySheetCode, 'indigo', sleepStatus);
         }
         if (isNightNCode(tomorrowSheetCode)) {
-          allDayStaffPool.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, normCode: normalizeDutyCode(tomorrowSheetCode), dayTag: '今晚N(22:30返工)' });
+          allDayStaffPool.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, normCode: normalizeDutyCode(tomorrowSheetCode), dayTag: `${dateStr.slice(5)}夜N(22:30返工)` });
         }
 
         if (isMidCode(todaySheetCode)) {
@@ -1858,14 +1958,15 @@
             downCount++;
             const st = evaluateStaffLiveStatus(tomorrowSheetCode, dateStr, true);
             nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode, isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : '', st);
-            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: '今晚N(22:30返工)' });
+            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: `${dateStr.slice(5)}夜N(22:30返工)` });
           }
         } else if (appState.selectedSlot === 'N') {
+          // 1. N Duty 頁面：上半格顯示 dateStr 22:30 起更、延續至 nextDateStr 早上 07:00 的 N Duty（在 DutyList 記於 nextDateStr 欄）
           if (isNightNCode(tomorrowSheetCode)) {
             upCount++;
             const st = evaluateStaffLiveStatus(tomorrowSheetCode, dateStr, true);
             currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode, isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : 'teal', st);
-            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: '今晚N(22:30返工)' });
+            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: `${dateStr.slice(5)}夜N(22:30返工)` });
           }
           if (isMorningACode(tomorrowSheetCode)) {
             downCount++;
@@ -1909,7 +2010,6 @@
       renderDutyScheduleDetails(activeWorkingStaff, allDayStaffPool, dateStr);
     }
 
-    // 1 & 3. A / P / N / 中更卡片內自動分行顯示簡化工作位置、替食飯與未上班/食飯中/已放工（食飯時不顯示工作位置）
     function createDutyPersonChip(rowNum, name, code, theme, liveStatus = { state: 'normal', label: '', reliefLabel: '', zoneLabel: '', cssClass: '' }) {
       const isHighlighted = appState.highlightedStaff === name;
       const statusBadgeHtml = liveStatus && liveStatus.label
@@ -1969,7 +2069,7 @@
           : { work: '依更表', workStart: '07:00', mealStart: '13:00', mealText: '依崗位', takeOverFromCodes: [], handoverToCodes: [] };
 
         const spec = DUTY_SPEC_MAP[norm] || fallbackSpec;
-        const isTonightN = person.dayTag === '今晚N(22:30返工)';
+        const isTonightN = person.dayTag.includes('夜N');
         const liveSt = evaluateStaffLiveStatus(person.code, dateStr, isTonightN);
 
         const takeOverNames = (spec.takeOverFromCodes || []).map(targetCode => {
@@ -1984,7 +2084,7 @@
         const handoverNames = (spec.handoverToCodes || []).map(targetCode => {
           const matched = allDayStaffPool.find(p => {
             if (p.normCode !== targetCode) return false;
-            if (isAfternoonPECode(person.code) && isNightNCode(targetCode)) return p.dayTag === '今晚N(22:30返工)';
+            if (isAfternoonPECode(person.code) && isNightNCode(targetCode)) return p.dayTag.includes('夜N');
             return true;
           });
           return matched ? `${matched.name}(${matched.code})` : targetCode;
@@ -1995,26 +2095,39 @@
         if (handoverNames.length) handoverDescParts.push(`收工交 ${handoverNames.join('、')}`);
         const handoverFullText = handoverDescParts.length ? handoverDescParts.join(' ｜ ') : '按更交接';
 
+        // 3. 在 11-8 返工更表中，調食飯對象姓名加入 WhatsApp 外連：
+        // 訊息內容：「我[日期]係118,可以同你調食飯嗎？」（後一日顯示聽日，超過一日顯示 dd/mm 星期幾）
         let swapMeal118Html = '';
         if (norm === '11/8') {
           const ecStaffList = allDayStaffPool.filter(p => p.dayTag === '今日' && p.normCode === 'Ec');
           const paStaffList = allDayStaffPool.filter(p => p.dayTag === '今日' && p.normCode === 'Pa');
-          const ecName = ecStaffList.length ? ecStaffList.map(p => p.name).join('、') : '無';
-          const ecCodeDisp = ecStaffList.length ? ecStaffList[0].code : 'Ec';
-          const paName = paStaffList.length ? paStaffList.map(p => p.name).join('、') : '無';
-          const paCodeDisp = paStaffList.length ? paStaffList[0].code : 'Pa';
+          const datePhrase = format118SwapDatePhrase(dateStr);
+          const waMsg = `我${datePhrase}係118,可以同你調食飯嗎？`;
+
+          const buildSwapTargetDisplay = (staffArr, fallbackCode) => {
+            if (!staffArr.length) {
+              return `<strong style="color:#1e293b;font-size:12px;">無</strong><span class="duty-font code-badge warn">${fallbackCode}</span>`;
+            }
+            const nameBadges = staffArr.map(p => {
+              const waUrl = buildWhatsAppUrl(p.name, waMsg);
+              if (waUrl) {
+                return `<a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="wa-card-link" title="傳送 WhatsApp：${waMsg}">💬 ${p.name}</a>`;
+              }
+              return `<strong style="color:#1e293b;font-size:12px;">${p.name}</strong>`;
+            }).join(' ');
+            const codeDisp = staffArr[0].code;
+            return `<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">${nameBadges}</div><span class="duty-font code-badge warn">${codeDisp}</span>`;
+          };
 
           swapMeal118Html = `
             <div style="display:flex;flex-direction:column;gap:4px;">
-              <div style="font-size:11px;font-weight:700;color:#92400e;">🍽️ 詢問調食飯對象</div>
+              <div style="font-size:11px;font-weight:700;color:#92400e;">🍽️ 詢問調食飯對象（點擊姓名傳送 WhatsApp：「${waMsg}」）</div>
               <div class="swap-meal-cards">
                 <div class="swap-meal-card">
-                  <strong style="color:#1e293b;font-size:12px;">${ecName}</strong>
-                  <span class="duty-font code-badge warn">${ecCodeDisp}</span>
+                  ${buildSwapTargetDisplay(ecStaffList, 'Ec')}
                 </div>
                 <div class="swap-meal-card">
-                  <strong style="color:#1e293b;font-size:12px;">${paName}</strong>
-                  <span class="duty-font code-badge warn">${paCodeDisp}</span>
+                  ${buildSwapTargetDisplay(paStaffList, 'Pa')}
                 </div>
               </div>
             </div>
@@ -2079,7 +2192,7 @@
       }).join('');
     }
 
-    // ==================== 刪除本週與 DutyList ====================
+    // ==================== 刪除本週與 DutyList（含 WhatsApp 調更連結） ====================
     let deleteConfirmTimer = null;
     let isDeleteArmed = false;
 
@@ -2171,6 +2284,18 @@
       renderRosterTable();
     }
 
+    function renderStaffNameWithWaHtml(staffName, rIdx = -1, editable = true) {
+      if (!staffName) return '-';
+      const waUrl = buildWhatsAppUrl(staffName, '');
+      const waBtn = waUrl
+        ? `<a href="${waUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="wa-link-inline" title="WhatsApp 聯絡 ${staffName} 調更">💬</a>`
+        : '';
+      const nameSpan = editable
+        ? `<span class="name-text-click" onclick="editStaffName(${rIdx})" title="點擊修改姓名">${staffName}</span>`
+        : `<span class="name-text-click" style="cursor:default;">${staffName}</span>`;
+      return `<div class="name-cell-flex">${nameSpan}${waBtn}</div>`;
+    }
+
     function renderRosterTable() {
       const weekObj = appState.weeks[appState.currentWeekMonday];
       if (!weekObj) return;
@@ -2207,9 +2332,10 @@
         const prevSunDuty = staffName ? getDutyByStaffNameOnDate(prevSunStr, staffName) : '';
         const nextMonDuty = staffName ? getDutyByStaffNameOnDate(nextMonStr, staffName) : '';
 
+        // 4. DutyList 姓名中加入 WhatsApp 連結，方便調更使用
         let html = `
           <td class="sticky-col-1">${r.row}</td>
-          <td class="sticky-col-2" onclick="editStaffName(${rIdx})">${staffName || '-'}</td>
+          <td class="sticky-col-2">${renderStaffNameWithWaHtml(staffName, rIdx, true)}</td>
           <td class="col-edge" title="${staffName ? staffName + ' 上星期日 (' + prevSunStr + ')' : ''}"><span class="duty-font cell-pill ${getDutyBadgeClass(prevSunDuty)}">${prevSunDuty || '-'}</span></td>
         `;
         r.duties.forEach((duty, dIdx) => {
@@ -2230,7 +2356,7 @@
       if (isIncompleteSingleLetter(c)) return 'st-single-warn';
       const inner = unwrapBracketDuty(c);
       if (isLeaveOrOffCode(inner)) {
-        if (inner.toUpperCase().includes('SH') || inner.includes('替位')) return 'st-sh';
+        if (inner.toUpperCase().includes('SH') || inner.includes('替位') || inner.includes('替假')) return 'st-sh';
         if (inner.toUpperCase().includes('AL') || inner.toUpperCase().includes('PH')) return 'st-al';
         return 'st-leave';
       }
@@ -2340,7 +2466,7 @@
       }
     }
 
-    // ==================== 更期預測（總行數 21 行） ====================
+    // ==================== 更期預測（21 行 × 9 天完整輪轉更期表） ====================
     function initSwipeGestureOnPredictCalendar() {
       const el = document.getElementById('predict-cal-swipe-box');
       let startX = 0, startY = 0;
@@ -2364,7 +2490,7 @@
         for (let i = 1; i <= 21; i++) {
           const opt = document.createElement('option');
           opt.value = i;
-          opt.textContent = i <= 17 ? `第 ${i} 行` : `第 ${i} 行（替位）`;
+          opt.textContent = i <= 17 ? `第 ${i} 行` : `第 ${i} 行（替假）`;
           rowSel.appendChild(opt);
         }
       }
@@ -2454,15 +2580,15 @@
               ${holName ? `<span style="background:#e11d48;color:#fff;padding:1px 5px;border-radius:4px;margin-left:4px;">🇭🇰 ${holName}</span>` : ''}
             </div>
             <div style="font-size:13px;font-weight:700;margin-top:2px;color:#fcd34d;">
-              第 ${startRow} 行屬替位更期，不納入固定循環預測
+              第 ${startRow} 行屬替假更期，不納入固定循環預測
             </div>
           </div>
           <div class="flex-row">
-            <div class="duty-font result-code" style="background:#475569;">替位</div>
+            <div class="duty-font result-code" style="background:#475569;">替假</div>
             <a href="${APPLY_SHIFT_FORM_URL}" target="_blank" rel="noopener noreferrer" class="btn-sm btn-indigo" style="padding:8px 12px;font-size:12px;">申請更期</a>
           </div>
         `;
-        renderPredictColleaguesOnDate(baseMonday, targetDate);
+        renderPredict21RowsRoster(baseMonday, targetDate);
         return;
       }
 
@@ -2484,7 +2610,7 @@
         </div>
       `;
 
-      renderPredictColleaguesOnDate(baseMonday, targetDate);
+      renderPredict21RowsRoster(baseMonday, targetDate);
 
       const targetWeekMon = getMondayOfDate(targetDate);
       const nextWeekMon = addDaysToDateStr(targetWeekMon, 7);
@@ -2518,65 +2644,84 @@
       });
     }
 
-    function renderPredictColleaguesOnDate(baseMonday, targetDate) {
-      const refWeek = appState.weeks[appState.currentWeekMonday] || Object.values(appState.weeks)[0];
-      const aEl = document.getElementById('predict-a-colleagues');
-      const pEl = document.getElementById('predict-p-colleagues');
-      const nEl = document.getElementById('predict-n-colleagues');
-      const offEl = document.getElementById('predict-off-colleagues');
-      document.getElementById('predict-colleagues-title').textContent = `${targetDate} 同日可確定預測同事`;
-      if (!refWeek || !refWeek.rows) return;
+    // 2. 將同日可確定預測同事的卡片轉成 21 行更期表：
+    // - 完整跟隨更表輪轉位移方式（每星期同事移動到下一行）
+    // - 第 18-21 行替假位仍然顯示「替假」
+    // - 使用 9 天更表方式顯示（包括前一星期日同後一星期一）
+    function renderPredict21RowsRoster(baseMonday, targetDate) {
+      const targetWeekMon = getMondayOfDate(targetDate);
+      const prevSunStr = addDaysToDateStr(targetWeekMon, -1);
+      const nextMonStr = addDaysToDateStr(targetWeekMon, 7);
 
-      const nextDate = addDaysToDateStr(targetDate, 1);
-      let aList = [], pList = [], nList = [], offList = [];
+      document.getElementById('predict-colleagues-title').textContent = `${targetWeekMon} 至 ${addDaysToDateStr(targetWeekMon, 6)}（21 行預測更期表）`;
+      document.getElementById('pred-th-prev-sun').innerHTML = `${prevSunStr.slice(8)}/${prevSunStr.slice(5, 7)}<br><span style="font-size:9px;">上日</span>`;
+      document.getElementById('pred-th-next-mon').innerHTML = `${nextMonStr.slice(8)}/${nextMonStr.slice(5, 7)}<br><span style="font-size:9px;">下一</span>`;
 
-      for (let rowNum = 1; rowNum <= 17; rowNum++) {
-        const staffRow = refWeek.rows.find(r => r.row === rowNum);
-        if (!staffRow || !staffRow.name) continue;
-
-        const predToday = calculatePredictedDutyForDate(rowNum, baseMonday, targetDate);
-        const predTomorrow = calculatePredictedDutyForDate(rowNum, baseMonday, nextDate);
-
-        const code = (predToday.dutyCode || '').trim();
-        const nextCode = (predTomorrow.dutyCode || '').trim();
-
-        if (isNightNCode(nextCode) || nextCode.includes('/N')) {
-          nList.push({ name: staffRow.name, code: nextCode });
-        }
-
-        if (!code || code.includes('替位')) continue;
-
-        if (isNightNCode(code)) {
-          offList.push({ name: staffRow.name, code: code + '(Sleeping)' });
-        } else if (isLeaveOrOffCode(code)) {
-          offList.push({ name: staffRow.name, code });
-        } else if (isMorningACode(code) || code.startsWith('Aa')) {
-          aList.push({ name: staffRow.name, code });
-        } else if (isAfternoonPECode(code) || isMidCode(code)) {
-          pList.push({ name: staffRow.name, code });
-        }
+      const dayLabels = ['一', '二', '三', '四', '五', '六', '日'];
+      const targetColFlags = [];
+      for (let i = 0; i < 7; i++) {
+        const dStr = addDaysToDateStr(targetWeekMon, i);
+        const [, mm, dd] = dStr.split('-');
+        const isHol = Boolean(HK_STATUTORY_HOLIDAYS[dStr]);
+        const isTargetCol = (dStr === targetDate);
+        targetColFlags.push(isTargetCol);
+        const thEl = document.getElementById('pred-th-day-' + i);
+        thEl.classList.toggle('col-today', isTargetCol);
+        thEl.innerHTML = `<span style="${isTargetCol ? 'color:#fff;font-weight:800;' : (isHol ? 'color:#be123c;font-weight:800;' : '')}">${dd}/${mm}</span><br><span style="font-size:10px;">${dayLabels[i]}</span>`;
       }
 
-      document.getElementById('predict-a-count').textContent = `${aList.length}人`;
-      document.getElementById('predict-p-count').textContent = `${pList.length}人`;
-      document.getElementById('predict-n-count').textContent = `${nList.length}人`;
-      document.getElementById('predict-off-count').textContent = `${offList.length}人`;
+      // 依照目標週星期一計算 21 人輪轉位移（每星期同事向下移動一行）
+      const expectedTargetWeekRoster = getExpectedRosterForWeek(targetWeekMon);
+      const baseMonDate = parseLocalDate(baseMonday);
+      const targetMonDate = parseLocalDate(targetWeekMon);
+      const weeksDiffFromBase = Math.round((targetMonDate - baseMonDate) / (7 * 24 * 60 * 60 * 1000));
 
-      aEl.innerHTML = aList.length
-        ? aList.map(c => `<span class="badge-tag" style="background:#f0fdfa;border:1px solid #99f6e4;color:#115e59;">${c.name}<span class="duty-font" style="color:#0f766e;">${c.code}</span></span>`).join('')
-        : '<span style="color:#94a3b8;font-size:11px;">無</span>';
+      const tbody = document.getElementById('predict-21rows-tbody');
+      tbody.innerHTML = '';
 
-      pEl.innerHTML = pList.length
-        ? pList.map(c => `<span class="badge-tag" style="background:#f0f9ff;border:1px solid #bae6fd;color:#075985;">${c.name}<span class="duty-font" style="color:#0369a1;">${c.code}</span></span>`).join('')
-        : '<span style="color:#94a3b8;font-size:11px;">無</span>';
+      expectedTargetWeekRoster.forEach((personObj, rowIdx0) => {
+        const rowNum1Based = rowIdx0 + 1;
+        const staffName = personObj.name;
+        const isReserveRow = rowNum1Based >= 18;
 
-      nEl.innerHTML = nList.length
-        ? nList.map(c => `<span class="badge-tag" style="background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;">${c.name}<span class="duty-font" style="color:#4338ca;">${c.code}</span></span>`).join('')
-        : '<span style="color:#94a3b8;font-size:11px;">無</span>';
+        // 反推該同事在基準週（baseMonday）所處的原始行次（1..17），以便代入循環樣本表計算前一星期日與後一星期一
+        const origBaseRow1Based = (((rowIdx0 - weeksDiffFromBase) % 17) + 17) % 17 + 1;
 
-      offEl.innerHTML = offList.length
-        ? offList.map(c => `<span class="badge-tag" style="background:#fff1f2;border:1px solid #fecdd3;color:#9f1239;">${c.name}<span class="duty-font" style="color:#be123c;">${c.code}</span></span>`).join('')
-        : '<span style="color:#94a3b8;font-size:11px;">無</span>';
+        const prevSunCode = isReserveRow
+          ? '替假'
+          : (calculatePredictedDutyForDate(origBaseRow1Based, baseMonday, prevSunStr).dutyCode || '-');
+        const nextMonCode = isReserveRow
+          ? '替假'
+          : (calculatePredictedDutyForDate(origBaseRow1Based, baseMonday, nextMonStr).dutyCode || '-');
+
+        const week7Codes = [];
+        for (let dIdx = 0; dIdx < 7; dIdx++) {
+          const dStr = addDaysToDateStr(targetWeekMon, dIdx);
+          if (isReserveRow) {
+            week7Codes.push('替假');
+          } else {
+            week7Codes.push(calculatePredictedDutyForDate(origBaseRow1Based, baseMonday, dStr).dutyCode || '');
+          }
+        }
+
+        const tr = document.createElement('tr');
+        if (isReserveRow) tr.style.background = '#fffbeb';
+
+        let rowHtml = `
+          <td class="sticky-col-1">${rowNum1Based}</td>
+          <td class="sticky-col-2">${renderStaffNameWithWaHtml(staffName, -1, false)}</td>
+          <td class="col-edge"><span class="duty-font cell-pill ${getDutyBadgeClass(prevSunCode)}">${prevSunCode}</span></td>
+        `;
+
+        week7Codes.forEach((code, dIdx) => {
+          const targetCellCls = targetColFlags[dIdx] ? 'col-today' : '';
+          rowHtml += `<td class="col-day ${targetCellCls}" onclick="selectPredictTargetDate('${addDaysToDateStr(targetWeekMon, dIdx)}')"><span class="duty-font cell-pill ${getDutyBadgeClass(code)}">${code}</span></td>`;
+        });
+
+        rowHtml += `<td class="col-edge"><span class="duty-font cell-pill ${getDutyBadgeClass(nextMonCode)}">${nextMonCode}</span></td>`;
+        tr.innerHTML = rowHtml;
+        tbody.appendChild(tr);
+      });
     }
 
     function renderSamplePatternTable() {
@@ -2635,7 +2780,7 @@
             else if (u === 'O') counts.O++;
             else if (u === 'AL') counts.AL++;
             else if (u === 'PH') counts.PH++;
-            else if (['SH', 'SL', 'CL'].some(k => u.includes(k)) || u.includes('替位')) counts.OTHER++;
+            else if (['SH', 'SL', 'CL'].some(k => u.includes(k)) || u.includes('替位') || u.includes('替假')) counts.OTHER++;
           });
         }
       });
