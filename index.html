@@ -88,20 +88,16 @@
       font-weight: 600; color: #1e293b; background: #fff;
     }
 
-    /* WhatsApp 專屬樣式 */
+    /* 1. WhatsApp 直接名字外連樣式（不另設按鈕） */
     .wa-name-link {
-      color: #0f766e; font-weight: 700; text-decoration: none;
+      color: #0f766e; font-weight: 700; text-decoration: underline;
+      text-decoration-color: rgba(15, 118, 110, 0.45);
+      text-underline-offset: 2px;
       display: inline-block; max-width: 100%;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      cursor: pointer;
     }
-    .wa-name-link:hover, .wa-name-link:active { text-decoration: underline; color: #15803d; }
-    .wa-card-link {
-      display: inline-flex; align-items: center; gap: 4px;
-      background: #16a34a; color: #fff; border-radius: 6px; padding: 3px 8px;
-      font-size: 12px; font-weight: 700; text-decoration: none;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-    }
-    .wa-card-link:active { background: #15803d; }
+    .wa-name-link:hover, .wa-name-link:active { color: #15803d; text-decoration-color: #15803d; }
 
     /* 三更切換器 */
     .slot-group { display: flex; background: #f1f5f9; padding: 2px; border-radius: 8px; border: 1px solid #e2e8f0; }
@@ -284,7 +280,7 @@
       font-weight: 800;
     }
 
-    /* 7. 唯讀規律樣本表細小縮圖卡片（置於21行預測更期表旁空白位置） */
+    /* 規律樣本表細小縮圖卡片 */
     .sample-mini-thumb-btn {
       display: inline-flex; align-items: center; gap: 5px;
       background: #fff; border: 1px solid #5eead4; border-radius: 7px;
@@ -300,6 +296,113 @@
       display: block; width: 3px; height: 2px; background: #0f766e;
     }
     .sample-mini-grid-icon span.off { background: #f59e0b; }
+
+    /* 21 位同事姓名橫向 3 行每行 7 個小卡片（按姓氏筆畫排序） */
+    .staff-grid-3x7 {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .staff-stroke-chip {
+      padding: 5px 2px;
+      border-radius: 6px;
+      border: 1px solid #99f6e4;
+      background: #fff;
+      color: #115e59;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .staff-stroke-chip:hover {
+      background: #ccfbf1;
+    }
+    .staff-stroke-chip.active {
+      background: #0f766e;
+      color: #fff;
+      border-color: #0f766e;
+      box-shadow: 0 1px 3px rgba(15,118,110,0.3);
+    }
+
+    /* 查詢面板摺疊列 */
+    .query-collapsed-bar {
+      background: #f0fdfa;
+      border: 1px solid #5eead4;
+      border-radius: 8px;
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .query-collapsed-bar:hover {
+      background: #ccfbf1;
+    }
+
+    /* 3. 目標日放假同事卡片區（名字整齊對齊 + 直接姓名 WhatsApp 外連） */
+    .off-staff-box {
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      border-radius: 8px;
+      padding: 6px 8px;
+      margin-bottom: 6px;
+    }
+    .off-staff-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 5px;
+      margin-top: 5px;
+    }
+    @media (min-width: 540px) {
+      .off-staff-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    @media (min-width: 760px) {
+      .off-staff-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    .off-staff-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      background: #fff;
+      border: 1px solid #fda4af;
+      border-radius: 6px;
+      padding: 4px 7px;
+      font-size: 11px;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.03);
+    }
+    .off-staff-left {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+    .off-staff-idx {
+      display: inline-block;
+      width: 22px;
+      flex-shrink: 0;
+      font-size: 10px;
+      color: #94a3b8;
+      text-align: left;
+      font-variant-numeric: tabular-nums;
+    }
+    .off-staff-name-slot {
+      display: inline-block;
+      width: 48px;
+      flex-shrink: 0;
+      text-align: left;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
     /* 雲端原圖卡片 */
     .cloud-img-card {
@@ -341,7 +444,7 @@
     .day7-card.hol { border-color: #fda4af; background: #fff1f2; }
     .day7-card.target { border: 2px solid #0d9488; background: #f0fdfa; box-shadow: 0 1px 3px rgba(13,148,136,0.2); }
 
-    /* 5. 更期快速選擇器彈窗按鈕網格 */
+    /* 更期快速選擇器彈窗按鈕網格 */
     .duty-picker-group-title {
       font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;
     }
@@ -485,7 +588,7 @@
         </div>
       </div>
 
-      <!-- 2. 中更卡片（僅 A/P Duty 顯示；11-8 在左、9-6 在右） -->
+      <!-- 中更卡片（僅 A/P Duty 顯示；11-8 在左、9-6 在右） -->
       <div id="mid-shift-card" class="card">
         <div class="panel-head bg-cyan">
           <div>中更（11-8 / 9-6）<span id="mid-shift-count" class="pill-count">0人</span></div>
@@ -513,7 +616,6 @@
         </div>
         <div class="flex-center">
           <button onclick="openUploadModal()" class="btn-sm btn-emerald">⬆ 上載更期</button>
-          <!-- 3. 更新調更連結 -->
           <a href="https://docs.google.com/spreadsheets/d/17wae7UwtU93GSEDcq-tZ1Uptj3mL2hEaxYcKSTvePD4/edit?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="btn-sm btn-blue">調更</a>
         </div>
       </div>
@@ -555,17 +657,31 @@
     <!-- ==================== 分頁 3：更期預測 ==================== -->
     <section id="view-predict" class="hidden" style="display:flex;flex-direction:column;gap:10px;">
       <div class="card card-pad" style="display:flex;flex-direction:column;gap:10px;">
-        <div class="toolbar" style="border-bottom:1px solid #f1f5f9;padding-bottom:6px;">
-          <strong style="color:#115e59;font-size:13px;">更期規律跨週推算（總行數 21 行）</strong>
+        <!-- 4. 免責聲明標題置中顯示 -->
+        <div style="border-bottom:1px solid #f1f5f9;padding-bottom:6px;text-align:center;">
+          <strong style="color:#be123c;font-size:12.5px;">更期預測只作參考之用，如有重要事情，請自行計算更期</strong>
         </div>
 
-        <div class="predict-top-grid">
+        <!-- 摺疊收起列（點選日期查詢後自動顯示，點擊向下按鈕展開） -->
+        <div id="predict-query-collapsed-bar" class="query-collapsed-bar hidden" onclick="expandPredictQueryPanel()">
+          <div style="font-size:11.5px;font-weight:700;color:#115e59;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+            <span id="predict-collapsed-summary">已選同事與日期</span>
+          </div>
+          <button type="button" class="btn-sm btn-teal" style="font-size:11px;padding:3px 8px;flex-shrink:0;">▼ 展開查詢與月曆</button>
+        </div>
+
+        <!-- 查詢與月曆面板（含 21 位同事 3×7 按筆畫排序姓名小卡片 ＋ 月曆卡片） -->
+        <div id="predict-top-collapsible-panel" class="predict-top-grid">
           <div>
-            <label style="display:block;font-weight:700;color:#115e59;margin-bottom:4px;">本星期所屬行數 (1–21行)</label>
-            <select id="predict-start-row" onchange="runRowCyclePrediction()" class="input-box" style="width:100%;padding:6px;"></select>
+            <div class="toolbar" style="margin-bottom:4px;">
+              <label style="font-weight:700;color:#115e59;">選擇同事姓名（按姓氏筆畫排序 · 3×7）</label>
+              <span id="predict-selected-row-pill" style="font-size:10px;background:#ccfbf1;color:#115e59;padding:1px 6px;border-radius:4px;font-weight:800;">第 1 行</span>
+            </div>
+            <!-- 21 位同事姓名橫向 3 行每行 7 個姓名小卡片 -->
+            <div id="predict-staff-cards-grid" class="staff-grid-3x7"></div>
             <div id="locked-current-week-label" style="font-size:11px;color:#0f766e;font-weight:600;margin-top:6px;"></div>
             <div id="reserve-row-notice" class="hidden" style="margin-top:6px;padding:6px 8px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;color:#92400e;font-size:11px;font-weight:700;">
-              第 18–21 行為替假人員，僅供行數核對，不納入固定循環更期預測。
+              此同事本週屬第 18–21 行替假人員，僅供行數核對，不納入固定循環更期預測。
             </div>
           </div>
 
@@ -585,14 +701,13 @@
         <!-- 預測結果與申請更期按鈕 -->
         <div id="predict-single-result" class="result-banner"></div>
 
-        <!-- 21 行預測更期表 ＋ 7. 規律樣本表細小縮圖放在右側空白位置 -->
+        <!-- 21 行預測更期表 ＋ 當日放假同事卡片 ＋ 規律樣本表縮圖 -->
         <div class="sub-box" style="background:#f8fafc;padding:6px;">
           <div class="toolbar" style="margin-bottom:5px;align-items:flex-start;">
             <div style="flex:1;min-width:180px;">
               <strong id="predict-colleagues-title" style="color:#115e59;font-size:12px;">21 行預測更期表</strong>
               <div style="font-size:10px;color:#64748b;margin-top:1px;">十字亮綠標示所屬行數與目標日更期 · 點擊日期或行數即時切換</div>
             </div>
-            <!-- 7. 規律樣本表細小縮圖按鈕 -->
             <button onclick="openSamplePatternViewerModal()" class="sample-mini-thumb-btn" title="點擊放大查看 21 行規律樣本表（唯讀）">
               <div class="sample-mini-grid-icon" aria-hidden="true">
                 <span></span><span class="off"></span><span></span><span></span><span></span><span></span><span class="off"></span>
@@ -605,6 +720,16 @@
               </div>
             </button>
           </div>
+
+          <!-- 3. 當日休假 / 假期同事卡片（SH/替 放最後，名字整齊對齊，名字直接作為 WhatsApp 外連） -->
+          <div id="predict-off-staff-panel" class="off-staff-box">
+            <div class="toolbar">
+              <strong id="predict-off-staff-title" style="font-size:11px;color:#9f1239;">當日休假 / 假期同事（O / WO / OW / SH / PH / AL）</strong>
+              <span id="predict-off-staff-count" style="font-size:10px;font-weight:800;color:#be123c;">0人</span>
+            </div>
+            <div id="predict-off-staff-cards" class="off-staff-grid"></div>
+          </div>
+
           <div style="border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;background:#fff;">
             <table class="pred-compact-tbl">
               <thead>
@@ -642,7 +767,7 @@
     </section>
   </main>
 
-  <!-- ==================== 彈窗 5：DutyList 格子更期選擇器（支援防重複自動互換） ==================== -->
+  <!-- ==================== 彈窗 5：DutyList 格子更期選擇器（預設取消勾選 []） ==================== -->
   <div id="duty-picker-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeDutyPickerModal()">
     <div class="modal-box" style="max-width:440px;" onclick="event.stopPropagation()">
       <div class="modal-head">
@@ -901,11 +1026,11 @@
 
     const APPLY_SHIFT_FORM_URL = "https://docs.google.com/forms/d/1wZFdmvXap07wmI2nzzdco4ercp5eYPI82yml-tlhkS8/viewform?edit_requested=true&pli=1&authuser=0";
 
-    const STORAGE_KEY = 'qeh_aed_duty_v19';
-    const BACKUP_KEY = 'qeh_aed_duty_backup_v19';
+    const STORAGE_KEY = 'qeh_aed_duty_v20';
+    const BACKUP_KEY = 'qeh_aed_duty_backup_v20';
     const BACKUP_FLAG_KEY = 'qeh_aed_auto_backup_enabled';
     const AUTO_CLOUD_FLAG_KEY = 'qeh_aed_auto_cloud_upload_enabled';
-    const DICT_STORAGE_KEY = 'qeh_aed_ocr_dictionary_v11';
+    const DICT_STORAGE_KEY = 'qeh_aed_ocr_dictionary_v12';
     const ALARM_STORAGE_KEY = 'qeh_aed_alarms_v7';
     const CLOUD_DB_ENDPOINT = '/api/duty-db';
 
@@ -931,6 +1056,24 @@
       '蘇靖珊': '+852 6579 0066',
       '葉曉彤': '+852 9533 5143',
       '黃雅倩': '+852 6748 4066'
+    };
+
+    const SURNAME_STROKES_MAP = {
+      '王': 4,
+      '丘': 5,
+      '朱': 6,
+      '吳': 7,
+      '李': 7,
+      '侯': 9,
+      '張': 11,
+      '梅': 11,
+      '陳': 11,
+      '黃': 12,
+      '馮': 12,
+      '葉': 13,
+      '謝': 17,
+      '關': 19,
+      '蘇': 22
     };
 
     function getCleanWaNumber(name) {
@@ -1012,7 +1155,6 @@
       'Ne':   { work: '2230-0718', workStart: '22:30', workStartMin: 1350, workEndMin: 438,  mealStart: '03:30', mealStartMin: 210,  mealEndMin: 300,  mealText: '0330-0500', takeOverFromCodes: ['Pe', 'Ec'], handoverToCodes: ['Ae', 'Ac'] }
     };
 
-    // 1. 將所有 SH/替位 改成 SH/替
     const IMAGE3_DEFAULT_PATTERN = [
       { row: 1,  days: ['SH/替', 'Ec', 'Pu', 'O', 'WO', 'Ad', 'Ae/N'] },
       { row: 2,  days: ['Na', 'O', 'Ec', '11-8', 'Ad', 'WO', 'Ac'] },
@@ -1087,8 +1229,25 @@
       lastCloudUpdatedAt: '',
       predictCalYear: 2026,
       predictCalMonth: 10,
-      predictTargetDate: ''
+      predictTargetDate: '',
+      predictSelectedStaffName: '',
+      predictSelectedBaseRow: 1,
+      predictPanelCollapsed: false
     };
+
+    // 每小時強制重新整理一次，防止 HTML 舊版本快取
+    function startHourlyForceReload() {
+      const ONE_HOUR_MS = 60 * 60 * 1000;
+      setTimeout(() => {
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.set('_r', Date.now());
+          window.location.replace(url.toString());
+        } catch (e) {
+          window.location.reload(true);
+        }
+      }, ONE_HOUR_MS);
+    }
 
     function isIosDevice() {
       return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -1330,7 +1489,6 @@
       return c;
     }
 
-    // 1. 統一將 SH/替位 轉換為 SH/替
     function sanitizeTwoLetterDutyCode(raw) {
       let c = (raw || '').trim();
       if (!c) return '';
@@ -1428,8 +1586,10 @@
     }
 
     function initApp() {
+      startHourlyForceReload();
+
       try {
-        const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('qeh_aed_duty_v18') || localStorage.getItem('qeh_aed_duty_v17');
+        const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('qeh_aed_duty_v19') || localStorage.getItem('qeh_aed_duty_v18');
         const backupFlag = localStorage.getItem(BACKUP_FLAG_KEY);
         const autoCloudFlag = localStorage.getItem(AUTO_CLOUD_FLAG_KEY);
         const savedDict = localStorage.getItem(DICT_STORAGE_KEY);
@@ -1502,7 +1662,6 @@
       } catch (e) {}
     }
 
-    // 4. 支援 forceCloudPush：DutyList 更新時即時同步至雲端並分發至其他裝置
     function saveState(forceCloudPush = false) {
       appState.lastCloudUpdatedAt = new Date().toISOString();
       saveLocalOnly();
@@ -1652,7 +1811,6 @@
         updateLiveClockAndAutoSlot(false);
       }, 1000);
 
-      // 每 4 秒自動輪詢雲端，其他裝置可快速接收最新 DutyList 變更
       setInterval(() => {
         if (document.visibilityState === 'visible') {
           pullAllFromCloud(true);
@@ -1902,7 +2060,7 @@
         renderCloudImagesStrip();
       } else if (tabName === 'predict') {
         initPredictControls();
-        runRowCyclePrediction();
+        runRowCyclePrediction(false);
       }
     }
 
@@ -1912,7 +2070,7 @@
       renderRosterTable();
       renderCloudImagesStrip();
       renderSamplePatternTable();
-      runRowCyclePrediction();
+      runRowCyclePrediction(false);
     }
 
     // ==================== OnDuty ====================
@@ -2161,7 +2319,6 @@
         }
       });
 
-      // 2. 中更卡片中 11-8 在左、9-6 在右
       midStaffItems.sort((a, b) => {
         if (a.is118 !== b.is118) return a.is118 ? -1 : 1;
         return a.row - b.row;
@@ -2287,6 +2444,7 @@
         if (handoverNames.length) handoverDescParts.push(`收工交 ${handoverNames.join('、')}`);
         const handoverFullText = handoverDescParts.length ? handoverDescParts.join(' ｜ ') : '按更交接';
 
+        // 1. 詢問調食飯對象：直接將名字作為 WhatsApp 外部連結（唔使另外整按鈕）
         let swapMeal118Html = '';
         if (norm === '11/8') {
           const ecStaffList = allDayStaffPool.filter(p => p.dayTag === '今日' && p.normCode === 'Ec');
@@ -2301,17 +2459,17 @@
             const nameBadges = staffArr.map(p => {
               const waUrl = buildWhatsAppUrl(p.name, waMsg);
               if (waUrl) {
-                return `<a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="wa-card-link" title="傳送 WhatsApp：${waMsg}">💬 ${p.name}</a>`;
+                return `<a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="wa-name-link" style="font-size:12px;" title="開啟 WhatsApp 傳送：${waMsg}">${p.name}</a>`;
               }
               return `<strong style="color:#1e293b;font-size:12px;">${p.name}</strong>`;
-            }).join(' ');
+            }).join('、');
             const codeDisp = staffArr[0].code;
             return `<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">${nameBadges}</div><span class="duty-font code-badge warn">${codeDisp}</span>`;
           };
 
           swapMeal118Html = `
             <div style="display:flex;flex-direction:column;gap:4px;">
-              <div style="font-size:11px;font-weight:700;color:#92400e;">🍽️ 詢問調食飯對象（點擊姓名傳送 WhatsApp：「${waMsg}」）</div>
+              <div style="font-size:11px;font-weight:700;color:#92400e;">🍽️ 詢問調食飯對象（直接點擊名字開啟 WhatsApp：「${waMsg}」）</div>
               <div class="swap-meal-cards">
                 <div class="swap-meal-card">
                   ${buildSwapTargetDisplay(ecStaffList, 'Ec')}
@@ -2474,6 +2632,7 @@
       renderRosterTable();
     }
 
+    // 1. 直接擺名字做 WhatsApp 外部連結
     function renderStaffNameWithWaHtml(staffName, rIdx = -1, editable = true) {
       if (!staffName) {
         return editable
@@ -2482,7 +2641,7 @@
       }
       const waUrl = buildWhatsAppUrl(staffName, '');
       if (waUrl) {
-        return `<a href="${waUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="wa-name-link" title="WhatsApp 聯絡 ${staffName} 調更">${staffName}</a>`;
+        return `<a href="${waUrl}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="wa-name-link" title="開啟 WhatsApp 聯絡 ${staffName}">${staffName}</a>`;
       }
       return editable
         ? `<span style="cursor:pointer;" onclick="editStaffName(${rIdx})" title="點擊修改姓名">${staffName}</span>`
@@ -2559,7 +2718,7 @@
       return '';
     }
 
-    // ==================== 5 & 6. DutyList 彈出更期選擇器 ＋ 防重複自動互換 ====================
+    // ==================== DutyList 彈出更期選擇器（預設取消勾選 []） ====================
     let activePickerTarget = null;
     const UNIQUE_SHIFT_CODES = new Set(['Aa', 'Ac', 'Ad', 'Ae', '9-6', '9/5', '11-8', '11/8', 'Pa', 'Pe', 'Pu', 'Ec', 'Ed', 'Na', 'Ne']);
 
@@ -2573,12 +2732,11 @@
       const dayLabels = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
       const dateStr = addDaysToDateStr(weekObj.monday, dIdx);
       const curCode = sanitizeTwoLetterDutyCode(rowObj.duties[dIdx] || '');
-      const hasBrackets = curCode.startsWith('[') && curCode.endsWith(']');
       const coreCode = unwrapBracketDuty(curCode);
 
       document.getElementById('duty-picker-title').textContent = `更改更期：${staffName}`;
       document.getElementById('duty-picker-subtitle').textContent = `${dateStr}（${dayLabels[dIdx]}）｜ 目前更期：${curCode || '空白'}`;
-      document.getElementById('duty-picker-bracket-chk').checked = hasBrackets;
+      document.getElementById('duty-picker-bracket-chk').checked = false;
       document.getElementById('duty-picker-custom-input').value = coreCode;
 
       document.querySelectorAll('#duty-picker-modal .duty-opt-btn').forEach(btn => {
@@ -2613,7 +2771,6 @@
       const originalTargetCode = sanitizeTwoLetterDutyCode(weekObj.rows[rIdx].duties[dIdx] || '');
       const newCoreNorm = normalizeDutyCode(finalNewCode);
 
-      // 6. 自動防重複與互換：同一日內不能有重複唯一崗位更期（如兩個 Ec），自動將另一位同事的 Ec 改為剛改動同事的原本更期（如 Ad）
       if (newCoreNorm && UNIQUE_SHIFT_CODES.has(newCoreNorm)) {
         weekObj.rows.forEach((otherRow, otherIdx) => {
           if (otherIdx === rIdx) return;
@@ -2637,7 +2794,6 @@
       closeDutyPickerModal();
       renderRosterTable();
       renderTodayView();
-      // 4. 立即同步至雲端並分發至其他裝置
       saveState(true);
     }
 
@@ -2746,19 +2902,82 @@
       }, { passive: true });
     }
 
-    function initPredictControls() {
-      const rowSel = document.getElementById('predict-start-row');
-      if (!rowSel.options.length) {
-        for (let i = 1; i <= 21; i++) {
-          const opt = document.createElement('option');
-          opt.value = i;
-          opt.textContent = i <= 17 ? `第 ${i} 行` : `第 ${i} 行（替假）`;
-          rowSel.appendChild(opt);
-        }
+    function getBaseRowForStaffName(staffName, baseMonday) {
+      const cleanName = (staffName || '').trim();
+      const weekObj = appState.weeks[baseMonday];
+      if (weekObj && Array.isArray(weekObj.rows)) {
+        const found = weekObj.rows.find(r => (r.name || '').trim() === cleanName);
+        if (found && found.row) return Number(found.row);
       }
+      const expected = getExpectedRosterForWeek(baseMonday);
+      const expFound = expected.find(r => (r.name || '').trim() === cleanName);
+      return expFound ? expFound.row : 1;
+    }
+
+    function getSorted21StaffBySurnameStrokes() {
+      const list = MASTER_21_ROTATION.map((item, origIdx) => {
+        const surname = (item.name || '').charAt(0);
+        const strokes = SURNAME_STROKES_MAP[surname] || 99;
+        return { name: item.name, strokes, origIdx };
+      });
+      return list.sort((a, b) => {
+        if (a.strokes !== b.strokes) return a.strokes - b.strokes;
+        return a.origIdx - b.origIdx;
+      });
+    }
+
+    function renderPredictStaffCardsGrid() {
+      const container = document.getElementById('predict-staff-cards-grid');
+      if (!container) return;
+      const sortedStaff = getSorted21StaffBySurnameStrokes();
+      if (!appState.predictSelectedStaffName && sortedStaff.length > 0) {
+        const baseMon = getMondayOfDate(getTodayLocalStr());
+        const firstRowStaff = getExpectedRosterForWeek(baseMon)[0];
+        appState.predictSelectedStaffName = firstRowStaff ? firstRowStaff.name : sortedStaff[0].name;
+      }
+
+      container.innerHTML = sortedStaff.map(st => {
+        const isActive = (st.name === appState.predictSelectedStaffName);
+        return `<button type="button" onclick="selectPredictStaffCard('${st.name}')" class="staff-stroke-chip ${isActive ? 'active' : ''}" title="${st.name}（姓氏 ${st.strokes} 畫）">${st.name}</button>`;
+      }).join('');
+    }
+
+    // 2. 選擇名字時不要摺疊，留待選擇月曆日子後才摺疊
+    function selectPredictStaffCard(staffName) {
+      const baseMon = getMondayOfDate(getTodayLocalStr());
+      appState.predictSelectedStaffName = staffName;
+      appState.predictSelectedBaseRow = getBaseRowForStaffName(staffName, baseMon);
+      renderPredictStaffCardsGrid();
+      runRowCyclePrediction(false);
+    }
+
+    function collapsePredictQueryPanel() {
+      appState.predictPanelCollapsed = true;
+      const panel = document.getElementById('predict-top-collapsible-panel');
+      const bar = document.getElementById('predict-query-collapsed-bar');
+      if (panel) panel.classList.add('hidden');
+      if (bar) bar.classList.remove('hidden');
+    }
+
+    function expandPredictQueryPanel() {
+      appState.predictPanelCollapsed = false;
+      const panel = document.getElementById('predict-top-collapsible-panel');
+      const bar = document.getElementById('predict-query-collapsed-bar');
+      if (panel) panel.classList.remove('hidden');
+      if (bar) bar.classList.add('hidden');
+    }
+
+    function initPredictControls() {
       const nowStr = getTodayLocalStr();
       const baseMon = getMondayOfDate(nowStr);
       document.getElementById('locked-current-week-label').textContent = `已鎖定本週起始（星期一）：${baseMon}（當刻：${nowStr}）`;
+
+      if (!appState.predictSelectedStaffName) {
+        const firstRowStaff = getExpectedRosterForWeek(baseMon)[0];
+        appState.predictSelectedStaffName = firstRowStaff ? firstRowStaff.name : MASTER_21_ROTATION[0].name;
+      }
+      appState.predictSelectedBaseRow = getBaseRowForStaffName(appState.predictSelectedStaffName, baseMon);
+      renderPredictStaffCardsGrid();
 
       if (!appState.predictTargetDate) {
         appState.predictTargetDate = addDaysToDateStr(nowStr, 7);
@@ -2776,10 +2995,11 @@
       renderPredictCalendar();
     }
 
-    function selectPredictTargetDate(dateStr) {
+    // 2. 點選月曆日子後觸發摺疊
+    function selectPredictTargetDate(dateStr, shouldCollapse = true) {
       appState.predictTargetDate = dateStr;
       renderPredictCalendar();
-      runRowCyclePrediction();
+      runRowCyclePrediction(shouldCollapse);
     }
 
     function renderPredictCalendar() {
@@ -2797,7 +3017,7 @@
         const holName = HK_STATUTORY_HOLIDAYS[dStr];
         const isSel = dStr === appState.predictTargetDate;
         grid.innerHTML += `
-          <div onclick="selectPredictTargetDate('${dStr}')" class="cal-cell ${isSel ? 'sel' : (holName ? 'hol' : '')}" title="${holName || dStr}">
+          <div onclick="selectPredictTargetDate('${dStr}', true)" class="cal-cell ${isSel ? 'sel' : (holName ? 'hol' : '')}" title="${holName || dStr}">
             <div>${d}</div>
             ${holName ? `<div style="font-size:8px;line-height:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${holName}</div>` : ''}
           </div>
@@ -2821,13 +3041,26 @@
       };
     }
 
-    function runRowCyclePrediction() {
-      const startRow = parseInt(document.getElementById('predict-start-row').value || '1', 10);
+    function runRowCyclePrediction(autoCollapse = false) {
       const baseMonday = getMondayOfDate(getTodayLocalStr());
+      const selectedStaffName = appState.predictSelectedStaffName || MASTER_21_ROTATION[0].name;
+      const startRow = getBaseRowForStaffName(selectedStaffName, baseMonday);
+      appState.predictSelectedBaseRow = startRow;
+
+      const rowPillEl = document.getElementById('predict-selected-row-pill');
+      if (rowPillEl) {
+        rowPillEl.textContent = startRow <= 17 ? `${selectedStaffName} · 本週第 ${startRow} 行` : `${selectedStaffName} · 本週第 ${startRow} 行（替假）`;
+      }
+
       const targetDate = appState.predictTargetDate || addDaysToDateStr(getTodayLocalStr(), 7);
       const targetDateObj = parseLocalDate(targetDate);
       const targetWeekdayName = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'][(targetDateObj.getDay() + 6) % 7];
       const holName = HK_STATUTORY_HOLIDAYS[targetDate] || '';
+
+      const collapsedSummaryEl = document.getElementById('predict-collapsed-summary');
+      if (collapsedSummaryEl) {
+        collapsedSummaryEl.textContent = `查詢：${selectedStaffName}（第${startRow}行）｜ 日期：${targetDate}（${targetWeekdayName}）`;
+      }
 
       const reserveNoticeEl = document.getElementById('reserve-row-notice');
       const twoWeeksWrapEl = document.getElementById('predict-two-weeks-wrapper');
@@ -2838,7 +3071,7 @@
         document.getElementById('predict-single-result').innerHTML = `
           <div>
             <div style="font-size:11px;color:#5eead4;font-weight:600;">
-              ${targetDate}（${targetWeekdayName}）
+              ${selectedStaffName} · ${targetDate}（${targetWeekdayName}）
               ${holName ? `<span style="background:#e11d48;color:#fff;padding:1px 5px;border-radius:4px;margin-left:4px;">🇭🇰 ${holName}</span>` : ''}
             </div>
             <div style="font-size:13px;font-weight:700;margin-top:2px;color:#fcd34d;">
@@ -2851,6 +3084,7 @@
           </div>
         `;
         renderPredict21RowsRoster(baseMonday, targetDate, startRow);
+        if (autoCollapse) collapsePredictQueryPanel();
         return;
       }
 
@@ -2862,7 +3096,7 @@
       document.getElementById('predict-single-result').innerHTML = `
         <div>
           <div style="font-size:11px;color:#5eead4;font-weight:600;">
-            ${targetDate}（${res.weekdayName}）
+            ${selectedStaffName}（第${res.projectedRow}行）· ${targetDate}（${res.weekdayName}）
             ${res.holidayName ? `<span style="background:#e11d48;color:#fff;padding:1px 5px;border-radius:4px;margin-left:4px;">🇭🇰 ${res.holidayName}</span>` : ''}
           </div>
         </div>
@@ -2877,8 +3111,10 @@
       const targetWeekMon = getMondayOfDate(targetDate);
       const nextWeekMon = addDaysToDateStr(targetWeekMon, 7);
 
-      document.getElementById('predict-two-weeks-title').textContent = `兩星期更期月曆`;
+      document.getElementById('predict-two-weeks-title').textContent = `兩星期更期月曆（${selectedStaffName}）`;
       renderTwoWeeksCalendar(targetWeekMon, nextWeekMon, startRow, baseMonday, targetDate);
+
+      if (autoCollapse) collapsePredictQueryPanel();
     }
 
     function renderTwoWeeksCalendar(week1Mon, week2Mon, startRow, baseMonday, highlightDate) {
@@ -2894,7 +3130,7 @@
           const isHol = Boolean(dayRes.holidayName);
           const isTarget = (dStr === highlightDate);
           rowDiv.innerHTML += `
-            <div onclick="selectPredictTargetDate('${dStr}')" class="day7-card ${isTarget ? 'target' : (isHol ? 'hol' : '')}" style="cursor:pointer;">
+            <div onclick="selectPredictTargetDate('${dStr}', false)" class="day7-card ${isTarget ? 'target' : (isHol ? 'hol' : '')}" style="cursor:pointer;">
               <div style="font-size:10px;color:${isHol ? '#be123c' : '#64748b'};font-weight:${isTarget ? '800' : '600'};">${dStr.slice(5)}</div>
               <div class="duty-font" style="font-size:13px;margin-top:2px;color:${isTarget ? '#0f766e' : '#0f172a'};">${dayRes.dutyCode}</div>
               ${isHol ? `<div style="font-size:8px;color:#e11d48;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${dayRes.holidayName}</div>` : ''}
@@ -2905,16 +3141,26 @@
       });
     }
 
-    function selectBaseRowFromProjectedRow(projectedRow1Based, weeksDiffFromBase) {
-      const rowSel = document.getElementById('predict-start-row');
-      if (!rowSel) return;
-      if (projectedRow1Based >= 18) {
-        rowSel.value = String(projectedRow1Based);
-      } else {
-        const baseRow1Based = (((projectedRow1Based - 1 - weeksDiffFromBase) % 17) + 17) % 17 + 1;
-        rowSel.value = String(baseRow1Based);
+    function selectBaseRowFromProjectedRow(projectedRow1Based, weeksDiffFromBase, staffName) {
+      if (staffName) {
+        appState.predictSelectedStaffName = staffName;
+        renderPredictStaffCardsGrid();
       }
-      runRowCyclePrediction();
+      runRowCyclePrediction(false);
+    }
+
+    function isOffOrHolidayPredictionCode(code) {
+      const inner = unwrapBracketDuty(code).toUpperCase().trim();
+      if (!inner) return false;
+      const exactTargets = ['O', 'WO', 'WO OWING', 'OW', 'SH', 'PH', 'AL'];
+      if (exactTargets.includes(inner)) return true;
+      return inner.startsWith('SH/') || inner.includes('OWING');
+    }
+
+    // 3. 判斷是否為 SH/替 同事（排到休假/假期同事卡片最後面）
+    function isShReliefCode(code) {
+      const inner = unwrapBracketDuty(code).toUpperCase().trim();
+      return inner.includes('SH/替') || inner.includes('替');
     }
 
     function renderPredict21RowsRoster(baseMonday, targetDate, highlightedProjectedRow1Based) {
@@ -2944,6 +3190,8 @@
       const targetMonDate = parseLocalDate(targetWeekMon);
       const weeksDiffFromBase = Math.round((targetMonDate - baseMonDate) / (7 * 24 * 60 * 60 * 1000));
 
+      const targetDayOffStaffList = [];
+
       const rowsHtmlArr = expectedTargetWeekRoster.map((personObj, rowIdx0) => {
         const rowNum1Based = rowIdx0 + 1;
         const staffName = personObj.name;
@@ -2962,18 +3210,30 @@
         let dayCellsHtml = '';
         for (let dIdx = 0; dIdx < 7; dIdx++) {
           const dStr = addDaysToDateStr(targetWeekMon, dIdx);
-          const code = isReserveRow
+          const actualDutyInList = getDutyByStaffNameOnDate(dStr, staffName);
+          const predictedCode = isReserveRow
             ? '替假'
             : (calculatePredictedDutyForDate(origBaseRow1Based, baseMonday, dStr).dutyCode || '');
+          const code = actualDutyInList || predictedCode;
+
+          if (dStr === targetDate && isOffOrHolidayPredictionCode(code)) {
+            targetDayOffStaffList.push({
+              row: rowNum1Based,
+              name: staffName,
+              code,
+              isShRelief: isShReliefCode(code)
+            });
+          }
+
           const colHlCls = targetColFlags[dIdx] ? 'pred-col-hl' : '';
-          dayCellsHtml += `<td class="pred-col-day ${colHlCls}" onclick="selectPredictTargetDate('${dStr}')"><span class="duty-font pred-pill ${getDutyBadgeClass(code)}">${code}</span></td>`;
+          dayCellsHtml += `<td class="pred-col-day ${colHlCls}" onclick="selectPredictTargetDate('${dStr}', false)"><span class="duty-font pred-pill ${getDutyBadgeClass(code)}">${code}</span></td>`;
         }
 
         const trCls = isSelectedRow ? 'pred-row-hl' : '';
         const trStyle = (!isSelectedRow && isReserveRow) ? ' style="background:#fffbeb;"' : '';
 
         return `<tr class="${trCls}"${trStyle}>
-          <td class="pred-col-idx" onclick="selectBaseRowFromProjectedRow(${rowNum1Based}, ${weeksDiffFromBase})" style="cursor:pointer;">${rowNum1Based}</td>
+          <td class="pred-col-idx" onclick="selectBaseRowFromProjectedRow(${rowNum1Based}, ${weeksDiffFromBase}, '${staffName}')" style="cursor:pointer;">${rowNum1Based}</td>
           <td class="pred-col-name">${renderStaffNameWithWaHtml(staffName, -1, false)}</td>
           <td class="pred-col-edge"><span class="duty-font pred-pill ${getDutyBadgeClass(prevSunCode)}">${prevSunCode}</span></td>
           ${dayCellsHtml}
@@ -2982,9 +3242,41 @@
       });
 
       document.getElementById('predict-21rows-tbody').innerHTML = rowsHtmlArr.join('');
+
+      // 3. 休假/假期同事：SH/替 放到最後，並將卡片名字整齊對齊，名字直接作為 WhatsApp 外部連結
+      targetDayOffStaffList.sort((a, b) => {
+        if (a.isShRelief !== b.isShRelief) return a.isShRelief ? 1 : -1;
+        return a.row - b.row;
+      });
+
+      const offTitleEl = document.getElementById('predict-off-staff-title');
+      const offCountEl = document.getElementById('predict-off-staff-count');
+      const offCardsEl = document.getElementById('predict-off-staff-cards');
+      if (offTitleEl && offCountEl && offCardsEl) {
+        offTitleEl.textContent = `${targetDate} 休假 / 假期同事（直接點擊名字開啟 WhatsApp）`;
+        offCountEl.textContent = `${targetDayOffStaffList.length}人`;
+        if (!targetDayOffStaffList.length) {
+          offCardsEl.innerHTML = `<span style="font-size:11px;color:#94a3b8;grid-column:1/-1;">當日暫無休假同事紀錄</span>`;
+        } else {
+          offCardsEl.innerHTML = targetDayOffStaffList.map(item => {
+            const waUrl = buildWhatsAppUrl(item.name, '');
+            const nameElementHtml = waUrl
+              ? `<a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="wa-name-link" title="開啟 WhatsApp 聯絡 ${item.name}">${item.name}</a>`
+              : `<strong style="color:#1e293b;">${item.name}</strong>`;
+            return `
+              <div class="off-staff-card">
+                <div class="off-staff-left">
+                  <span class="off-staff-idx">#${item.row}</span>
+                  <span class="off-staff-name-slot">${nameElementHtml}</span>
+                </div>
+                <span class="duty-font code-badge ${item.isShRelief ? 'indigo' : 'warn'}" style="font-size:10px;padding:0 5px;">${item.code}</span>
+              </div>
+            `;
+          }).join('');
+        }
+      }
     }
 
-    // 7. 唯讀規律樣本表（點擊缩圖放大觀看，取消點擊更改功能）
     function openSamplePatternViewerModal() {
       renderSamplePatternTable();
       document.getElementById('sample-viewer-modal').classList.remove('hidden');
@@ -3249,7 +3541,21 @@
       `).join('');
     }
 
+    // DutyList 中當該週已有更期時，上載圖片覆蓋前彈出警告確認
     function confirmImportAllWeeks() {
+      const existingMondays = verifiedImportPayloads
+        .map(p => getMondayOfDate(p.monday))
+        .filter(m => {
+          const w = appState.weeks[m];
+          return w && Array.isArray(w.rows) && w.rows.some(r => (r.name || '').trim() && (r.duties || []).some(d => (d || '').trim() !== ''));
+        });
+
+      if (existingMondays.length > 0) {
+        const uniqueExisting = Array.from(new Set(existingMondays));
+        const okToOverwrite = confirm(`⚠️ 警告：DutyList 中以下週次已有更期紀錄：\n${uniqueExisting.join('、')}\n\n確定要用新上載的圖片更期覆蓋原有資料嗎？`);
+        if (!okToOverwrite) return;
+      }
+
       verifiedImportPayloads.forEach(payload => {
         const monday = getMondayOfDate(payload.monday);
         const normalizedRows = normalizeWeekRowsNoEmptyWhenFull(payload.rows || []);
