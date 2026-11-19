@@ -88,7 +88,7 @@
       font-weight: 600; color: #1e293b; background: #fff;
     }
 
-    /* 1. WhatsApp 直接名字外連樣式（不另設按鈕） */
+    /* WhatsApp 直接名字外連樣式 */
     .wa-name-link {
       color: #0f766e; font-weight: 700; text-decoration: underline;
       text-decoration-color: rgba(15, 118, 110, 0.45);
@@ -160,9 +160,11 @@
     .status-mini-pill.meal { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
     .status-mini-pill.off-work { background: #e2e8f0; color: #475569; }
     .status-mini-pill.relief { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
+    .status-mini-pill.swapped-meal { background: #fce7f3; color: #be185d; border: 1px solid #f9a8d4; }
+    .status-mini-pill.swapped-duty { background: #e0e7ff; color: #3730a3; border: 1px solid #a5b4fc; }
     .status-mini-pill.zone {
       background: #ccfbf1; color: #115e59; border: 1px solid #5eead4;
-      white-space: normal; word-break: break-word; line-height: 1.2;
+      white-space: normal; word-break: break-word; line-height: 1.25;
     }
 
     .code-badge {
@@ -202,7 +204,30 @@
       display: flex; gap: 4px; overflow-x: auto; padding-top: 3px;
     }
     .next7-pill {
-      flex-shrink: 0; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 5px; text-align: center; background: #f8fafc; min-width: 38px;
+      flex-shrink: 0; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 5px; text-align: center; background: #f8fafc; min-width: 48px;
+    }
+    .draft-badge {
+      display: inline-block; font-size: 9px; font-weight: 800;
+      background: #fef3c7; color: #b45309; border: 1px solid #f59e0b;
+      padding: 0 4px; border-radius: 3px; line-height: 1.25;
+    }
+
+    /* 未來 7 日合併更表樣式 */
+    table.next7-matrix-tbl {
+      width: 100%; border-collapse: collapse; text-align: center; font-size: 11px; table-layout: fixed; background: #fff;
+    }
+    table.next7-matrix-tbl th,
+    table.next7-matrix-tbl td {
+      border: 1px solid #cbd5e1; padding: 4px 2px;
+    }
+    table.next7-matrix-tbl th {
+      background: #f1f5f9; color: #334155; font-weight: 700; line-height: 1.2;
+    }
+    table.next7-matrix-tbl th.draft-col-head {
+      background: #fffbeb; color: #92400e;
+    }
+    table.next7-matrix-tbl td.draft-col-cell {
+      background: rgba(255, 251, 235, 0.55);
     }
 
     /* DutyList 表格 */
@@ -343,7 +368,7 @@
       background: #ccfbf1;
     }
 
-    /* 3. 目標日放假同事卡片區（名字整齊對齊 + 直接姓名 WhatsApp 外連） */
+    /* 目標日放假同事卡片區 */
     .off-staff-box {
       background: #fff1f2;
       border: 1px solid #fecdd3;
@@ -524,17 +549,15 @@
     <!-- ==================== 分頁 1：OnDuty ==================== -->
     <section id="view-today" style="display:flex;flex-direction:column;gap:8px;">
       <div class="card card-pad" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-        <div class="flex-center">
-          <span id="live-today-clock-badge" style="font-size:11px;color:#0f766e;font-weight:800;background:#f0fdfa;border:1px solid #5eead4;padding:3px 9px;border-radius:6px;font-variant-numeric:tabular-nums;">今日：-- ｜ 現時：--:--:--</span>
-          <button onclick="jumpToRealToday()" class="btn-sm" style="font-size:11px;padding:3px 7px;background:#ecfdf5;color:#065f46;border-color:#6ee7b7;">回今日</button>
-        </div>
-
+        <!-- 日期選擇器 + 星期幾 + 回今日按鈕 -->
         <div class="flex-center">
           <input type="date" id="today-date-picker" onchange="renderTodayView()" class="input-box" />
           <span id="today-weekday-badge" class="btn-sm" style="background:#f0fdfa;color:#115e59;border-color:#99f6e4;">星期四</span>
+          <button onclick="jumpToRealToday()" class="btn-sm" style="font-size:11px;padding:4px 8px;background:#ecfdf5;color:#065f46;border-color:#6ee7b7;">回今日</button>
           <span id="today-hk-holiday-badge" class="btn-sm hidden" style="background:#ffe4e6;color:#9f1239;border-color:#fecdd3;"></span>
         </div>
 
+        <!-- A / P / N 按鈕 -->
         <div class="flex-center">
           <div class="slot-group">
             <button onclick="setShiftSlot('A', true)" id="slot-A" class="slot-btn active">A Duty</button>
@@ -543,10 +566,16 @@
           </div>
         </div>
 
+        <!-- 現時時間放到 A P N 按鈕下 -->
+        <div class="flex-center">
+          <span id="live-today-clock-badge" style="font-size:11px;color:#0f766e;font-weight:800;background:#f0fdfa;border:1px solid #5eead4;padding:3px 9px;border-radius:6px;font-variant-numeric:tabular-nums;">現時：--:--:--</span>
+        </div>
+
         <div class="legend-bar">
           <span><span class="legend-dot" style="background:#dbeafe;border:1px solid #93c5fd;"></span>未上班</span>
           <span><span class="legend-dot" style="background:#fef3c7;border:1px solid #fbbf24;"></span>食飯中</span>
           <span><span class="legend-dot" style="background:#ffedd5;border:1px solid #fdba74;"></span>替食飯</span>
+          <span><span class="legend-dot" style="background:#fce7f3;border:1px solid #f9a8d4;"></span>調食飯</span>
           <span><span class="legend-dot" style="background:#ccfbf1;border:1px solid #5eead4;"></span>工作位置</span>
           <span><span class="legend-dot" style="background:#e2e8f0;border:1px solid #94a3b8;"></span>已放工</span>
         </div>
@@ -597,11 +626,14 @@
         <div id="mid-shift-list" class="mid-grid"></div>
       </div>
 
-      <!-- 當日返放工、食飯、交接與未來7日更期 -->
+      <!-- 當日返放工、食飯、交接與未來7日更期（加入列表顯示按鈕） -->
       <div class="card card-pad" style="display:flex;flex-direction:column;gap:8px;">
         <div class="toolbar" style="border-bottom:1px solid #f1f5f9;padding-bottom:6px;">
           <strong style="color:#115e59;font-size:13px;">當日返放工、食飯、交接與未來 7 日更期</strong>
-          <button onclick="openAlarmModal()" class="btn-sm" style="background:#fef3c7;color:#92400e;border-color:#fcd34d;">⏰ 鬧鐘提醒設定</button>
+          <div class="flex-row">
+            <button id="btn-toggle-next7-matrix" onclick="toggleNext7MatrixView()" class="btn-sm" style="background:#f0fdfa;color:#115e59;border-color:#5eead4;">📋 列表顯示</button>
+            <button onclick="openAlarmModal()" class="btn-sm" style="background:#fef3c7;color:#92400e;border-color:#fcd34d;">⏰ 鬧鐘提醒設定</button>
+          </div>
         </div>
         <div id="duty-schedule-detail-list" style="display:flex;flex-direction:column;gap:6px;"></div>
       </div>
@@ -657,12 +689,11 @@
     <!-- ==================== 分頁 3：更期預測 ==================== -->
     <section id="view-predict" class="hidden" style="display:flex;flex-direction:column;gap:10px;">
       <div class="card card-pad" style="display:flex;flex-direction:column;gap:10px;">
-        <!-- 4. 免責聲明標題置中顯示 -->
         <div style="border-bottom:1px solid #f1f5f9;padding-bottom:6px;text-align:center;">
           <strong style="color:#be123c;font-size:12.5px;">更期預測只作參考之用，如有重要事情，請自行計算更期</strong>
         </div>
 
-        <!-- 摺疊收起列（點選日期查詢後自動顯示，點擊向下按鈕展開） -->
+        <!-- 摺疊收起列 -->
         <div id="predict-query-collapsed-bar" class="query-collapsed-bar hidden" onclick="expandPredictQueryPanel()">
           <div style="font-size:11.5px;font-weight:700;color:#115e59;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
             <span id="predict-collapsed-summary">已選同事與日期</span>
@@ -670,14 +701,13 @@
           <button type="button" class="btn-sm btn-teal" style="font-size:11px;padding:3px 8px;flex-shrink:0;">▼ 展開查詢與月曆</button>
         </div>
 
-        <!-- 查詢與月曆面板（含 21 位同事 3×7 按筆畫排序姓名小卡片 ＋ 月曆卡片） -->
+        <!-- 查詢與月曆面板 -->
         <div id="predict-top-collapsible-panel" class="predict-top-grid">
           <div>
             <div class="toolbar" style="margin-bottom:4px;">
               <label style="font-weight:700;color:#115e59;">選擇同事姓名（按姓氏筆畫排序 · 3×7）</label>
               <span id="predict-selected-row-pill" style="font-size:10px;background:#ccfbf1;color:#115e59;padding:1px 6px;border-radius:4px;font-weight:800;">第 1 行</span>
             </div>
-            <!-- 21 位同事姓名橫向 3 行每行 7 個姓名小卡片 -->
             <div id="predict-staff-cards-grid" class="staff-grid-3x7"></div>
             <div id="locked-current-week-label" style="font-size:11px;color:#0f766e;font-weight:600;margin-top:6px;"></div>
             <div id="reserve-row-notice" class="hidden" style="margin-top:6px;padding:6px 8px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;color:#92400e;font-size:11px;font-weight:700;">
@@ -721,7 +751,7 @@
             </button>
           </div>
 
-          <!-- 3. 當日休假 / 假期同事卡片（SH/替 放最後，名字整齊對齊，名字直接作為 WhatsApp 外連） -->
+          <!-- 當日休假 / 假期同事卡片 -->
           <div id="predict-off-staff-panel" class="off-staff-box">
             <div class="toolbar">
               <strong id="predict-off-staff-title" style="font-size:11px;color:#9f1239;">當日休假 / 假期同事（O / WO / OW / SH / PH / AL）</strong>
@@ -767,7 +797,24 @@
     </section>
   </main>
 
-  <!-- ==================== 彈窗 5：DutyList 格子更期選擇器（預設取消勾選 []） ==================== -->
+  <!-- ==================== 彈窗 7：OnDuty 互調食飯選擇器 ==================== -->
+  <div id="meal-swap-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeMealSwapModal()">
+    <div class="modal-box" style="max-width:420px;" onclick="event.stopPropagation()">
+      <div class="modal-head">
+        <span id="meal-swap-modal-title">互調食飯時間</span>
+        <button onclick="closeMealSwapModal()" style="background:none;color:#fff;font-size:20px;">&times;</button>
+      </div>
+      <div class="modal-body" style="gap:8px;">
+        <div id="meal-swap-modal-desc" style="font-size:11.5px;color:#0f766e;font-weight:700;background:#f0fdfa;border:1px solid #99f6e4;padding:6px 8px;border-radius:6px;"></div>
+        <div id="meal-swap-candidates-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+      </div>
+      <div class="modal-foot">
+        <button onclick="closeMealSwapModal()" class="btn-sm">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 彈窗 5：DutyList 格子更期選擇器 ==================== -->
   <div id="duty-picker-modal" class="modal-backdrop hidden" onclick="if(event.target===this) closeDutyPickerModal()">
     <div class="modal-box" style="max-width:440px;" onclick="event.stopPropagation()">
       <div class="modal-head">
@@ -1026,12 +1073,13 @@
 
     const APPLY_SHIFT_FORM_URL = "https://docs.google.com/forms/d/1wZFdmvXap07wmI2nzzdco4ercp5eYPI82yml-tlhkS8/viewform?edit_requested=true&pli=1&authuser=0";
 
-    const STORAGE_KEY = 'qeh_aed_duty_v20';
-    const BACKUP_KEY = 'qeh_aed_duty_backup_v20';
+    const STORAGE_KEY = 'qeh_aed_duty_v21';
+    const BACKUP_KEY = 'qeh_aed_duty_backup_v21';
     const BACKUP_FLAG_KEY = 'qeh_aed_auto_backup_enabled';
     const AUTO_CLOUD_FLAG_KEY = 'qeh_aed_auto_cloud_upload_enabled';
     const DICT_STORAGE_KEY = 'qeh_aed_ocr_dictionary_v12';
     const ALARM_STORAGE_KEY = 'qeh_aed_alarms_v7';
+    const MEAL_SWAPS_STORAGE_KEY = 'qeh_aed_meal_swaps_v4';
     const CLOUD_DB_ENDPOINT = '/api/duty-db';
 
     const STAFF_PHONE_MAP = {
@@ -1059,21 +1107,9 @@
     };
 
     const SURNAME_STROKES_MAP = {
-      '王': 4,
-      '丘': 5,
-      '朱': 6,
-      '吳': 7,
-      '李': 7,
-      '侯': 9,
-      '張': 11,
-      '梅': 11,
-      '陳': 11,
-      '黃': 12,
-      '馮': 12,
-      '葉': 13,
-      '謝': 17,
-      '關': 19,
-      '蘇': 22
+      '王': 4, '丘': 5, '朱': 6, '吳': 7, '李': 7, '侯': 9,
+      '張': 11, '梅': 11, '陳': 11, '黃': 12, '馮': 12,
+      '葉': 13, '謝': 17, '關': 19, '蘇': 22
     };
 
     function getCleanWaNumber(name) {
@@ -1225,6 +1261,8 @@
       dictionary: JSON.parse(JSON.stringify(DEFAULT_DICTIONARY)),
       highlightedStaff: '',
       alarms: [],
+      mealSwapsByDate: {},
+      showNext7AsMatrix: false,
       cloudImages: [],
       lastCloudUpdatedAt: '',
       predictCalYear: 2026,
@@ -1295,7 +1333,6 @@
     function updateLiveClockAndAutoSlot(forceAutoSlot = false) {
       const now = new Date();
       const todayStr = formatLocalDate(now);
-      const dayNames = ['日', '一', '二', '三', '四', '五', '六'];
       const hh = String(now.getHours()).padStart(2, '0');
       const mm = String(now.getMinutes()).padStart(2, '0');
       const ss = String(now.getSeconds()).padStart(2, '0');
@@ -1305,7 +1342,7 @@
       const liveBadge = document.getElementById('live-today-clock-badge');
       if (liveBadge) {
         const overnightNote = (autoSlot === 'N' && mins < 420) ? ` · 延續${addDaysToDateStr(todayStr, -1).slice(5)} N` : '';
-        liveBadge.textContent = `今日：${todayStr} (${dayNames[now.getDay()]}) ｜ 現時：${hh}:${mm}:${ss} (${autoSlot} Duty${overnightNote})`;
+        liveBadge.textContent = `現時：${hh}:${mm}:${ss}（${autoSlot} Duty${overnightNote}）`;
       }
 
       if (forceAutoSlot || !appState.manualSlotOverride) {
@@ -1339,18 +1376,56 @@
       renderTodayView();
     }
 
-    function getMealReliefLabel(normCode, mins) {
+    // 依當前該更期是否正在食飯，決定替更標籤
+    function getMealReliefLabelForCurrentMinute(normCode, mins, selectedDateStr) {
+      if (selectedDateStr !== getTodayLocalStr()) return '';
       if (normCode === '11/8' || normCode === '11-8') {
         if (mins >= 720 && mins < 780) return '替 Ac';
-        if (mins >= 1140 && mins < 1200) return '替 Ec';
+        if (mins >= 1140 && mins < 1200) {
+          const activeLunchNorms = getActivelyMealNormCodesOnDate(selectedDateStr, mins);
+          if (activeLunchNorms.has('Ec')) return '替 Ec';
+          if (activeLunchNorms.has('Ed')) return '替 Ed';
+          return '替 Ec';
+        }
       } else if (normCode === 'Aa') {
-        if (mins >= 780 && mins < 840) return '替 Ad';
+        if (mins >= 780 && mins < 840) {
+          const activeLunchNorms = getActivelyMealNormCodesOnDate(selectedDateStr, mins);
+          if (activeLunchNorms.has('Ad')) return '替 Ad';
+          if (activeLunchNorms.has('Ac')) return '替 Ac';
+          return '替 Ad';
+        }
       } else if (normCode === 'Pa') {
-        if (mins >= 1200 && mins < 1260) return '替 Ed';
+        if (mins >= 1200 && mins < 1260) {
+          const activeLunchNorms = getActivelyMealNormCodesOnDate(selectedDateStr, mins);
+          if (activeLunchNorms.has('Ed')) return '替 Ed';
+          if (activeLunchNorms.has('Ec')) return '替 Ec';
+          return '替 Ed';
+        }
       }
       return '';
     }
 
+    // 取得當刻實際正在食飯的所有同事「有效更期代碼集合」
+    function getActivelyMealNormCodesOnDate(dateStr, nowMins) {
+      const activeSet = new Set();
+      const mondayStr = getMondayOfDate(dateStr);
+      const weekObj = appState.weeks[mondayStr];
+      if (!weekObj || !Array.isArray(weekObj.rows)) return activeSet;
+
+      weekObj.rows.forEach(r => {
+        const name = (r.name || '').trim();
+        if (!name) return;
+        const code = getDutyByStaffNameOnDate(dateStr, name);
+        if (!code || isLeaveOrOffCode(code) || isNightNCode(code)) return;
+        const mealInfo = getEffectiveMealInfo(name, code, dateStr);
+        if (nowMins >= mealInfo.mealStartMin && nowMins < mealInfo.mealEndMin) {
+          activeSet.add(normalizeDutyCode(code));
+        }
+      });
+      return activeSet;
+    }
+
+    // 依指定時間表顯示各更期工作位置先後次序
     function getRealtimeZoneLabel(code, selectedDateStr, isTonightNextNight = false) {
       const todayStr = getTodayLocalStr();
       const yesterdayStr = addDaysToDateStr(todayStr, -1);
@@ -1364,10 +1439,14 @@
         if (isActiveNight) return '電話/Cub/R房';
         return '';
       } else if (norm === 'Ne') {
-        if (isTonightNextNight && selectedDateStr === todayStr && mins >= 1350 && mins < 1380) return 'G1H2/ALG';
-        if (isTonightNextNight && selectedDateStr === todayStr && mins >= 1380) return 'Cub/R房/G1H2';
-        if (isTonightNextNight && selectedDateStr === yesterdayStr && mins < 300) return 'Cub/R房/G1H2';
-        if (isTonightNextNight && selectedDateStr === yesterdayStr && mins >= 300 && mins < 438) return 'G1H2/ALG/Cub';
+        if (isTonightNextNight && selectedDateStr === todayStr) {
+          if (mins >= 1350 && mins < 1380) return 'G1H2/ALG';
+          if (mins >= 1380) return 'Cub/R房/G1H2';
+        }
+        if (isTonightNextNight && selectedDateStr === yesterdayStr) {
+          if (mins < 300) return 'Cub/R房/G1H2';
+          if (mins >= 300 && mins < 438) return 'G1H2/ALG/Cub';
+        }
         return '';
       }
 
@@ -1392,6 +1471,7 @@
         if (mins >= 825 && mins < 840) return 'G1';
         if (mins >= 840 && mins < 930) return '物資';
         if (mins >= 1200 && mins < 1353) return 'R房/Cub';
+        if (mins >= 825 && mins < 1353) return 'Cub/R房';
       } else if (norm === 'Ec') {
         if (mins >= 930 && mins < 960) return '電話/Cub/美好/ALG/G1H2';
         if (mins >= 855 && mins < 1383) return 'Cub/美好/ALG';
@@ -1414,12 +1494,61 @@
       return '';
     }
 
-    function evaluateStaffLiveStatus(code, selectedDateStr, isTonightNextNight = false) {
-      const todayStr = getTodayLocalStr();
-      const yesterdayStr = addDaysToDateStr(todayStr, -1);
+    // 取得該同事當日的有效食飯時段（若舊快取缺少 partnerCode，會即時從當日 DutyList 反查對方更期代碼並寫回）
+    function getEffectiveMealInfo(staffName, code, selectedDateStr) {
       const norm = normalizeDutyCode(code);
       const spec = DUTY_SPEC_MAP[norm];
-      if (!spec) return { state: 'normal', label: '', reliefLabel: '', zoneLabel: '', cssClass: '' };
+      const daySwaps = appState.mealSwapsByDate[selectedDateStr] || {};
+      const swapRec = staffName ? daySwaps[staffName] : null;
+      if (swapRec) {
+        let resolvedPartnerCode = swapRec.partnerCode || '';
+        if (!resolvedPartnerCode && swapRec.partner) {
+          resolvedPartnerCode = getDutyByStaffNameOnDate(selectedDateStr, swapRec.partner);
+          if (resolvedPartnerCode) {
+            swapRec.partnerCode = resolvedPartnerCode;
+            saveMealSwaps();
+          }
+        }
+        return {
+          mealStart: swapRec.mealStart,
+          mealStartMin: swapRec.mealStartMin,
+          mealEndMin: swapRec.mealEndMin,
+          mealText: swapRec.mealText,
+          isSwapped: true,
+          swapPartner: swapRec.partner,
+          partnerCode: resolvedPartnerCode,
+          origMealStartMin: swapRec.origMealStartMin,
+          origMealEndMin: swapRec.origMealEndMin
+        };
+      }
+      if (!spec) {
+        return {
+          mealStart: '13:00', mealStartMin: 780, mealEndMin: 840, mealText: '依崗位',
+          isSwapped: false, swapPartner: '', partnerCode: '', origMealStartMin: 780, origMealEndMin: 840
+        };
+      }
+      return {
+        mealStart: spec.mealStart,
+        mealStartMin: spec.mealStartMin,
+        mealEndMin: spec.mealEndMin,
+        mealText: spec.mealText,
+        isSwapped: false,
+        swapPartner: '',
+        partnerCode: '',
+        origMealStartMin: spec.mealStartMin,
+        origMealEndMin: spec.mealEndMin
+      };
+    }
+
+    // 原生單人即時狀態計算（不經互調代理，作為互調時「原本 A 顯示的就給 B 顯示」的基準）
+    function computeRawStaffLiveStatus(baseCode, selectedDateStr, isTonightNextNight = false) {
+      const todayStr = getTodayLocalStr();
+      const yesterdayStr = addDaysToDateStr(todayStr, -1);
+      const norm = normalizeDutyCode(baseCode);
+      const spec = DUTY_SPEC_MAP[norm];
+      if (!spec) {
+        return { state: 'normal', label: '', reliefLabel: '', zoneLabel: '', effectiveCode: baseCode, isCoveringPartner: false, cssClass: '' };
+      }
 
       const now = new Date();
       const nowMins = now.getHours() * 60 + now.getMinutes();
@@ -1427,58 +1556,96 @@
       if (isTonightNextNight) {
         if (selectedDateStr === todayStr) {
           if (nowMins < spec.workStartMin) {
-            return { state: 'not-started', label: '未上班', reliefLabel: '', zoneLabel: '', cssClass: 'st-not-started' };
+            return { state: 'not-started', label: '未上班', reliefLabel: '', zoneLabel: '', effectiveCode: baseCode, isCoveringPartner: false, cssClass: 'st-not-started' };
           }
-          const zoneLabel = getRealtimeZoneLabel(code, selectedDateStr, true);
-          return { state: 'working', label: '', reliefLabel: '', zoneLabel, cssClass: '' };
+          const zoneLabel = getRealtimeZoneLabel(baseCode, selectedDateStr, true);
+          return { state: 'working', label: '', reliefLabel: '', zoneLabel, effectiveCode: baseCode, isCoveringPartner: false, cssClass: '' };
         }
         if (selectedDateStr === yesterdayStr) {
           if (nowMins >= spec.workEndMin) {
-            return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', cssClass: 'st-off-work' };
+            return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', effectiveCode: baseCode, isCoveringPartner: false, cssClass: 'st-off-work' };
           }
           if (nowMins >= spec.mealStartMin && nowMins < spec.mealEndMin) {
-            return { state: 'meal', label: '食飯中', reliefLabel: '', zoneLabel: '', cssClass: 'st-meal' };
+            return { state: 'meal', label: '食飯中', reliefLabel: '', zoneLabel: '', effectiveCode: baseCode, isCoveringPartner: false, cssClass: 'st-meal' };
           }
-          const zoneLabel = getRealtimeZoneLabel(code, selectedDateStr, true);
-          return { state: 'working', label: '', reliefLabel: '', zoneLabel, cssClass: '' };
+          const zoneLabel = getRealtimeZoneLabel(baseCode, selectedDateStr, true);
+          return { state: 'working', label: '', reliefLabel: '', zoneLabel, effectiveCode: baseCode, isCoveringPartner: false, cssClass: '' };
         }
         if (selectedDateStr > todayStr) {
-          return { state: 'not-started', label: '未上班', reliefLabel: '', zoneLabel: '', cssClass: 'st-not-started' };
+          return { state: 'not-started', label: '未上班', reliefLabel: '', zoneLabel: '', effectiveCode: baseCode, isCoveringPartner: false, cssClass: 'st-not-started' };
         }
-        return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', cssClass: 'st-off-work' };
+        return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', effectiveCode: baseCode, isCoveringPartner: false, cssClass: 'st-off-work' };
       }
 
       if (selectedDateStr > todayStr) {
-        return { state: 'not-started', label: '未上班', reliefLabel: '', zoneLabel: '', cssClass: 'st-not-started' };
+        return { state: 'not-started', label: '未上班', reliefLabel: '', zoneLabel: '', effectiveCode: baseCode, isCoveringPartner: false, cssClass: 'st-not-started' };
       }
       if (selectedDateStr < todayStr) {
-        return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', cssClass: 'st-off-work' };
+        return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', effectiveCode: baseCode, isCoveringPartner: false, cssClass: 'st-off-work' };
       }
 
-      if (isNightNCode(code)) {
+      if (isNightNCode(baseCode)) {
         if (nowMins >= spec.workEndMin) {
-          return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', cssClass: 'st-off-work' };
+          return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', effectiveCode: baseCode, isCoveringPartner: false, cssClass: 'st-off-work' };
         }
         if (nowMins >= spec.mealStartMin && nowMins < spec.mealEndMin) {
-          return { state: 'meal', label: '食飯中', reliefLabel: '', zoneLabel: '', cssClass: 'st-meal' };
+          return { state: 'meal', label: '食飯中', reliefLabel: '', zoneLabel: '', effectiveCode: baseCode, isCoveringPartner: false, cssClass: 'st-meal' };
         }
-        return { state: 'working', label: '', reliefLabel: '', zoneLabel: '', cssClass: '' };
+        return { state: 'working', label: '', reliefLabel: '', zoneLabel: '', effectiveCode: baseCode, isCoveringPartner: false, cssClass: '' };
       }
 
       if (nowMins < spec.workStartMin) {
-        return { state: 'not-started', label: '未上班', reliefLabel: '', zoneLabel: '', cssClass: 'st-not-started' };
+        return { state: 'not-started', label: '未上班', reliefLabel: '', zoneLabel: '', effectiveCode: baseCode, isCoveringPartner: false, cssClass: 'st-not-started' };
       }
       if (nowMins >= spec.workEndMin) {
-        return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', cssClass: 'st-off-work' };
+        return { state: 'off-work', label: '已放工', reliefLabel: '', zoneLabel: '', effectiveCode: baseCode, isCoveringPartner: false, cssClass: 'st-off-work' };
       }
-
       if (nowMins >= spec.mealStartMin && nowMins < spec.mealEndMin) {
-        return { state: 'meal', label: '食飯中', reliefLabel: '', zoneLabel: '', cssClass: 'st-meal' };
+        return { state: 'meal', label: '食飯中', reliefLabel: '', zoneLabel: '', effectiveCode: baseCode, isCoveringPartner: false, cssClass: 'st-meal' };
       }
 
-      const reliefLabel = getMealReliefLabel(norm, nowMins);
-      const zoneLabel = getRealtimeZoneLabel(code, selectedDateStr, false);
-      return { state: 'working', label: '', reliefLabel, zoneLabel, cssClass: '' };
+      const reliefLabel = getMealReliefLabelForCurrentMinute(norm, nowMins, selectedDateStr);
+      const zoneLabel = getRealtimeZoneLabel(baseCode, selectedDateStr, false);
+      return { state: 'working', label: '', reliefLabel, zoneLabel, effectiveCode: baseCode, isCoveringPartner: false, cssClass: '' };
+    }
+
+    // 完整食飯兩時段互換（Full Slot Proxy Swap）：
+    // 對調食飯後，在「原本自己食飯時段」或「原本對方食飯時段」這兩小時內，
+    // 直接把原本對方該顯示的工作與食飯狀態交給自己顯示，原本自己該顯示的交給對方顯示！
+    function evaluateStaffLiveStatus(staffName, code, selectedDateStr, isTonightNextNight = false) {
+      const mealInfo = getEffectiveMealInfo(staffName, code, selectedDateStr);
+      const rawSelf = computeRawStaffLiveStatus(code, selectedDateStr, isTonightNextNight);
+
+      if (!isTonightNextNight && mealInfo.isSwapped && mealInfo.partnerCode && selectedDateStr === getTodayLocalStr()) {
+        const now = new Date();
+        const nowMins = now.getHours() * 60 + now.getMinutes();
+
+        const selfSpec = DUTY_SPEC_MAP[normalizeDutyCode(code)];
+        const partnerSpec = DUTY_SPEC_MAP[normalizeDutyCode(mealInfo.partnerCode)];
+
+        if (selfSpec && partnerSpec) {
+          const inSelfOrigMealWindow = (nowMins >= selfSpec.mealStartMin && nowMins < selfSpec.mealEndMin);
+          const inPartnerOrigMealWindow = (nowMins >= partnerSpec.mealStartMin && nowMins < partnerSpec.mealEndMin);
+
+          // 只要處於兩人食飯的這兩個時段之一，且自己當刻正在上班時段內，直接互換兩人的顯示結果！
+          if ((inSelfOrigMealWindow || inPartnerOrigMealWindow) && rawSelf.state !== 'not-started' && rawSelf.state !== 'off-work') {
+            const rawPartner = computeRawStaffLiveStatus(mealInfo.partnerCode, selectedDateStr, false);
+            return {
+              ...rawPartner,
+              effectiveCode: mealInfo.partnerCode,
+              isCoveringPartner: (rawPartner.state === 'working'),
+              isSwapped: true,
+              swapPartner: mealInfo.swapPartner
+            };
+          }
+        }
+      }
+
+      return {
+        ...rawSelf,
+        isSwapped: mealInfo.isSwapped,
+        swapPartner: mealInfo.swapPartner
+      };
     }
 
     function unwrapBracketDuty(code) {
@@ -1563,7 +1730,7 @@
     }
 
     function closeAllModals() {
-      ['upload-modal', 'alarm-modal', 'settings-modal', 'cloud-image-viewer-modal', 'duty-picker-modal', 'sample-viewer-modal'].forEach(id => {
+      ['upload-modal', 'alarm-modal', 'settings-modal', 'cloud-image-viewer-modal', 'duty-picker-modal', 'sample-viewer-modal', 'meal-swap-modal'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
       });
@@ -1589,11 +1756,15 @@
       startHourlyForceReload();
 
       try {
-        const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('qeh_aed_duty_v19') || localStorage.getItem('qeh_aed_duty_v18');
+        const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('qeh_aed_duty_v20') || localStorage.getItem('qeh_aed_duty_v19');
         const backupFlag = localStorage.getItem(BACKUP_FLAG_KEY);
         const autoCloudFlag = localStorage.getItem(AUTO_CLOUD_FLAG_KEY);
         const savedDict = localStorage.getItem(DICT_STORAGE_KEY);
         const savedAlarms = localStorage.getItem(ALARM_STORAGE_KEY);
+        const savedMealSwaps = localStorage.getItem(MEAL_SWAPS_STORAGE_KEY)
+          || localStorage.getItem('qeh_aed_meal_swaps_v3')
+          || localStorage.getItem('qeh_aed_meal_swaps_v2')
+          || localStorage.getItem('qeh_aed_meal_swaps_v1');
 
         appState.autoBackup = (backupFlag === 'true');
         appState.autoCloudUpload = (autoCloudFlag === 'true');
@@ -1605,6 +1776,7 @@
           appState.dictionary = { ...parsedDict, names: mergedNames, leaveCodes: cleanedLeave };
         }
         if (savedAlarms) appState.alarms = JSON.parse(savedAlarms);
+        if (savedMealSwaps) appState.mealSwapsByDate = JSON.parse(savedMealSwaps);
 
         if (saved) {
           const parsed = JSON.parse(saved);
@@ -1646,6 +1818,12 @@
       renderAll();
 
       pullAllFromCloud(true);
+    }
+
+    function saveMealSwaps() {
+      try {
+        localStorage.setItem(MEAL_SWAPS_STORAGE_KEY, JSON.stringify(appState.mealSwapsByDate));
+      } catch (e) {}
     }
 
     function saveLocalOnly() {
@@ -2073,12 +2251,36 @@
       runRowCyclePrediction(false);
     }
 
-    // ==================== OnDuty ====================
+    // ==================== OnDuty 滑動切換 ====================
     function shiftTodayDate(deltaDays) {
       const picker = document.getElementById('today-date-picker');
       if (!picker.value) return;
       picker.value = addDaysToDateStr(picker.value, deltaDays);
       renderTodayView();
+    }
+
+    function handleOnDutySwipeStep(direction) {
+      const slotsOrder = ['A', 'P', 'N'];
+      const curIdx = slotsOrder.indexOf(appState.selectedSlot);
+      if (direction === 1) {
+        if (curIdx < 2) {
+          setShiftSlot(slotsOrder[curIdx + 1], true);
+        } else {
+          appState.manualSlotOverride = true;
+          appState.selectedSlot = 'A';
+          ['A', 'P', 'N'].forEach(s => document.getElementById('slot-' + s).classList.toggle('active', s === 'A'));
+          shiftTodayDate(1);
+        }
+      } else {
+        if (curIdx > 0) {
+          setShiftSlot(slotsOrder[curIdx - 1], true);
+        } else {
+          appState.manualSlotOverride = true;
+          appState.selectedSlot = 'N';
+          ['A', 'P', 'N'].forEach(s => document.getElementById('slot-' + s).classList.toggle('active', s === 'N'));
+          shiftTodayDate(-1);
+        }
+      }
     }
 
     function initSwipeGestureOnTodayView() {
@@ -2090,7 +2292,9 @@
         const dx = e.changedTouches[0].clientX - startX;
         const dy = e.changedTouches[0].clientY - startY;
         startX = 0;
-        if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.4) shiftTodayDate(dx < 0 ? 1 : -1);
+        if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+          handleOnDutySwipeStep(dx < 0 ? 1 : -1);
+        }
       }, { passive: true });
     }
 
@@ -2255,7 +2459,7 @@
         if (isNightNCode(todaySheetCode)) {
           allDayStaffPool.push({ row: staff.row, name: staff.name, code: todaySheetCode, normCode: normalizeDutyCode(todaySheetCode), dayTag: '昨夜N(07:18放工)' });
           sleepingCount++;
-          const sleepStatus = evaluateStaffLiveStatus(todaySheetCode, dateStr, false);
+          const sleepStatus = evaluateStaffLiveStatus(staff.name, todaySheetCode, dateStr, false);
           sleepingListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, todaySheetCode, 'indigo', sleepStatus);
         }
         if (isNightNCode(tomorrowSheetCode)) {
@@ -2264,7 +2468,7 @@
 
         if (isMidCode(todaySheetCode)) {
           midCount++;
-          const midStatus = evaluateStaffLiveStatus(todaySheetCode, dateStr, false);
+          const midStatus = evaluateStaffLiveStatus(staff.name, todaySheetCode, dateStr, false);
           midStaffItems.push({
             is118: is118Code(todaySheetCode),
             row: staff.row,
@@ -2279,14 +2483,14 @@
           if (isMorningACode(todaySheetCode)) {
             upCount++;
             const dispCode = isIncompleteSingleLetter(todaySheetCode) ? `${todaySheetCode}(待補位)` : todaySheetCode;
-            const st = evaluateStaffLiveStatus(todaySheetCode, dateStr, false);
+            const st = evaluateStaffLiveStatus(staff.name, todaySheetCode, dateStr, false);
             currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, dispCode, isIncompleteSingleLetter(todaySheetCode) ? 'warn' : 'teal', st);
             activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
           }
           if (isAfternoonPECode(todaySheetCode)) {
             downCount++;
             const dispCode = isIncompleteSingleLetter(todaySheetCode) ? `${todaySheetCode}(待補位)` : todaySheetCode;
-            const st = evaluateStaffLiveStatus(todaySheetCode, dateStr, false);
+            const st = evaluateStaffLiveStatus(staff.name, todaySheetCode, dateStr, false);
             nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, dispCode, isIncompleteSingleLetter(todaySheetCode) ? 'warn' : '', st);
             activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
           }
@@ -2294,26 +2498,26 @@
           if (isAfternoonPECode(todaySheetCode)) {
             upCount++;
             const dispCode = isIncompleteSingleLetter(todaySheetCode) ? `${todaySheetCode}(待補位)` : todaySheetCode;
-            const st = evaluateStaffLiveStatus(todaySheetCode, dateStr, false);
+            const st = evaluateStaffLiveStatus(staff.name, todaySheetCode, dateStr, false);
             currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, dispCode, isIncompleteSingleLetter(todaySheetCode) ? 'warn' : 'teal', st);
             activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
           }
           if (isNightNCode(tomorrowSheetCode)) {
             downCount++;
-            const st = evaluateStaffLiveStatus(tomorrowSheetCode, dateStr, true);
+            const st = evaluateStaffLiveStatus(staff.name, tomorrowSheetCode, dateStr, true);
             nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode, isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : '', st);
             activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: `${dateStr.slice(5)}夜N(22:30返工)` });
           }
         } else if (appState.selectedSlot === 'N') {
           if (isNightNCode(tomorrowSheetCode)) {
             upCount++;
-            const st = evaluateStaffLiveStatus(tomorrowSheetCode, dateStr, true);
+            const st = evaluateStaffLiveStatus(staff.name, tomorrowSheetCode, dateStr, true);
             currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode, isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : 'teal', st);
             activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: `${dateStr.slice(5)}夜N(22:30返工)` });
           }
           if (isMorningACode(tomorrowSheetCode)) {
             downCount++;
-            const st = evaluateStaffLiveStatus(tomorrowSheetCode, nextDateStr, false);
+            const st = evaluateStaffLiveStatus(staff.name, tomorrowSheetCode, nextDateStr, false);
             nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode, isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : '', st);
           }
         }
@@ -2359,8 +2563,14 @@
       renderDutyScheduleDetails(activeWorkingStaff, allDayStaffPool, dateStr);
     }
 
-    function createDutyPersonChip(rowNum, name, code, theme, liveStatus = { state: 'normal', label: '', reliefLabel: '', zoneLabel: '', cssClass: '' }) {
+    function createDutyPersonChip(rowNum, name, code, theme, liveStatus = { state: 'normal', label: '', reliefLabel: '', zoneLabel: '', effectiveCode: '', isCoveringPartner: false, isSwapped: false, cssClass: '' }) {
       const isHighlighted = appState.highlightedStaff === name;
+      const swappedBadgeHtml = liveStatus && liveStatus.isSwapped
+        ? `<span class="status-mini-pill swapped-meal">調食飯</span>`
+        : '';
+      const coveringDutyBadgeHtml = (liveStatus && liveStatus.state !== 'meal' && liveStatus.isCoveringPartner && liveStatus.effectiveCode)
+        ? `<span class="status-mini-pill swapped-duty">頂 ${liveStatus.effectiveCode}</span>`
+        : '';
       const statusBadgeHtml = liveStatus && liveStatus.label
         ? `<span class="status-mini-pill ${liveStatus.state}">${liveStatus.label}</span>`
         : '';
@@ -2370,7 +2580,7 @@
       const zoneBadgeHtml = (liveStatus && liveStatus.state !== 'meal' && liveStatus.zoneLabel)
         ? `<span class="status-mini-pill zone">${liveStatus.zoneLabel}</span>`
         : '';
-      const hasSubRow = Boolean(statusBadgeHtml || reliefBadgeHtml || zoneBadgeHtml);
+      const hasSubRow = Boolean(statusBadgeHtml || coveringDutyBadgeHtml || reliefBadgeHtml || zoneBadgeHtml);
 
       return `
         <div onclick="highlightStaff('${name}')" class="person-chip ${liveStatus.cssClass || ''} ${isHighlighted ? 'hl' : ''}">
@@ -2380,10 +2590,11 @@
               <span class="chip-staff-name">${name}</span>
             </div>
             <div class="chip-badges-wrap">
+              ${swappedBadgeHtml}
               <span class="duty-font code-badge ${theme}">${code}</span>
             </div>
           </div>
-          ${hasSubRow ? `<div class="chip-sub-row">${statusBadgeHtml}${reliefBadgeHtml}${zoneBadgeHtml}</div>` : ''}
+          ${hasSubRow ? `<div class="chip-sub-row">${statusBadgeHtml}${coveringDutyBadgeHtml}${reliefBadgeHtml}${zoneBadgeHtml}</div>` : ''}
         </div>
       `;
     }
@@ -2391,6 +2602,183 @@
     function highlightStaff(name) {
       appState.highlightedStaff = (appState.highlightedStaff === name) ? '' : name;
       renderTodayView();
+    }
+
+    // ==================== 同更調食飯功能（食飯兩時段完整角色對調） ====================
+    let activeMealSwapContext = null;
+
+    function openMealSwapModal(dateStr, staffName, staffCode) {
+      const dayPool = [];
+      const mondayStr = getMondayOfDate(dateStr);
+      const weekObj = appState.weeks[mondayStr];
+      if (!weekObj || !Array.isArray(weekObj.rows)) return;
+
+      weekObj.rows.forEach(r => {
+        const n = (r.name || '').trim();
+        if (!n) return;
+        const c = getDutyByStaffNameOnDate(dateStr, n);
+        if (isMorningACode(c) || isMidCode(c) || isAfternoonPECode(c)) {
+          dayPool.push({ row: r.row, name: n, code: c });
+        }
+      });
+
+      const isSelfA = isMorningACode(staffCode);
+      const isSelfP = isAfternoonPECode(staffCode);
+      const isSelfMid = isMidCode(staffCode);
+
+      const candidates = dayPool.filter(p => {
+        if (p.name === staffName) return false;
+        if (isSelfA) return isMorningACode(p.code) || isMidCode(p.code);
+        if (isSelfP) return isAfternoonPECode(p.code) || isMidCode(p.code);
+        if (isSelfMid) return isMorningACode(p.code) || isAfternoonPECode(p.code) || isMidCode(p.code);
+        return false;
+      });
+
+      activeMealSwapContext = { dateStr, staffName, staffCode, candidates };
+
+      const selfMeal = getEffectiveMealInfo(staffName, staffCode, dateStr);
+      document.getElementById('meal-swap-modal-title').textContent = `互調食飯：${staffName} (${staffCode})`;
+      document.getElementById('meal-swap-modal-desc').textContent = `${dateStr} ｜ ${staffName} 目前食飯時段：${selfMeal.mealText}`;
+
+      const listEl = document.getElementById('meal-swap-candidates-list');
+      let html = '';
+
+      if (selfMeal.isSwapped) {
+        html += `
+          <div class="toolbar sub-box" style="background:#fff1f2;border-color:#fda4af;padding:6px 8px;">
+            <span style="font-size:11px;font-weight:700;color:#be123c;">目前已與「${selfMeal.swapPartner}」對調食飯兩時段</span>
+            <button type="button" onclick="cancelMealSwap('${dateStr}', '${staffName}')" class="btn-sm btn-rose" style="font-size:11px;padding:3px 8px;">恢復原食飯時間</button>
+          </div>
+        `;
+      }
+
+      if (!candidates.length) {
+        html += `<div style="text-align:center;color:#94a3b8;padding:12px;">當日暫無其他同更或中更同事可互調食飯</div>`;
+      } else {
+        html += candidates.map(cand => {
+          const candMeal = getEffectiveMealInfo(cand.name, cand.code, dateStr);
+          return `
+            <div class="toolbar sub-box" style="padding:7px 9px;background:#f8fafc;">
+              <div>
+                <strong>${cand.name}</strong>
+                <span class="duty-font code-badge teal" style="margin-left:4px;">${cand.code}</span>
+                <div style="font-size:11px;color:#475569;margin-top:2px;">食飯時間：${candMeal.mealText}</div>
+              </div>
+              <button type="button" onclick="confirmSwapMealWith('${cand.name}', '${cand.code}')" class="btn-sm btn-amber" style="font-size:11px;">與他互調</button>
+            </div>
+          `;
+        }).join('');
+      }
+
+      listEl.innerHTML = html;
+      document.getElementById('meal-swap-modal').classList.remove('hidden');
+    }
+
+    function closeMealSwapModal() {
+      document.getElementById('meal-swap-modal').classList.add('hidden');
+      activeMealSwapContext = null;
+    }
+
+    function confirmSwapMealWith(partnerName, partnerCode) {
+      if (!activeMealSwapContext) return;
+      const { dateStr, staffName, staffCode } = activeMealSwapContext;
+
+      const selfMeal = getEffectiveMealInfo(staffName, staffCode, dateStr);
+      const partnerMeal = getEffectiveMealInfo(partnerName, partnerCode, dateStr);
+
+      if (!appState.mealSwapsByDate[dateStr]) appState.mealSwapsByDate[dateStr] = {};
+
+      if (selfMeal.isSwapped && selfMeal.swapPartner && appState.mealSwapsByDate[dateStr][selfMeal.swapPartner]) {
+        delete appState.mealSwapsByDate[dateStr][selfMeal.swapPartner];
+      }
+      if (partnerMeal.isSwapped && partnerMeal.swapPartner && appState.mealSwapsByDate[dateStr][partnerMeal.swapPartner]) {
+        delete appState.mealSwapsByDate[dateStr][partnerMeal.swapPartner];
+      }
+
+      const selfBaseSpec = DUTY_SPEC_MAP[normalizeDutyCode(staffCode)] || { mealStart: '12:00', mealStartMin: 720, mealEndMin: 780 };
+      const partnerBaseSpec = DUTY_SPEC_MAP[normalizeDutyCode(partnerCode)] || { mealStart: '13:00', mealStartMin: 780, mealEndMin: 840 };
+
+      const fmtRange = (sMin, eMin) => {
+        const sh = String(Math.floor(sMin / 60)).padStart(2, '0');
+        const sm = String(sMin % 60).padStart(2, '0');
+        const eh = String(Math.floor(eMin / 60)).padStart(2, '0');
+        const em = String(eMin % 60).padStart(2, '0');
+        return `${sh}${sm}-${eh}${em}`;
+      };
+
+      appState.mealSwapsByDate[dateStr][staffName] = {
+        partner: partnerName,
+        partnerCode: partnerCode,
+        origMealStartMin: selfBaseSpec.mealStartMin,
+        origMealEndMin: selfBaseSpec.mealEndMin,
+        mealStart: partnerBaseSpec.mealStart,
+        mealStartMin: partnerBaseSpec.mealStartMin,
+        mealEndMin: partnerBaseSpec.mealEndMin,
+        mealText: `${fmtRange(partnerBaseSpec.mealStartMin, partnerBaseSpec.mealEndMin)} (與${partnerName}調食飯)`
+      };
+
+      appState.mealSwapsByDate[dateStr][partnerName] = {
+        partner: staffName,
+        partnerCode: staffCode,
+        origMealStartMin: partnerBaseSpec.mealStartMin,
+        origMealEndMin: partnerBaseSpec.mealEndMin,
+        mealStart: selfBaseSpec.mealStart,
+        mealStartMin: selfBaseSpec.mealStartMin,
+        mealEndMin: selfBaseSpec.mealEndMin,
+        mealText: `${fmtRange(selfBaseSpec.mealStartMin, selfBaseSpec.mealEndMin)} (與${staffName}調食飯)`
+      };
+
+      saveMealSwaps();
+      closeMealSwapModal();
+      renderTodayView();
+    }
+
+    function cancelMealSwap(dateStr, staffName) {
+      const daySwaps = appState.mealSwapsByDate[dateStr];
+      if (daySwaps && daySwaps[staffName]) {
+        const partner = daySwaps[staffName].partner;
+        delete daySwaps[staffName];
+        if (partner && daySwaps[partner]) delete daySwaps[partner];
+      }
+      saveMealSwaps();
+      closeMealSwapModal();
+      renderTodayView();
+    }
+
+    // 切換「未來 7 日更期列表顯示（合併更表）」
+    function toggleNext7MatrixView() {
+      appState.showNext7AsMatrix = !appState.showNext7AsMatrix;
+      const btn = document.getElementById('btn-toggle-next7-matrix');
+      if (btn) {
+        if (appState.showNext7AsMatrix) {
+          btn.textContent = '🗂 卡片顯示';
+          btn.classList.add('btn-teal');
+        } else {
+          btn.textContent = '📋 列表顯示';
+          btn.classList.remove('btn-teal');
+        }
+      }
+      renderTodayView();
+    }
+
+    // 判斷是否為「非當星期」且「當日（或現時）在星期五下午 17:00 或之前」→ 顯示初稿
+    function isNext7DateDraft(selectedDateStr, futureDateStr) {
+      const selectedWeekMon = getMondayOfDate(selectedDateStr);
+      const futureWeekMon = getMondayOfDate(futureDateStr);
+      if (futureWeekMon === selectedWeekMon) return false;
+
+      const todayStr = getTodayLocalStr();
+      const now = new Date();
+      if (selectedDateStr === todayStr) {
+        const dow = now.getDay();
+        const mins = now.getHours() * 60 + now.getMinutes();
+        if (dow >= 1 && dow <= 4) return true;
+        if (dow === 5 && mins <= 1020) return true;
+        return false;
+      }
+
+      const selDow = parseLocalDate(selectedDateStr).getDay();
+      return selDow >= 1 && selDow <= 5;
     }
 
     function renderDutyScheduleDetails(staffList, allDayStaffPool, dateStr) {
@@ -2406,34 +2794,122 @@
       });
       const list = Array.from(uniqueMap.values());
       const filtered = appState.highlightedStaff ? list.filter(x => x.name === appState.highlightedStaff) : list;
+      const dayNamesShort = ['日', '一', '二', '三', '四', '五', '六'];
 
+      if (appState.showNext7AsMatrix) {
+        const futureDates = [];
+        let hasAnyDraft = false;
+        for (let offset = 1; offset <= 7; offset++) {
+          const fDate = addDaysToDateStr(dateStr, offset);
+          const fDateObj = parseLocalDate(fDate);
+          const fWeekChar = dayNamesShort[fDateObj.getDay()];
+          const isHol = Boolean(HK_STATUTORY_HOLIDAYS[fDate]);
+          const isDraft = isNext7DateDraft(dateStr, fDate);
+          if (isDraft) hasAnyDraft = true;
+          futureDates.push({
+            dateStr: fDate,
+            dateObj: fDateObj,
+            weekChar: fWeekChar,
+            isHol,
+            isDraft
+          });
+        }
+
+        const uniqueStaffByName = new Map();
+        filtered.forEach(p => {
+          if (!uniqueStaffByName.has(p.name)) {
+            uniqueStaffByName.set(p.name, p);
+          }
+        });
+        const sortedStaffForMatrix = Array.from(uniqueStaffByName.values()).sort((a, b) => (a.row || 99) - (b.row || 99));
+
+        const headerColsHtml = futureDates.map(fd => {
+          const isSunOrHol = fd.dateObj.getDay() === 0 || fd.isHol;
+          return `
+            <th class="${fd.isDraft ? 'draft-col-head' : ''}">
+              <div style="color:${isSunOrHol ? '#be123c' : '#1e293b'};font-weight:800;">${fd.dateStr.slice(5)}</div>
+              <div style="font-size:10px;color:${isSunOrHol ? '#be123c' : '#64748b'};">(${fd.weekChar})</div>
+              ${fd.isDraft ? `<div style="margin-top:1px;"><span class="draft-badge">初稿</span></div>` : ''}
+            </th>
+          `;
+        }).join('');
+
+        const bodyRowsHtml = sortedStaffForMatrix.map(person => {
+          const dayCells = futureDates.map(fd => {
+            const fCode = getDutyByStaffNameOnDate(fd.dateStr, person.name);
+            const badgeCls = getDutyBadgeClass(fCode);
+            return `
+              <td class="${fd.isDraft ? 'draft-col-cell' : ''}">
+                <span class="duty-font cell-pill ${badgeCls}">${fCode || '-'}</span>
+              </td>
+            `;
+          }).join('');
+
+          return `
+            <tr>
+              <td style="font-size:10px;color:#64748b;font-weight:700;">${person.row || '-'}</td>
+              <td style="font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${person.name}</td>
+              ${dayCells}
+            </tr>
+          `;
+        }).join('');
+
+        container.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px;">
+            <span style="font-size:11.5px;font-weight:700;color:#115e59;">📅 當日返工同事未來 7 日更期合併更表（共 ${sortedStaffForMatrix.length} 人）</span>
+            ${hasAnyDraft ? `<span class="draft-badge" style="font-size:10px;padding:1px 6px;">⚠ 非當星期且在星期五 17:00 或之前，下週更期一律顯示為初稿</span>` : ''}
+          </div>
+          <div class="table-wrap" style="border:1px solid #cbd5e1;border-radius:8px;">
+            <table class="next7-matrix-tbl">
+              <thead>
+                <tr>
+                  <th style="width:24px;">#</th>
+                  <th style="width:54px;">姓名</th>
+                  ${headerColsHtml}
+                </tr>
+              </thead>
+              <tbody>
+                ${bodyRowsHtml}
+              </tbody>
+            </table>
+          </div>
+        `;
+        return;
+      }
+
+      // 預設卡片顯示模式
       container.innerHTML = filtered.map(person => {
-        const norm = normalizeDutyCode(person.code);
-        const fallbackSpec = isMorningACode(person.code)
+        const isTonightN = person.dayTag.includes('夜N');
+        const effectiveMeal = getEffectiveMealInfo(person.name, person.code, dateStr);
+        const liveSt = evaluateStaffLiveStatus(person.name, person.code, dateStr, isTonightN);
+
+        const activeCodeNow = (!isTonightN && liveSt.state === 'working' && liveSt.effectiveCode) ? liveSt.effectiveCode : person.code;
+        const norm = normalizeDutyCode(activeCodeNow);
+
+        const fallbackSpec = isMorningACode(activeCodeNow)
           ? { work: '0700-1548 (待補崗位)', workStart: '07:00', mealStart: '12:00', mealText: '請於 DutyList 補回雙字母(如Aa/Ac/Ad/Ae)', takeOverFromCodes: [], handoverToCodes: [] }
-          : isAfternoonPECode(person.code)
+          : isAfternoonPECode(activeCodeNow)
           ? { work: '1345-2303 (待補崗位)', workStart: '13:45', mealStart: '19:00', mealText: '請於 DutyList 補回雙字母(如Pa/Pe/Ec/Ed)', takeOverFromCodes: [], handoverToCodes: [] }
-          : isNightNCode(person.code)
+          : isNightNCode(activeCodeNow)
           ? { work: '2230-0718 (待補崗位)', workStart: '22:30', mealStart: '01:30', mealText: '請於 DutyList 補回雙字母(Na或Ne)', takeOverFromCodes: [], handoverToCodes: [] }
           : { work: '依更表', workStart: '07:00', mealStart: '13:00', mealText: '依崗位', takeOverFromCodes: [], handoverToCodes: [] };
 
-        const spec = DUTY_SPEC_MAP[norm] || fallbackSpec;
-        const isTonightN = person.dayTag.includes('夜N');
-        const liveSt = evaluateStaffLiveStatus(person.code, dateStr, isTonightN);
+        const baseSpec = DUTY_SPEC_MAP[normalizeDutyCode(person.code)] || fallbackSpec;
+        const activeSpec = DUTY_SPEC_MAP[norm] || fallbackSpec;
 
-        const takeOverNames = (spec.takeOverFromCodes || []).map(targetCode => {
+        const takeOverNames = (activeSpec.takeOverFromCodes || []).map(targetCode => {
           const matched = allDayStaffPool.find(p => {
             if (p.normCode !== targetCode) return false;
-            if (isMorningACode(person.code) && isNightNCode(targetCode)) return p.dayTag === '昨夜N(07:18放工)';
+            if (isMorningACode(activeCodeNow) && isNightNCode(targetCode)) return p.dayTag === '昨夜N(07:18放工)';
             return true;
           });
           return matched ? `${matched.name}(${matched.code})` : targetCode;
         });
 
-        const handoverNames = (spec.handoverToCodes || []).map(targetCode => {
+        const handoverNames = (activeSpec.handoverToCodes || []).map(targetCode => {
           const matched = allDayStaffPool.find(p => {
             if (p.normCode !== targetCode) return false;
-            if (isAfternoonPECode(person.code) && isNightNCode(targetCode)) return p.dayTag.includes('夜N');
+            if (isAfternoonPECode(activeCodeNow) && isNightNCode(targetCode)) return p.dayTag.includes('夜N');
             return true;
           });
           return matched ? `${matched.name}(${matched.code})` : targetCode;
@@ -2444,7 +2920,6 @@
         if (handoverNames.length) handoverDescParts.push(`收工交 ${handoverNames.join('、')}`);
         const handoverFullText = handoverDescParts.length ? handoverDescParts.join(' ｜ ') : '按更交接';
 
-        // 1. 詢問調食飯對象：直接將名字作為 WhatsApp 外部連結（唔使另外整按鈕）
         let swapMeal118Html = '';
         if (norm === '11/8') {
           const ecStaffList = allDayStaffPool.filter(p => p.dayTag === '今日' && p.normCode === 'Ec');
@@ -2459,7 +2934,7 @@
             const nameBadges = staffArr.map(p => {
               const waUrl = buildWhatsAppUrl(p.name, waMsg);
               if (waUrl) {
-                return `<a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="wa-name-link" style="font-size:12px;" title="開啟 WhatsApp 傳送：${waMsg}">${p.name}</a>`;
+                return `<a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="wa-name-link" style="font-size:12px;">${p.name}</a>`;
               }
               return `<strong style="color:#1e293b;font-size:12px;">${p.name}</strong>`;
             }).join('、');
@@ -2469,7 +2944,7 @@
 
           swapMeal118Html = `
             <div style="display:flex;flex-direction:column;gap:4px;">
-              <div style="font-size:11px;font-weight:700;color:#92400e;">🍽️ 詢問調食飯對象（直接點擊名字開啟 WhatsApp：「${waMsg}」）</div>
+              <div style="font-size:11px;font-weight:700;color:#92400e;">🍽️ 詢問調食飯對象</div>
               <div class="swap-meal-cards">
                 <div class="swap-meal-card">
                   ${buildSwapTargetDisplay(ecStaffList, 'Ec')}
@@ -2482,22 +2957,34 @@
           `;
         }
 
-        const sameWork = list.filter(o => o.name !== person.name && (DUTY_SPEC_MAP[normalizeDutyCode(o.code)]?.work === spec.work)).map(o => `${o.name}(${o.code})`);
-        const sameMeal = list.filter(o => o.name !== person.name && (DUTY_SPEC_MAP[normalizeDutyCode(o.code)]?.mealStart === spec.mealStart)).map(o => `${o.name}(${o.code})`);
+        const sameWork = list.filter(o => o.name !== person.name && (DUTY_SPEC_MAP[normalizeDutyCode(o.code)]?.work === baseSpec.work)).map(o => `${o.name}(${o.code})`);
+        const sameMeal = list.filter(o => o.name !== person.name && (getEffectiveMealInfo(o.name, o.code, dateStr).mealStart === effectiveMeal.mealStart)).map(o => `${o.name}(${o.code})`);
 
         let next7Html = '';
+        let cardHasDraft = false;
         for (let offset = 1; offset <= 7; offset++) {
           const fDate = addDaysToDateStr(dateStr, offset);
+          const fDateObj = parseLocalDate(fDate);
+          const fWeekChar = dayNamesShort[fDateObj.getDay()];
           const fCode = getDutyByStaffNameOnDate(fDate, person.name);
           const isOff = fCode ? isLeaveOrOffCode(fCode) : false;
           const isWarn = isIncompleteSingleLetter(fCode);
+          const isDraft = isNext7DateDraft(dateStr, fDate);
+          if (isDraft) cardHasDraft = true;
+
           next7Html += `
             <div class="next7-pill" style="${isWarn ? 'background:#fef3c7;border-color:#f59e0b;' : (isOff ? 'background:#fff1f2;border-color:#fecdd3;' : '')}">
-              <div style="font-size:9px;color:#64748b;">${fDate.slice(5)}</div>
+              <div style="font-size:9px;color:${fDateObj.getDay() === 0 ? '#be123c' : '#64748b'};font-weight:700;">${fDate.slice(5)} (${fWeekChar})</div>
               <div class="duty-font" style="font-size:11px;color:${isWarn ? '#b45309' : (isOff ? '#be123c' : '#115e59')};">${fCode || '-'}</div>
+              ${isDraft ? `<div><span class="draft-badge">初稿</span></div>` : ''}
             </div>
           `;
         }
+
+        const canSwapMeal = !isTonightN && (isMorningACode(person.code) || isAfternoonPECode(person.code) || isMidCode(person.code));
+        const swapMealBtnHtml = canSwapMeal
+          ? `<button onclick="openMealSwapModal('${dateStr}', '${person.name}', '${person.code}')" class="btn-sm" style="font-size:10px;padding:2px 6px;background:${effectiveMeal.isSwapped ? '#fce7f3' : '#f0f9ff'};color:${effectiveMeal.isSwapped ? '#be185d' : '#0369a1'};border-color:${effectiveMeal.isSwapped ? '#f9a8d4' : '#bae6fd'};">🍽️ 調食飯</button>`
+          : '';
 
         const cardBgStyle = liveSt.state === 'not-started'
           ? 'background:#eff6ff;border-color:#93c5fd;'
@@ -2513,18 +3000,21 @@
               <div>
                 <strong style="font-size:13px;">${person.name}</strong>
                 <span class="duty-font code-badge ${isIncompleteSingleLetter(person.code) ? 'warn' : 'teal'}" style="margin-left:4px;">${person.code}</span>
+                ${effectiveMeal.isSwapped ? `<span class="status-mini-pill swapped-meal" style="margin-left:4px;">調食飯</span>` : ''}
+                ${(liveSt.state !== 'meal' && liveSt.isCoveringPartner && liveSt.effectiveCode) ? `<span class="status-mini-pill swapped-duty" style="margin-left:4px;">頂 ${liveSt.effectiveCode}</span>` : ''}
                 ${liveSt.label ? `<span class="status-mini-pill ${liveSt.state}" style="margin-left:4px;">${liveSt.label}</span>` : ''}
                 ${liveSt.reliefLabel ? `<span class="status-mini-pill relief" style="margin-left:4px;">${liveSt.reliefLabel}</span>` : ''}
                 ${(liveSt.state !== 'meal' && liveSt.zoneLabel) ? `<span class="status-mini-pill zone" style="margin-left:4px;">${liveSt.zoneLabel}</span>` : ''}
-                <span style="font-size:11px;color:#334155;font-weight:700;margin-left:4px;">${spec.work}</span>
+                <span style="font-size:11px;color:#334155;font-weight:700;margin-left:4px;">${baseSpec.work}</span>
               </div>
               <div class="flex-row">
-                <button onclick="addQuickAlarm('${spec.workStart}', '${person.name} ${person.code} 返工', '${dateStr}')" class="btn-sm btn-teal" style="font-size:10px;padding:2px 6px;">⏰ 返工(${spec.workStart})</button>
-                <button onclick="addQuickAlarm('${spec.mealStart}', '${person.name} ${person.code} 食飯', '${dateStr}')" class="btn-sm btn-amber" style="font-size:10px;padding:2px 6px;">⏰ 食飯(${spec.mealStart})</button>
+                ${swapMealBtnHtml}
+                <button onclick="addQuickAlarm('${baseSpec.workStart}', '${person.name} ${person.code} 返工', '${dateStr}')" class="btn-sm btn-teal" style="font-size:10px;padding:2px 6px;">⏰ 返工(${baseSpec.workStart})</button>
+                <button onclick="addQuickAlarm('${effectiveMeal.mealStart}', '${person.name} ${person.code} 食飯', '${dateStr}')" class="btn-sm btn-amber" style="font-size:10px;padding:2px 6px;">⏰ 食飯(${effectiveMeal.mealStart})</button>
               </div>
             </div>
             <div style="font-size:11px;">
-              <strong>食飯：</strong>${spec.mealText} ｜ <strong style="color:#115e59;">交接：</strong><span style="font-weight:700;color:#0f172a;">${handoverFullText}</span>
+              <strong>食飯：</strong>${effectiveMeal.mealText} ｜ <strong style="color:#115e59;">交接：</strong><span style="font-weight:700;color:#0f172a;">${handoverFullText}</span>
             </div>
             ${swapMeal118Html}
             <div class="detail-subgrid">
@@ -2532,7 +3022,10 @@
               <div class="sub-box"><strong style="color:#3730a3;">一齊返放工：</strong>${sameWork.length ? sameWork.join('、') : '無同鐘點'}</div>
             </div>
             <div class="sub-box" style="background:#f0fdfa;border-color:#ccfbf1;">
-              <div style="font-size:10px;font-weight:700;color:#115e59;margin-bottom:2px;">未來 7 日更期（DutyList 紀錄）：</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+                <span style="font-size:10px;font-weight:700;color:#115e59;">未來 7 日更期：</span>
+                ${cardHasDraft ? `<span class="draft-badge">非當星期（五 17:00 前）標示初稿</span>` : ''}
+              </div>
               <div class="next7-strip">${next7Html}</div>
             </div>
           </div>
@@ -2632,7 +3125,6 @@
       renderRosterTable();
     }
 
-    // 1. 直接擺名字做 WhatsApp 外部連結
     function renderStaffNameWithWaHtml(staffName, rIdx = -1, editable = true) {
       if (!staffName) {
         return editable
@@ -2718,7 +3210,7 @@
       return '';
     }
 
-    // ==================== DutyList 彈出更期選擇器（預設取消勾選 []） ====================
+    // ==================== DutyList 彈出更期選擇器 ====================
     let activePickerTarget = null;
     const UNIQUE_SHIFT_CODES = new Set(['Aa', 'Ac', 'Ad', 'Ae', '9-6', '9/5', '11-8', '11/8', 'Pa', 'Pe', 'Pu', 'Ec', 'Ed', 'Na', 'Ne']);
 
@@ -2942,7 +3434,6 @@
       }).join('');
     }
 
-    // 2. 選擇名字時不要摺疊，留待選擇月曆日子後才摺疊
     function selectPredictStaffCard(staffName) {
       const baseMon = getMondayOfDate(getTodayLocalStr());
       appState.predictSelectedStaffName = staffName;
@@ -2995,7 +3486,6 @@
       renderPredictCalendar();
     }
 
-    // 2. 點選月曆日子後觸發摺疊
     function selectPredictTargetDate(dateStr, shouldCollapse = true) {
       appState.predictTargetDate = dateStr;
       renderPredictCalendar();
@@ -3157,7 +3647,6 @@
       return inner.startsWith('SH/') || inner.includes('OWING');
     }
 
-    // 3. 判斷是否為 SH/替 同事（排到休假/假期同事卡片最後面）
     function isShReliefCode(code) {
       const inner = unwrapBracketDuty(code).toUpperCase().trim();
       return inner.includes('SH/替') || inner.includes('替');
@@ -3243,7 +3732,6 @@
 
       document.getElementById('predict-21rows-tbody').innerHTML = rowsHtmlArr.join('');
 
-      // 3. 休假/假期同事：SH/替 放到最後，並將卡片名字整齊對齊，名字直接作為 WhatsApp 外部連結
       targetDayOffStaffList.sort((a, b) => {
         if (a.isShRelief !== b.isShRelief) return a.isShRelief ? 1 : -1;
         return a.row - b.row;
@@ -3535,62 +4023,64 @@
       }
     }
 
-    function renderOcrPreviewTable(weekPayload) {
-      document.getElementById('ocr-preview-tbody').innerHTML = (weekPayload.rows || []).map(r => `
-        <tr style="${!r.name ? 'background:#f8fafc;' : ''}"><td>${r.row}</td><td><strong>${r.name || '-'}</strong></td>${(r.duties || []).map(d => `<td class="duty-font">${d}</td>`).join('')}</tr>
-      `).join('');
+    function renderOcrPreviewTable(data) {
+      const tbody = document.getElementById('ocr-preview-tbody');
+      tbody.innerHTML = '';
+      data.rows.forEach(r => {
+        const tr = document.createElement('tr');
+        if (!r.name) tr.style.background = '#f8fafc';
+        tr.innerHTML = `<td>${r.row}</td><td style="font-weight:700;">${r.name || '-'}</td>` +
+          r.duties.map(d => `<td class="duty-font ${isIncompleteSingleLetter(d) ? 'st-single-warn' : ''}">${d || ''}</td>`).join('');
+        tbody.appendChild(tr);
+      });
     }
 
-    // DutyList 中當該週已有更期時，上載圖片覆蓋前彈出警告確認
     function confirmImportAllWeeks() {
-      const existingMondays = verifiedImportPayloads
-        .map(p => getMondayOfDate(p.monday))
-        .filter(m => {
-          const w = appState.weeks[m];
-          return w && Array.isArray(w.rows) && w.rows.some(r => (r.name || '').trim() && (r.duties || []).some(d => (d || '').trim() !== ''));
-        });
-
-      if (existingMondays.length > 0) {
-        const uniqueExisting = Array.from(new Set(existingMondays));
-        const okToOverwrite = confirm(`⚠️ 警告：DutyList 中以下週次已有更期紀錄：\n${uniqueExisting.join('、')}\n\n確定要用新上載的圖片更期覆蓋原有資料嗎？`);
-        if (!okToOverwrite) return;
-      }
-
-      verifiedImportPayloads.forEach(payload => {
-        const monday = getMondayOfDate(payload.monday);
-        const normalizedRows = normalizeWeekRowsNoEmptyWhenFull(payload.rows || []);
-        appState.weeks[monday] = { monday, rows: normalizedRows };
-        appState.currentWeekMonday = monday;
+      if (!verifiedImportPayloads.length) return;
+      verifiedImportPayloads.forEach(item => {
+        const normalizedRows = normalizeWeekRowsNoEmptyWhenFull(item.rows);
         learnFromVerifiedWeek(normalizedRows);
-        if (payload._cloudImageBase64) {
-          appState.cloudImages = appState.cloudImages.filter(x => x.monday !== monday);
-          appState.cloudImages.push({ monday, uploadedAt: new Date().toISOString(), base64: payload._cloudImageBase64 });
+        appState.weeks[item.monday] = { monday: item.monday, rows: normalizedRows };
+        appState.currentWeekMonday = item.monday;
+
+        if (item._cloudImageBase64) {
+          appState.cloudImages = appState.cloudImages.filter(img => img.monday !== item.monday);
+          appState.cloudImages.unshift({
+            monday: item.monday,
+            base64: item._cloudImageBase64,
+            uploadedAt: new Date().toLocaleString('zh-HK')
+          });
+          if (appState.cloudImages.length > 8) appState.cloudImages.length = 8;
         }
       });
-      saveState(true);
-      renderAll();
+      saveState(false);
       closeUploadModal();
-      alert(`已成功匯入 ${verifiedImportPayloads.length} 張更期表至 DutyList 並即時同步至雲端！`);
+      switchTab('roster');
+      renderAll();
+      alert(`已成功匯入 ${verifiedImportPayloads.length} 週更期表！`);
     }
 
-    function resizeImageToBase64(file, maxDim, quality) {
+    function resizeImageToBase64(file, maxDim = 2200, quality = 0.92) {
       return new Promise((resolve, reject) => {
-        const img = new Image();
-        const url = URL.createObjectURL(file);
-        img.onload = () => {
-          let w = img.width, h = img.height;
-          if (w > maxDim || h > maxDim) {
-            if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
-            else { w = Math.round(w * maxDim / h); h = maxDim; }
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          URL.revokeObjectURL(url);
-          resolve(canvas.toDataURL('image/jpeg', quality).split(',')[1]);
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let w = img.width, h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+              else { w = Math.round(w * maxDim / h); h = maxDim; }
+            }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', quality).split(',')[1]);
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
         };
-        img.onerror = reject;
-        img.src = url;
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
       });
     }
 
