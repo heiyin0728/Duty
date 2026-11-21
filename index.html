@@ -199,6 +199,7 @@
     .status-mini-pill.relief { background: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }
     .status-mini-pill.swapped-meal { background: #fce7f3; color: #be185d; border: 1px solid #f9a8d4; }
     .status-mini-pill.swapped-duty { background: #e0e7ff; color: #3730a3; border: 1px solid #a5b4fc; }
+    .status-mini-pill.pu-sub-sl { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; }
     .status-mini-pill.zone {
       background: #ccfbf1; color: #115e59; border: 1px solid #5eead4;
       white-space: normal; word-break: break-word; line-height: 1.25;
@@ -243,11 +244,6 @@
     .next7-pill {
       flex-shrink: 0; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 5px; text-align: center; background: #f8fafc; min-width: 48px;
     }
-    .draft-badge {
-      display: inline-block; font-size: 9px; font-weight: 800;
-      background: #fef3c7; color: #b45309; border: 1px solid #f59e0b;
-      padding: 0 4px; border-radius: 3px; line-height: 1.25;
-    }
 
     /* 未來 7 日合併更表樣式 */
     table.next7-matrix-tbl {
@@ -260,12 +256,6 @@
     table.next7-matrix-tbl th {
       background: #f1f5f9; color: #334155; font-weight: 700; line-height: 1.2;
     }
-    table.next7-matrix-tbl th.draft-col-head {
-      background: #fffbeb; color: #92400e;
-    }
-    table.next7-matrix-tbl td.draft-col-cell {
-      background: rgba(255, 251, 235, 0.55);
-    }
 
     /* DutyList 表格與底部統計列 */
     .table-wrap { overflow-x: auto; width: 100%; }
@@ -276,21 +266,38 @@
       background: #f0fdfa;
       color: #115e59;
       font-weight: 800;
-      font-size: 11px;
+      font-size: 10.5px;
       border-top: 2px solid #0d9488;
       padding: 4px 1px;
+      line-height: 1.2;
+    }
+    table.roster-tbl tfoot tr.n-count-row td {
+      background: #eef2ff;
+      color: #3730a3;
+      border-top: 1px solid #cbd5e1;
+      font-size: 10px;
+      padding: 3px 1px;
     }
     table.roster-tbl tfoot td.sticky-col-1,
     table.roster-tbl tfoot td.sticky-col-2 {
       background: #ccfbf1;
       color: #115e59;
     }
+    table.roster-tbl tfoot tr.n-count-row td.sticky-col-1,
+    table.roster-tbl tfoot tr.n-count-row td.sticky-col-2 {
+      background: #e0e7ff;
+      color: #3730a3;
+    }
     .sticky-col-1 { position: sticky; left: 0; background: #fff; z-index: 2; width: 22px; color: #64748b; font-size: 10px; }
     .sticky-col-2 { position: sticky; left: 22px; background: #fff; z-index: 2; width: 64px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     th.sticky-col-1, th.sticky-col-2 { background: #f1f5f9; z-index: 3; }
-    .col-edge { background: #fffbeb !important; width: 36px; }
-    .col-day { width: 36px; cursor: pointer; }
+    .col-edge { background: #fffbeb !important; width: 38px; }
+    .col-day { width: 38px; cursor: pointer; }
     .col-day:hover { background: #f0fdfa; }
+    .col-day.pending-dirty-cell {
+      background: #fef3c7 !important;
+      box-shadow: inset 0 0 0 2px #f59e0b;
+    }
     th.col-today { background: #0f766e !important; color: #fff !important; }
     td.col-today { background: #ecfdf5 !important; border-left: 2px solid #0d9488 !important; border-right: 2px solid #0d9488 !important; }
     .cell-pill { display: inline-block; width: 100%; padding: 2px 0; border-radius: 4px; }
@@ -302,6 +309,20 @@
     .st-p { background: #f0f9ff; color: #075985; }
     .st-n { background: #eef2ff; color: #3730a3; }
     .st-single-warn { background: #fef3c7; color: #b45309; border: 1px dashed #f59e0b; }
+
+    /* DutyList 待確認修改提示列 */
+    .pending-confirm-banner {
+      background: #fffbeb;
+      border: 2px solid #f59e0b;
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 6px;
+      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.18);
+    }
 
     /* 更期預測放大提示橫幅 */
     .predict-disclaimer-banner {
@@ -735,16 +756,27 @@
       </div>
     </section>
 
-    <!-- ==================== 分頁 2：DutyList（已移除上載圖片按鈕） ==================== -->
+    <!-- ==================== 分頁 2：DutyList ==================== -->
     <section id="view-roster" class="hidden" style="display:flex;flex-direction:column;gap:8px;">
       <div class="card card-pad toolbar-center">
         <div class="flex-center">
           <select id="week-selector" onchange="selectWeek(this.value)" class="input-box"></select>
           <button id="btn-delete-week" onclick="handleDeleteWeekClick()" class="btn-sm btn-rose">刪除本週</button>
-        </div>
-        <div class="flex-center">
-          <button onclick="createNextWeekFromPattern()" class="btn-sm btn-teal">＋ 新增下週更表</button>
           <a href="https://docs.google.com/spreadsheets/d/17wae7UwtU93GSEDcq-tZ1Uptj3mL2hEaxYcKSTvePD4/edit?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="btn-sm btn-blue">調更</a>
+        </div>
+        <div style="font-size:11px;color:#475569;font-weight:600;width:100%;">
+          僅顯示已上載更期之星期 · 點擊更期修改後請按「確認並儲存」
+        </div>
+      </div>
+
+      <!-- 需求 3：DutyList 更改後確認橫幅 -->
+      <div id="roster-pending-confirm-bar" class="pending-confirm-banner hidden">
+        <div style="font-size:12px;font-weight:800;color:#92400e;">
+          ⚠️ <span id="roster-pending-count-text">有 1 項未儲存修改</span>（尚未儲存，請確認後儲存）
+        </div>
+        <div class="flex-row">
+          <button type="button" onclick="confirmAndSavePendingRosterChanges()" class="btn-sm btn-emerald">✅ 確認並儲存</button>
+          <button type="button" onclick="discardPendingRosterChanges()" class="btn-sm btn-rose">↩ 放棄修改</button>
         </div>
       </div>
 
@@ -787,7 +819,7 @@
 
         <div id="predict-top-collapsible-panel" style="display:flex;flex-direction:column;gap:6px;">
           <div class="toolbar" style="background:#ccfbf1;border:1px solid #5eead4;border-radius:8px;padding:4px 8px;">
-            <span style="font-size:11px;font-weight:700;color:#115e59;">📅 以 2026-11-16 為基準週 · 嚴格遵守 21 行規律樣本表並以 DutyList 規則覆蓋</span>
+            <span style="font-size:11px;font-weight:700;color:#115e59;">📅 每週全體順延一行（謝小曼下一行固定為侯嘉敏）· 已自動套用 DutyList 規則覆蓋</span>
             <button type="button" onclick="collapsePredictQueryPanel()" class="btn-sm" style="font-size:11px;padding:2px 8px;background:#fff;color:#0f766e;border-color:#5eead4;">▲ 手動收起月曆</button>
           </div>
 
@@ -795,19 +827,19 @@
             <div>
               <div class="toolbar" style="margin-bottom:4px;">
                 <label style="font-weight:700;color:#115e59;">選擇同事姓名（按姓氏筆畫排序 · 3×7）</label>
-                <span id="predict-selected-row-pill" style="font-size:10px;background:#ccfbf1;color:#115e59;padding:1px 6px;border-radius:4px;font-weight:800;">第 1 行</span>
+                <span id="predict-selected-row-pill" style="font-size:10px;background:#ccfbf1;color:#115e59;padding:1px 6px;border-radius:4px;font-weight:800;">基準第 4 行</span>
               </div>
               <div id="predict-staff-cards-grid" class="staff-grid-3x7"></div>
               <div id="locked-current-week-label" style="font-size:11px;color:#0f766e;font-weight:600;margin-top:6px;"></div>
               <div id="reserve-row-notice" class="hidden" style="margin-top:6px;padding:6px 8px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;color:#92400e;font-size:11px;font-weight:700;">
-                此同事於基準週屬第 18–21 行，已嚴格依 21 行規律樣本表第 18–21 行循環計算。
+                此同事於該週屬第 18–21 行（替假更期），已嚴格依 21 行規律樣本表或 DutyList 實際更期顯示。
               </div>
             </div>
 
             <div id="predict-cal-swipe-box" class="cal-box">
               <div class="toolbar" style="margin-bottom:4px;">
                 <button onclick="changePredictCalendarMonth(-1)" class="btn-sm" style="padding:2px 6px;">&lt;</button>
-                <strong id="predict-cal-month-title" style="font-size:12px;">2026年11月</strong>
+                <strong id="predict-cal-month-title" style="font-size:12px;">2026年12月</strong>
                 <button onclick="changePredictCalendarMonth(1)" class="btn-sm" style="padding:2px 6px;">&gt;</button>
               </div>
               <div class="cal-grid" style="font-weight:700;color:#64748b;margin-bottom:2px;">
@@ -826,7 +858,7 @@
           <div class="toolbar" style="margin-bottom:5px;align-items:flex-start;">
             <div style="flex:1;min-width:180px;">
               <strong id="predict-colleagues-title" style="color:#115e59;font-size:12px;">21 行預測更期表</strong>
-              <div style="font-size:10px;color:#64748b;margin-top:1px;">以 16/11 基準週嚴格對照 21 行規律樣本表，若 DutyList 已建立該週則自動以 DutyList 規則覆蓋</div>
+              <div style="font-size:10px;color:#64748b;margin-top:1px;">嚴格遵守每過一星期全部姓名轉到下一行（謝小曼下一行固定侯嘉敏），已存在於 DutyList 的週次自動覆蓋顯示</div>
             </div>
             <button onclick="openSamplePatternViewerModal()" class="sample-mini-thumb-btn" title="點擊放大查看 21 行規律樣本表（唯讀）">
               <div class="sample-mini-grid-icon" aria-hidden="true">
@@ -979,7 +1011,7 @@
             <input type="checkbox" id="duty-picker-bracket-chk" style="width:15px;height:15px;" />
             <span>加上方括號 [ ]</span>
           </label>
-          <span style="font-size:10px;color:#64748b;">同日重複崗位將自動與原同事互換</span>
+          <span style="font-size:10px;color:#64748b;">修改後需於 DutyList 頂部按「確認並儲存」</span>
         </div>
 
         <div>
@@ -1034,7 +1066,7 @@
         </div>
 
         <div class="flex-row" style="padding-top:4px;border-top:1px solid #e2e8f0;">
-          <input type="text" id="duty-picker-custom-input" placeholder="自訂更期代碼（如 SH/Ac）" class="input-box" style="flex:1;" />
+          <input type="text" id="duty-picker-custom-input" placeholder="自訂更期代碼（如 SL/Ac）" class="input-box" style="flex:1;" />
           <button type="button" onclick="applyCustomDutyFromPicker()" class="btn-sm btn-teal">套用自訂</button>
           <button type="button" onclick="applySelectedDutyFromPicker('')" class="btn-sm btn-rose">清空</button>
         </div>
@@ -1176,8 +1208,8 @@
     // 嚴格鎖定 2026-11-16 為基準週
     const ANCHOR_BASE_MONDAY = '2026-11-16';
 
-    const STORAGE_KEY = 'qeh_aed_duty_v24';
-    const BACKUP_KEY = 'qeh_aed_duty_backup_v24';
+    const STORAGE_KEY = 'qeh_aed_duty_v26';
+    const BACKUP_KEY = 'qeh_aed_duty_backup_v26';
     const BACKUP_FLAG_KEY = 'qeh_aed_auto_backup_enabled';
     const AUTO_CLOUD_FLAG_KEY = 'qeh_aed_auto_cloud_upload_enabled';
     const HIDE_ALARMS_FLAG_KEY = 'qeh_aed_hide_alarms_enabled';
@@ -1536,29 +1568,28 @@
       }, 5 * 60 * 1000);
     }
 
-    // 2026-11-16 基準週員工順序（第 1 行至第 21 行）
     const MASTER_21_ROTATION = [
-      { id: '175542', name: '黃詩琪' }, // Row 1
-      { id: '162684', name: '李嘉琪' }, // Row 2
-      { id: '208233', name: '梅潔瑜' }, // Row 3
-      { id: '247527', name: '陳曦彥' }, // Row 4
-      { id: '158841', name: '關鉦' },   // Row 5
-      { id: '259714', name: '吳愷欣' }, // Row 6
-      { id: '171295', name: '吳媛' },   // Row 7
-      { id: '301579', name: '吳珈翹' }, // Row 8
-      { id: '159659', name: '黃愛萍' }, // Row 9
-      { id: '164819', name: '王曉雯' }, // Row 10
-      { id: '263461', name: '丘飛鵬' }, // Row 11
-      { id: '242627', name: '謝玉連' }, // Row 12
-      { id: '272902', name: '朱翠君' }, // Row 13
-      { id: '157242', name: '張麗' },   // Row 14
-      { id: '',       name: '謝小曼' }, // Row 15
-      { id: '177981', name: '侯嘉敏' }, // Row 16
-      { id: '166859', name: '馮玉琼' }, // Row 17
-      { id: '276239', name: '馮嘉錂' }, // Row 18
-      { id: '257094', name: '蘇靖珊' }, // Row 19
-      { id: '213820', name: '葉曉彤' }, // Row 20
-      { id: '302592', name: '黃雅倩' }  // Row 21
+      { id: '175542', name: '黃詩琪', prevName: '黃雅倩', nextName: '李嘉琪' }, // 1
+      { id: '162684', name: '李嘉琪', prevName: '黃詩琪', nextName: '梅潔瑜' }, // 2
+      { id: '208233', name: '梅潔瑜', prevName: '李嘉琪', nextName: '陳曦彥' }, // 3
+      { id: '247527', name: '陳曦彥', prevName: '梅潔瑜', nextName: '關鉦' },   // 4
+      { id: '158841', name: '關鉦',   prevName: '陳曦彥', nextName: '吳愷欣' }, // 5
+      { id: '259714', name: '吳愷欣', prevName: '關鉦',   nextName: '吳媛' },   // 6
+      { id: '171295', name: '吳媛',   prevName: '吳愷欣', nextName: '吳珈翹' }, // 7
+      { id: '301579', name: '吳珈翹', prevName: '吳媛',   nextName: '黃愛萍' }, // 8
+      { id: '159659', name: '黃愛萍', prevName: '吳珈翹', nextName: '王曉雯' }, // 9
+      { id: '164819', name: '王曉雯', prevName: '黃愛萍', nextName: '丘飛鵬' }, // 10
+      { id: '263461', name: '丘飛鵬', prevName: '王曉雯', nextName: '謝玉連' }, // 11
+      { id: '242627', name: '謝玉連', prevName: '丘飛鵬', nextName: '朱翠君' }, // 12
+      { id: '272902', name: '朱翠君', prevName: '謝玉連', nextName: '張麗' },   // 13
+      { id: '157242', name: '張麗',   prevName: '朱翠君', nextName: '謝小曼' }, // 14
+      { id: '',       name: '謝小曼', prevName: '張麗',   nextName: '侯嘉敏' }, // 15 -> 下一行必定係侯嘉敏
+      { id: '177981', name: '侯嘉敏', prevName: '謝小曼', nextName: '馮玉琼' }, // 16 -> 緊跟謝小曼之後
+      { id: '166859', name: '馮玉琼', prevName: '侯嘉敏', nextName: '馮嘉錂' }, // 17
+      { id: '276239', name: '馮嘉錂', prevName: '馮玉琼', nextName: '蘇靖珊' }, // 18
+      { id: '257094', name: '蘇靖珊', prevName: '馮嘉錂', nextName: '葉曉彤' }, // 19
+      { id: '213820', name: '葉曉彤', prevName: '蘇靖珊', nextName: '黃雅倩' }, // 20
+      { id: '302592', name: '黃雅倩', prevName: '葉曉彤', nextName: '黃詩琪' }  // 21
     ];
 
     const HK_STATUTORY_HOLIDAYS = {
@@ -1591,7 +1622,6 @@
       'Ne':   { work: '2230-0718', workStart: '22:30', workStartMin: 1350, workEndMin: 438,  mealStart: '03:30', mealStartMin: 210,  mealEndMin: 300,  mealText: '0330-0500', takeOverFromCodes: ['Pe', 'Ec'], handoverToCodes: ['Ae', 'Ac'] }
     };
 
-    // 嚴格對照 21 行規律樣本表（圖 3 完整 1 至 21 行）
     const IMAGE3_DEFAULT_PATTERN = [
       { row: 1,  days: ['SH/替', 'Ec', 'Pu', 'O', 'WO', 'Ad', 'Ae/N'] },
       { row: 2,  days: ['Na', 'O', 'Ec', '11-8', 'Ad', 'WO', 'Ac'] },
@@ -1616,6 +1646,7 @@
       { row: 21, days: ['11-8', 'WO', 'Aa', 'Ne', 'O', 'Ac', 'Pe'] }
     ];
 
+    // 僅包含已上載更期圖片之星期
     const DEFAULT_WEEK_DATA = {
       '2026-11-16': {
         monday: '2026-11-16',
@@ -1661,12 +1692,90 @@
           { row: 13, name: '謝玉連', duties: ['9-6', 'Ad', 'Ae', 'Na', 'O', 'WO', 'Ae'] },
           { row: 14, name: '朱翠君', duties: ['Pe', 'Pu', 'OW', 'Ae', 'Na', 'O', 'WO'] },
           { row: 15, name: '張麗',   duties: ['Pu', 'Pe', 'Pe', 'WO', 'O', 'Pa', 'Ed'] },
-          { row: 16, name: '',       duties: ['', '', '', '', '', '', ''] },
+          { row: 16, name: '謝小曼', duties: ['', '', '', '', '', '', ''] },
           { row: 17, name: '侯嘉敏', duties: ['O', 'Pa', 'Pa', 'Pu', 'Ae', 'Na', 'WO'] },
           { row: 18, name: '馮玉琼', duties: ['Ne', 'O', '11-8', 'Ac', 'Ac', 'WO', 'Aa'] },
           { row: 19, name: '馮嘉錂', duties: ['Aa', 'Ne', 'WO', 'O', 'Pe', 'Ec', '11-8'] },
           { row: 20, name: '蘇靖珊', duties: ['O', '11-8', 'Ed', 'Ec', 'Pu', '9-6', 'WO'] },
           { row: 21, name: '葉曉彤', duties: ['Ac', '9-6', 'Ac', 'O', 'WO', 'Ae', 'Na'] }
+        ]
+      },
+      '2026-11-30': {
+        monday: '2026-11-30',
+        rows: [
+          { row: 1,  name: '葉曉彤', duties: ['SH', 'Ec', 'Pa', 'O', 'WO', 'Ad', 'Ae'] },
+          { row: 2,  name: '黃雅倩', duties: ['Na', 'O', 'Ec', '11-8', 'Ad', 'WO', 'Ac'] },
+          { row: 3,  name: '黃詩琪', duties: ['AL', 'AL', 'AL', 'AL', 'AL', 'WO', 'O'] },
+          { row: 4,  name: '李嘉琪', duties: ['SH', 'Aa', 'Ne', 'WO', 'O', 'Ec', 'Pa'] },
+          { row: 5,  name: '梅潔瑜', duties: ['11-8', 'WO', 'Aa', 'Ne', 'O', 'Ac', 'Pe'] },
+          { row: 6,  name: '陳曦彥', duties: ['Ed', 'Pu', 'O', 'Aa', 'Ne', 'WO', 'Ad'] },
+          { row: 7,  name: '關鉦',   duties: ['Pa', 'Ed', '9-6', 'WO', 'Aa', 'Ne', 'O'] },
+          { row: 8,  name: '吳愷欣', duties: ['WO', 'O', 'Ad', 'Ed', '11-8', 'Aa', 'Ne'] },
+          { row: 9,  name: '吳媛',   duties: ['O', 'Pa', '11-8', 'Ad', 'Ac', 'WO', 'Aa'] },
+          { row: 10, name: '吳珈翹', duties: ['SH', 'O', 'WO', 'Pe', 'Pa', 'Ed', '11-8'] },
+          { row: 11, name: '黃愛萍', duties: ['Ae', 'Na', 'O', 'Pa', 'Ec', '11-8', 'WO'] },
+          { row: 12, name: '王曉雯', duties: ['Ad', 'Ae', 'Na', 'O', 'WO', 'Pe', 'Pu'] },
+          { row: 13, name: '丘飛鵬', duties: ['Pe', '11-8', 'Ae', 'Na', 'O', 'WO', 'Ec'] },
+          { row: 14, name: '謝玉連', duties: ['Pe', '9-6', 'Ac', 'Ae', 'Na', 'O', 'SH'] },
+          { row: 15, name: '朱翠君', duties: ['AL', 'AL', 'AL', 'AL', 'AL', 'WO', 'O'] },
+          { row: 16, name: '張麗',   duties: ['Ac', 'Ad', 'Ed', 'WO', 'O', 'Ae', 'Na'] },
+          { row: 17, name: '謝小曼', duties: ['', '', '', '', '', '', ''] },
+          { row: 18, name: '侯嘉敏', duties: ['O', 'Pe', 'Pe', '9-6', 'Ae', 'Na', 'WO'] },
+          { row: 19, name: '馮玉琼', duties: ['Ne', 'Ac', 'SH', 'O', 'WO', 'Pa', '9-6'] },
+          { row: 20, name: '馮嘉錂', duties: ['Ec', 'O', 'WO', 'Ac', 'Pe', 'Pu', 'Ed'] },
+          { row: 21, name: '蘇靖珊', duties: ['Aa', 'Ne', 'O', 'Ec', 'Ed', 'WO', 'O'] }
+        ]
+      },
+      '2026-12-07': {
+        monday: '2026-12-07',
+        rows: [
+          { row: 1,  name: '蘇靖珊', duties: ['Ed', 'Ec', 'Pa', 'O', 'WO', 'Ad', 'Ae'] },
+          { row: 2,  name: '葉曉彤', duties: ['Na', 'O', 'Ec', '11-8', 'Ad', 'WO', 'Ac'] },
+          { row: 3,  name: '黃雅倩', duties: ['Aa', 'Ne', 'O', 'Ac', 'Pe', 'Ec', 'WO'] },
+          { row: 4,  name: '黃詩琪', duties: ['WO', 'Aa', 'Ne', 'O', '9-6', 'Pu', 'Pa'] },
+          { row: 5,  name: '李嘉琪', duties: ['11-8', 'WO', 'Aa', 'Ne', 'O', 'OW', 'Pe'] },
+          { row: 6,  name: '梅潔瑜', duties: ['9-6', 'Ac', 'O', 'Aa', 'Ne', 'WO', 'Ad'] },
+          { row: 7,  name: '陳曦彥', duties: ['Pa', 'Ed', 'SH', 'WO', 'Aa', 'Ne', 'O'] },
+          { row: 8,  name: '關鉦',   duties: ['WO', 'O', 'Ad', 'Ed', '11-8', 'Aa', 'Ne'] },
+          { row: 9,  name: '吳愷欣', duties: ['AL', 'AL', 'AL', 'AL', 'AL', 'WO', 'O'] },
+          { row: 10, name: '吳媛',   duties: ['Ne', 'O', 'WO', 'Pe', 'Pa', 'Ed', '11-8'] },
+          { row: 11, name: '吳珈翹', duties: ['Ae', 'Na', 'O', 'Pa', 'Ec', '11-8', 'WO'] },
+          { row: 12, name: '黃愛萍', duties: ['WO', 'Ae', 'Na', 'O', 'Ed', 'Pe', 'Ec'] },
+          { row: 13, name: '王曉雯', duties: ['Pe', '11-8', 'Ae', 'Na', 'O', 'WO', 'Aa'] },
+          { row: 14, name: '丘飛鵬', duties: ['Pe', 'Pu', '11-8', 'Ae', 'Na', 'O', 'WO'] },
+          { row: 15, name: '謝玉連', duties: ['Ac', '9-6', 'Pe', 'WO', 'Ae', 'Na', 'O'] },
+          { row: 16, name: '朱翠君', duties: ['SH', 'Ad', 'Ed', 'WO', 'O', 'Ae', 'Na'] },
+          { row: 17, name: '張麗',   duties: ['AL', 'AL', 'AL', 'AL', 'AL', 'WO', 'O'] },
+          { row: 18, name: '謝小曼', duties: ['', '', '', '', '', '', ''] },
+          { row: 19, name: '侯嘉敏', duties: ['Ec', 'Pa', 'WO', 'O', 'Ac', 'Ac', 'SH'] },
+          { row: 20, name: '馮玉琼', duties: ['Ad', 'SH', 'Ac', 'Ec', 'Pe', 'O', 'WO'] },
+          { row: 21, name: '馮嘉錂', duties: ['O', 'Pe', '9-6', 'Ad', 'SH', 'Pa', 'Ed'] }
+        ]
+      },
+      '2026-12-14': {
+        monday: '2026-12-14',
+        rows: [
+          { row: 1,  name: '馮嘉錂', duties: ['SH', 'Ec', 'Pa', 'O', 'WO', 'Ad', 'Ae'] },
+          { row: 2,  name: '蘇靖珊', duties: ['Na', 'O', 'Ec', '11-8', 'Ad', 'WO', 'Ac'] },
+          { row: 3,  name: '葉曉彤', duties: ['Aa', 'Ne', 'O', 'Ac', 'Pe', 'Ec', 'WO'] },
+          { row: 4,  name: '黃雅倩', duties: ['Ad', 'Aa', 'Ne', 'WO', 'O', 'SH', 'Pa'] },
+          { row: 5,  name: '黃詩琪', duties: ['11-8', 'WO', 'Aa', 'Ne', 'O', 'Ac', 'Pe'] },
+          { row: 6,  name: '李嘉琪', duties: ['Ed', 'SH', 'O', 'Aa', 'Ne', 'WO', 'Ad'] },
+          { row: 7,  name: '梅潔瑜', duties: ['WO', 'Ed', 'Ed', '9-6', 'Aa', 'Ne', 'O'] },
+          { row: 8,  name: '陳曦彥', duties: ['WO', 'O', 'Ad', 'Ed', '11-8', 'Aa', 'Ne'] },
+          { row: 9,  name: '關鉦',   duties: ['O', 'Pa', '11-8', 'Ad', 'Ac', 'WO', 'Aa'] },
+          { row: 10, name: '吳愷欣', duties: ['Ne', 'O', 'WO', 'Pe', 'Pa', 'Ed', '11-8'] },
+          { row: 11, name: '吳媛',   duties: ['Ae', 'Na', 'O', 'Pa', 'Ec', '11-8', 'WO'] },
+          { row: 12, name: '吳珈翹', duties: ['WO', 'Ae', 'Na', 'O', 'Ed', 'Pe', 'Pu'] },
+          { row: 13, name: '黃愛萍', duties: ['Pa', '11-8', 'Ae', 'Na', 'O', 'WO', 'Ec'] },
+          { row: 14, name: '王曉雯', duties: ['Pe', 'Pu', 'SH', 'Ae', 'Na', 'O', 'WO'] },
+          { row: 15, name: '丘飛鵬', duties: ['Pu', 'Pe', 'Pe', 'WO', 'Ae', 'Na', 'O'] },
+          { row: 16, name: '謝玉連', duties: ['Ac', 'Ad', '9-6', 'WO', 'O', 'Ae', 'Na'] },
+          { row: 17, name: '朱翠君', duties: ['AL', 'AL', 'AL', 'AL', 'AL', 'WO', 'O'] },
+          { row: 18, name: '張麗',   duties: ['9-6', 'Ae', 'WO', 'Ec', 'Pe', 'Pa', 'O'] },
+          { row: 19, name: '謝小曼', duties: ['[Pa]', '[11-8]', '[Ae]', '[Na]', 'O', 'WO', '[Ec]'] },
+          { row: 20, name: '侯嘉敏', duties: ['Ec', '9-6', 'Ac', 'Pu', 'O', 'WO', 'Ed'] },
+          { row: 21, name: '馮玉琼', duties: ['AL', 'AL', 'AL', 'AL', 'AL', 'WO', 'O'] }
         ]
       },
       '2026-12-21': {
@@ -1701,7 +1810,7 @@
 
     let appState = {
       weeks: {},
-      currentWeekMonday: ANCHOR_BASE_MONDAY,
+      currentWeekMonday: '2026-12-14',
       patternSample: JSON.parse(JSON.stringify(IMAGE3_DEFAULT_PATTERN)),
       selectedSlot: 'A',
       manualSlotOverride: false,
@@ -1722,16 +1831,10 @@
       predictTargetDate: '2026-12-17',
       predictSelectedStaffName: '陳曦彥',
       predictSelectedBaseRow: 4,
-      predictPanelCollapsed: false
+      predictPanelCollapsed: false,
+      // 需求 3：DutyList 待確認修改暫存
+      pendingRosterChanges: []
     };
-
-    function weekHasFiveAl(weekDutiesArray) {
-      if (!Array.isArray(weekDutiesArray)) return false;
-      const alCount = weekDutiesArray.filter(c =>
-        unwrapBracketDuty(sanitizeTwoLetterDutyCode(c)).toUpperCase() === 'AL'
-      ).length;
-      return alCount >= 5;
-    }
 
     function startHourlyForceReload() {
       const ONE_HOUR_MS = 60 * 60 * 1000;
@@ -1836,7 +1939,7 @@
         if (mins >= 1140 && mins < 1200) {
           const activeLunchNorms = getActivelyMealNormCodesOnDate(selectedDateStr, mins);
           if (activeLunchNorms.has('Ec')) return '替 Ec';
-          if (activeLunchNorms.has('Ed')) return '替 Ed';
+          if (activeLunchNorms.has('Pa')) return '替 Pa';
           return '替 Ec';
         }
       } else if (normCode === 'Aa') {
@@ -1866,7 +1969,8 @@
       weekObj.rows.forEach(r => {
         const name = (r.name || '').trim();
         if (!name) return;
-        const code = getDutyByStaffNameOnDate(dateStr, name);
+        const effInfo = getEffectiveDutyWithPuSlSub(dateStr, name);
+        const code = effInfo.code;
         if (!code || isLeaveOrOffCode(code) || isNightNCode(code)) return;
         const mealInfo = getEffectiveMealInfo(name, code, dateStr);
         if (nowMins >= mealInfo.mealStartMin && nowMins < mealInfo.mealEndMin) {
@@ -1952,7 +2056,7 @@
       if (swapRec) {
         let resolvedPartnerCode = swapRec.partnerCode || '';
         if (!resolvedPartnerCode && swapRec.partner) {
-          resolvedPartnerCode = getDutyByStaffNameOnDate(selectedDateStr, swapRec.partner);
+          resolvedPartnerCode = getEffectiveDutyWithPuSlSub(selectedDateStr, swapRec.partner).code;
           if (resolvedPartnerCode) {
             swapRec.partnerCode = resolvedPartnerCode;
             saveMealSwaps();
@@ -2057,7 +2161,7 @@
       return { state: 'working', label: '', reliefLabel, zoneLabel, effectiveCode: baseCode, isCoveringPartner: false, cssClass: '' };
     }
 
-    function evaluateStaffLiveStatus(staffName, code, selectedDateStr, isTonightNextNight = false) {
+    function evaluateStaffLiveStatus(staffName, code, selectedDateStr, isTonightNextNight = false, puSubNote = '') {
       const mealInfo = getEffectiveMealInfo(staffName, code, selectedDateStr);
       const rawSelf = computeRawStaffLiveStatus(code, selectedDateStr, isTonightNextNight);
 
@@ -2079,7 +2183,8 @@
               effectiveCode: mealInfo.partnerCode,
               isCoveringPartner: (rawPartner.state === 'working'),
               isSwapped: true,
-              swapPartner: mealInfo.swapPartner
+              swapPartner: mealInfo.swapPartner,
+              puSubNote
             };
           }
         }
@@ -2088,7 +2193,8 @@
       return {
         ...rawSelf,
         isSwapped: mealInfo.isSwapped,
-        swapPartner: mealInfo.swapPartner
+        swapPartner: mealInfo.swapPartner,
+        puSubNote
       };
     }
 
@@ -2129,23 +2235,6 @@
       return /^[A-Za-z]$/.test(inner) && inner.toUpperCase() !== 'O';
     }
 
-    function normalizeWeekRowsNoEmptyWhenFull(rows) {
-      const validRows = (rows || []).filter(r => (r.name || '').trim() !== '');
-      if (validRows.length >= 21) {
-        return validRows.map((r, idx) => ({
-          row: idx + 1,
-          name: (r.name || '').trim(),
-          duties: (r.duties || []).slice(0, 7).map(d => sanitizeTwoLetterDutyCode(d))
-        }));
-      }
-      return (rows || []).map((r, idx) => ({
-        row: r.row || (idx + 1),
-        name: (r.name || '').trim(),
-        duties: (r.name || '').trim() ? (r.duties || []).slice(0, 7).map(d => sanitizeTwoLetterDutyCode(d)) : ['', '', '', '', '', '', '']
-      }));
-    }
-
-    // 嚴格以 2026-11-16 基準週向下循環輪轉 21 行員工順序
     function getExpectedRosterForWeek(mondayStr) {
       const baseMon = parseLocalDate(ANCHOR_BASE_MONDAY);
       const targetMon = parseLocalDate(getMondayOfDate(mondayStr));
@@ -2162,7 +2251,28 @@
       });
     }
 
-    // 讀取 DutyList 內該員工於指定日期的實際排班（用於覆蓋預測樣本表）
+    function enforceStrict21StaffOrder(mondayStr, rawRows) {
+      const expectedRoster = getExpectedRosterForWeek(mondayStr);
+      const existingByName = new Map();
+      (rawRows || []).forEach(r => {
+        const cleanN = normalizeStaffNameForMatch(r.name);
+        if (cleanN) {
+          existingByName.set(cleanN, (r.duties || []).slice(0, 7).map(d => sanitizeTwoLetterDutyCode(d)));
+        }
+      });
+
+      return expectedRoster.map((st, idx) => {
+        const cleanN = normalizeStaffNameForMatch(st.name);
+        const duties = existingByName.get(cleanN) || ['', '', '', '', '', '', ''];
+        while (duties.length < 7) duties.push('');
+        return {
+          row: idx + 1,
+          name: st.name,
+          duties
+        };
+      });
+    }
+
     function getDutyByStaffNameOnDate(dateStr, staffName) {
       const cleanName = normalizeStaffNameForMatch(staffName);
       if (!cleanName) return '';
@@ -2173,6 +2283,78 @@
       if (!weekObj || !Array.isArray(weekObj.rows)) return '';
       const found = weekObj.rows.find(r => normalizeStaffNameForMatch(r.name) === cleanName);
       return found && Array.isArray(found.duties) ? sanitizeTwoLetterDutyCode(found.duties[dayIdx] || '') : '';
+    }
+
+    // 需求 2：在 DutyList 中，如果當日有 Pu，P 更有位置 SL，就用 Pu 接替 SL 的崗位同工作；如未有 Pu 就手動更改
+    function getEffectiveDutyWithPuSlSub(dateStr, staffName) {
+      const cleanName = normalizeStaffNameForMatch(staffName);
+      const rawCode = getDutyByStaffNameOnDate(dateStr, cleanName);
+      const unwrapped = unwrapBracketDuty(rawCode);
+      const upper = unwrapped.toUpperCase();
+
+      if (upper !== 'PU') {
+        return { code: rawCode, puSubFromStaff: '', puSubSlot: '' };
+      }
+
+      const monday = getMondayOfDate(dateStr);
+      const weekObj = appState.weeks[monday];
+      if (!weekObj || !Array.isArray(weekObj.rows)) {
+        return { code: rawCode, puSubFromStaff: '', puSubSlot: '' };
+      }
+
+      const d = parseLocalDate(dateStr);
+      const dayIdx = (d.getDay() + 6) % 7;
+
+      const presentPSlots = new Set();
+      let slStaffWithExplicitSlot = null;
+      let slStaffBare = null;
+
+      weekObj.rows.forEach((r, idx) => {
+        const n = normalizeStaffNameForMatch(r.name);
+        if (!n) return;
+        const c = unwrapBracketDuty(sanitizeTwoLetterDutyCode(r.duties?.[dayIdx] || ''));
+        const u = c.toUpperCase();
+        if (['PA', 'PE', 'EC', 'ED'].includes(u)) {
+          presentPSlots.add(c);
+        }
+        if (u === 'SL' || u.startsWith('SL/')) {
+          const parts = c.split('/');
+          if (parts.length > 1 && ['Pa', 'Pe', 'Ec', 'Ed'].includes(sanitizeTwoLetterDutyCode(parts[1]))) {
+            slStaffWithExplicitSlot = { name: n, slot: sanitizeTwoLetterDutyCode(parts[1]) };
+          } else {
+            // 推斷該 SL 同事原 P 更崗位（從樣本表該行當日更期取得，若為 P 更則作為接替崗位）
+            const sampleRow = appState.patternSample[idx];
+            const sampleDayCode = sampleRow ? sanitizeTwoLetterDutyCode(unwrapBracketDuty(sampleRow.days[dayIdx] || '')) : '';
+            const inferredPSlot = ['Pa', 'Pe', 'Ec', 'Ed'].includes(sampleDayCode) ? sampleDayCode : '';
+            slStaffBare = { name: n, inferredSlot: inferredPSlot };
+          }
+        }
+      });
+
+      if (slStaffWithExplicitSlot) {
+        return {
+          code: slStaffWithExplicitSlot.slot,
+          puSubFromStaff: slStaffWithExplicitSlot.name,
+          puSubSlot: slStaffWithExplicitSlot.slot
+        };
+      }
+
+      if (slStaffBare) {
+        let targetSlot = slStaffBare.inferredSlot;
+        if (!targetSlot) {
+          const corePSlots = ['Pa', 'Ec', 'Ed', 'Pe'];
+          targetSlot = corePSlots.find(s => !presentPSlots.has(s)) || '';
+        }
+        if (targetSlot) {
+          return {
+            code: targetSlot,
+            puSubFromStaff: slStaffBare.name,
+            puSubSlot: targetSlot
+          };
+        }
+      }
+
+      return { code: rawCode, puSubFromStaff: '', puSubSlot: '' };
     }
 
     function closeAllModals() {
@@ -2240,7 +2422,7 @@
       startExternalLiveFeedsWatcher();
 
       try {
-        const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('qeh_aed_duty_v23') || localStorage.getItem('qeh_aed_duty_v22');
+        const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('qeh_aed_duty_v25') || localStorage.getItem('qeh_aed_duty_v24');
         const backupFlag = localStorage.getItem(BACKUP_FLAG_KEY);
         const autoCloudFlag = localStorage.getItem(AUTO_CLOUD_FLAG_KEY);
         const hideAlarmsFlag = localStorage.getItem(HIDE_ALARMS_FLAG_KEY);
@@ -2269,19 +2451,25 @@
           }
         }
 
+        const defaultCopy = JSON.parse(JSON.stringify(DEFAULT_WEEK_DATA));
         if (saved) {
           const parsed = JSON.parse(saved);
-          const defaultCopy = JSON.parse(JSON.stringify(DEFAULT_WEEK_DATA));
-          appState.weeks = { ...defaultCopy, ...(parsed.weeks || {}) };
-          Object.values(appState.weeks).forEach(w => {
-            w.rows = normalizeWeekRowsNoEmptyWhenFull(w.rows || []);
+          appState.weeks = { ...(parsed.weeks || {}), ...defaultCopy };
+          Object.entries(appState.weeks).forEach(([monKey, w]) => {
+            w.monday = monKey;
+            w.rows = enforceStrict21StaffOrder(monKey, w.rows || []);
           });
-          appState.currentWeekMonday = parsed.currentWeekMonday || ANCHOR_BASE_MONDAY;
-          // 嚴格保留標準 21 行規律樣本表
+          appState.currentWeekMonday = parsed.currentWeekMonday && appState.weeks[parsed.currentWeekMonday]
+            ? parsed.currentWeekMonday
+            : '2026-12-14';
           appState.patternSample = JSON.parse(JSON.stringify(IMAGE3_DEFAULT_PATTERN));
           appState.lastCloudUpdatedAt = parsed.lastCloudUpdatedAt || '';
         } else {
-          appState.weeks = JSON.parse(JSON.stringify(DEFAULT_WEEK_DATA));
+          appState.weeks = defaultCopy;
+          Object.entries(appState.weeks).forEach(([monKey, w]) => {
+            w.monday = monKey;
+            w.rows = enforceStrict21StaffOrder(monKey, w.rows || []);
+          });
         }
       } catch (e) {
         appState.weeks = JSON.parse(JSON.stringify(DEFAULT_WEEK_DATA));
@@ -2448,6 +2636,7 @@
 
     async function pullAllFromCloud(silent = true) {
       if (isCloudRequestRunning && silent) return;
+      if (appState.pendingRosterChanges.length > 0 && silent) return;
       isCloudRequestRunning = true;
       if (!silent) updateCloudStatusUI(true, '☁ 下載中...', '正在從雲端資料庫下載...');
 
@@ -2477,8 +2666,9 @@
 
         if (isRemoteNewer) {
           const mergedWeeks = { ...JSON.parse(JSON.stringify(DEFAULT_WEEK_DATA)), ...remoteWeeks };
-          Object.values(mergedWeeks).forEach(w => {
-            w.rows = normalizeWeekRowsNoEmptyWhenFull(w.rows || []);
+          Object.entries(mergedWeeks).forEach(([monKey, w]) => {
+            w.monday = monKey;
+            w.rows = enforceStrict21StaffOrder(monKey, w.rows || []);
           });
           appState.weeks = mergedWeeks;
           appState.patternSample = JSON.parse(JSON.stringify(IMAGE3_DEFAULT_PATTERN));
@@ -2811,8 +3001,13 @@
       if (!raw) { alert('找不到本機備份紀錄。'); return; }
       const parsed = JSON.parse(raw);
       appState.weeks = parsed.data.weeks;
+      Object.entries(appState.weeks).forEach(([monKey, w]) => {
+        w.monday = monKey;
+        w.rows = enforceStrict21StaffOrder(monKey, w.rows || []);
+      });
       appState.currentWeekMonday = parsed.data.currentWeekMonday;
       appState.patternSample = JSON.parse(JSON.stringify(IMAGE3_DEFAULT_PATTERN));
+      appState.pendingRosterChanges = [];
       saveState(true);
       renderAll();
       alert('已還原至備份版本（' + parsed.timestamp + '）');
@@ -2977,6 +3172,12 @@
     function closeAlarmModal() { document.getElementById('alarm-modal').classList.add('hidden'); }
 
     function switchTab(tabName) {
+      if (tabName !== 'roster' && appState.pendingRosterChanges.length > 0) {
+        const leaveWithoutSave = confirm(`DutyList 尚有 ${appState.pendingRosterChanges.length} 項未確認儲存的修改！\n按「確定」先放棄未儲存修改並切換分頁，或按「取消」留在 DutyList 確認儲存。`);
+        if (!leaveWithoutSave) return;
+        discardPendingRosterChanges(true);
+      }
+
       ['today', 'roster', 'predict', 'al2027'].forEach(t => {
         const viewEl = document.getElementById('view-' + t);
         const navEl = document.getElementById('nav-' + t);
@@ -3175,15 +3376,15 @@
       nextWarnEl.classList.add('hidden');
 
       if (!todayWeekObj && !nextWeekObj) {
-        currentListEl.innerHTML = `<div style="text-align:center;color:#94a3b8;padding:8px;">DutyList 尚未建立 ${mondayStr} 週次</div>`;
-        nextListEl.innerHTML = `<div style="text-align:center;color:#94a3b8;padding:8px;">請於「DutyList」新增或編輯更期</div>`;
+        currentListEl.innerHTML = `<div style="text-align:center;color:#94a3b8;padding:8px;">DutyList 未有上載 ${mondayStr} 週次更期</div>`;
+        nextListEl.innerHTML = `<div style="text-align:center;color:#94a3b8;padding:8px;">僅顯示已上載更期之星期</div>`;
         midListEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#94a3b8;padding:6px;">暫無該週 DutyList 資料</div>`;
         sleepingListEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#94a3b8;padding:6px;">暫無 Sleeping 人員</div>`;
         document.getElementById('current-shift-count').textContent = '0人';
         document.getElementById('next-shift-count').textContent = '0人';
         document.getElementById('mid-shift-count').textContent = '0人';
         document.getElementById('sleeping-shift-count').textContent = '0人';
-        document.getElementById('duty-schedule-detail-list').innerHTML = `<div style="text-align:center;color:#94a3b8;padding:10px;">「DutyList」內尚未有 ${mondayStr} 至 ${addDaysToDateStr(mondayStr, 6)} 的更期紀錄</div>`;
+        document.getElementById('duty-schedule-detail-list').innerHTML = `<div style="text-align:center;color:#94a3b8;padding:10px;">「DutyList」內未有上載 ${mondayStr} 至 ${addDaysToDateStr(mondayStr, 6)} 的更期</div>`;
         return;
       }
 
@@ -3219,36 +3420,62 @@
       const slotPMap = { Pa: [], Ec: [], Ed: [], Pe: [], Pu: [], OTHER: [] };
 
       staffRosterList.forEach(staff => {
-        const todaySheetCode = getDutyByStaffNameOnDate(dateStr, staff.name);
-        const tomorrowSheetCode = getDutyByStaffNameOnDate(nextDateStr, staff.name);
+        const effToday = getEffectiveDutyWithPuSlSub(dateStr, staff.name);
+        const effTomorrow = getEffectiveDutyWithPuSlSub(nextDateStr, staff.name);
+
+        const todaySheetCode = effToday.code;
+        const tomorrowSheetCode = effTomorrow.code;
+        const todayPuSubNote = effToday.puSubFromStaff ? `Pu代SL(${effToday.puSubFromStaff})` : '';
+        const tomorrowPuSubNote = effTomorrow.puSubFromStaff ? `Pu代SL(${effTomorrow.puSubFromStaff})` : '';
 
         const unwrappedToday = unwrapBracketDuty(todaySheetCode);
         if (isMorningACode(todaySheetCode)) todayACodesPresent.add(unwrappedToday);
         if (isAfternoonPECode(todaySheetCode)) todayPCodesPresent.add(unwrappedToday);
 
         if (isMorningACode(todaySheetCode) || isMidCode(todaySheetCode) || isAfternoonPECode(todaySheetCode)) {
-          allDayStaffPool.push({ row: staff.row, name: staff.name, code: todaySheetCode, normCode: normalizeDutyCode(todaySheetCode), dayTag: '今日' });
+          allDayStaffPool.push({
+            row: staff.row,
+            name: staff.name,
+            code: todaySheetCode,
+            normCode: normalizeDutyCode(todaySheetCode),
+            dayTag: '今日',
+            puSubNote: todayPuSubNote
+          });
         }
         if (isNightNCode(todaySheetCode)) {
-          allDayStaffPool.push({ row: staff.row, name: staff.name, code: todaySheetCode, normCode: normalizeDutyCode(todaySheetCode), dayTag: '昨夜N(07:18放工)' });
+          allDayStaffPool.push({
+            row: staff.row,
+            name: staff.name,
+            code: todaySheetCode,
+            normCode: normalizeDutyCode(todaySheetCode),
+            dayTag: '昨夜N(07:18放工)',
+            puSubNote: todayPuSubNote
+          });
           sleepingCount++;
-          const sleepStatus = evaluateStaffLiveStatus(staff.name, todaySheetCode, dateStr, false);
+          const sleepStatus = evaluateStaffLiveStatus(staff.name, todaySheetCode, dateStr, false, todayPuSubNote);
           sleepingListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, todaySheetCode, 'indigo', sleepStatus);
         }
         if (isNightNCode(tomorrowSheetCode)) {
-          allDayStaffPool.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, normCode: normalizeDutyCode(tomorrowSheetCode), dayTag: `${dateStr.slice(5)}夜N(22:30返工)` });
+          allDayStaffPool.push({
+            row: staff.row,
+            name: staff.name,
+            code: tomorrowSheetCode,
+            normCode: normalizeDutyCode(tomorrowSheetCode),
+            dayTag: `${dateStr.slice(5)}夜N(22:30返工)`,
+            puSubNote: tomorrowPuSubNote
+          });
         }
 
         if (isMidCode(todaySheetCode)) {
           midCount++;
-          const midStatus = evaluateStaffLiveStatus(staff.name, todaySheetCode, dateStr, false);
+          const midStatus = evaluateStaffLiveStatus(staff.name, todaySheetCode, dateStr, false, todayPuSubNote);
           midStaffItems.push({
             is118: is118Code(todaySheetCode),
             row: staff.row,
             html: createDutyPersonChip(staff.row, staff.name, todaySheetCode, 'cyan', midStatus)
           });
           if (appState.selectedSlot !== 'N') {
-            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
+            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日', puSubNote: todayPuSubNote });
           }
         }
 
@@ -3256,49 +3483,49 @@
           if (isMorningACode(todaySheetCode)) {
             upCount++;
             const dispCode = isIncompleteSingleLetter(todaySheetCode) ? `${todaySheetCode}(待補位)` : todaySheetCode;
-            const st = evaluateStaffLiveStatus(staff.name, todaySheetCode, dateStr, false);
+            const st = evaluateStaffLiveStatus(staff.name, todaySheetCode, dateStr, false, todayPuSubNote);
             const chipHtml = createDutyPersonChip(staff.row, staff.name, dispCode, isIncompleteSingleLetter(todaySheetCode) ? 'warn' : 'teal', st);
             const coreKey = slotAMap[unwrappedToday] ? unwrappedToday : 'OTHER';
             slotAMap[coreKey].push(chipHtml);
-            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
+            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日', puSubNote: todayPuSubNote });
           }
           if (isAfternoonPECode(todaySheetCode)) {
             downCount++;
             const dispCode = isIncompleteSingleLetter(todaySheetCode) ? `${todaySheetCode}(待補位)` : todaySheetCode;
-            const st = evaluateStaffLiveStatus(staff.name, todaySheetCode, dateStr, false);
+            const st = evaluateStaffLiveStatus(staff.name, todaySheetCode, dateStr, false, todayPuSubNote);
             const chipHtml = createDutyPersonChip(staff.row, staff.name, dispCode, isIncompleteSingleLetter(todaySheetCode) ? 'warn' : '', st);
             const coreKey = slotPMap[unwrappedToday] ? unwrappedToday : 'OTHER';
             slotPMap[coreKey].push(chipHtml);
-            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
+            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日', puSubNote: todayPuSubNote });
           }
         } else if (appState.selectedSlot === 'P') {
           if (isAfternoonPECode(todaySheetCode)) {
             upCount++;
             const dispCode = isIncompleteSingleLetter(todaySheetCode) ? `${todaySheetCode}(待補位)` : todaySheetCode;
-            const st = evaluateStaffLiveStatus(staff.name, todaySheetCode, dateStr, false);
+            const st = evaluateStaffLiveStatus(staff.name, todaySheetCode, dateStr, false, todayPuSubNote);
             const chipHtml = createDutyPersonChip(staff.row, staff.name, dispCode, isIncompleteSingleLetter(todaySheetCode) ? 'warn' : 'teal', st);
             const coreKey = slotPMap[unwrappedToday] ? unwrappedToday : 'OTHER';
             slotPMap[coreKey].push(chipHtml);
-            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日' });
+            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: todaySheetCode, dayTag: '今日', puSubNote: todayPuSubNote });
           }
           if (isNightNCode(tomorrowSheetCode)) {
             downCount++;
-            const st = evaluateStaffLiveStatus(staff.name, tomorrowSheetCode, dateStr, true);
+            const st = evaluateStaffLiveStatus(staff.name, tomorrowSheetCode, dateStr, true, tomorrowPuSubNote);
             nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode, isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : '', st);
-            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: `${dateStr.slice(5)}夜N(22:30返工)` });
+            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: `${dateStr.slice(5)}夜N(22:30返工)`, puSubNote: tomorrowPuSubNote });
           }
         } else if (appState.selectedSlot === 'N') {
           if (isNightNCode(tomorrowSheetCode)) {
             upCount++;
-            const st = evaluateStaffLiveStatus(staff.name, tomorrowSheetCode, dateStr, true);
+            const st = evaluateStaffLiveStatus(staff.name, tomorrowSheetCode, dateStr, true, tomorrowPuSubNote);
             currentListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode, isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : 'teal', st);
-            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: `${dateStr.slice(5)}夜N(22:30返工)` });
+            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: `${dateStr.slice(5)}夜N(22:30返工)`, puSubNote: tomorrowPuSubNote });
           }
           if (isMorningACode(tomorrowSheetCode)) {
             downCount++;
-            const st = evaluateStaffLiveStatus(staff.name, tomorrowSheetCode, nextDateStr, false);
+            const st = evaluateStaffLiveStatus(staff.name, tomorrowSheetCode, nextDateStr, false, tomorrowPuSubNote);
             nextListEl.innerHTML += createDutyPersonChip(staff.row, staff.name, tomorrowSheetCode, isIncompleteSingleLetter(tomorrowSheetCode) ? 'warn' : '', st);
-            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: `明早A(${nextDateStr.slice(5)})` });
+            activeWorkingStaff.push({ row: staff.row, name: staff.name, code: tomorrowSheetCode, dayTag: `明早A(${nextDateStr.slice(5)})`, puSubNote: tomorrowPuSubNote });
           }
         }
       });
@@ -3374,13 +3601,16 @@
       renderDutyScheduleDetails(activeWorkingStaff, allDayStaffPool, dateStr, staffRosterList);
     }
 
-    function createDutyPersonChip(rowNum, name, code, theme, liveStatus = { state: 'normal', label: '', reliefLabel: '', zoneLabel: '', effectiveCode: '', isCoveringPartner: false, isSwapped: false, cssClass: '' }) {
+    function createDutyPersonChip(rowNum, name, code, theme, liveStatus = { state: 'normal', label: '', reliefLabel: '', zoneLabel: '', effectiveCode: '', isCoveringPartner: false, isSwapped: false, puSubNote: '', cssClass: '' }) {
       const isHighlighted = appState.highlightedStaff === name;
+      const puSubBadgeHtml = liveStatus && liveStatus.puSubNote
+        ? `<span class="status-mini-pill pu-sub-sl">${liveStatus.puSubNote}</span>`
+        : '';
       const swappedBadgeHtml = liveStatus && liveStatus.isSwapped
         ? `<span class="status-mini-pill swapped-meal">調食飯</span>`
         : '';
       const coveringDutyBadgeHtml = (liveStatus && liveStatus.state !== 'meal' && liveStatus.isCoveringPartner && liveStatus.effectiveCode)
-        ? `<span class="status-mini-pill swapped-duty">頂 ${liveStatus.effectiveCode}</span>`
+        ? `<span class="status-mini-pill swapped-duty">轉 ${liveStatus.effectiveCode}</span>`
         : '';
       const statusBadgeHtml = liveStatus && liveStatus.label
         ? `<span class="status-mini-pill ${liveStatus.state}">${liveStatus.label}</span>`
@@ -3388,29 +3618,30 @@
       const reliefBadgeHtml = liveStatus && liveStatus.reliefLabel
         ? `<span class="status-mini-pill relief">${liveStatus.reliefLabel}</span>`
         : '';
-      const zoneBadgeHtml = (liveStatus && liveStatus.state !== 'meal' && liveStatus.zoneLabel)
-        ? `<span class="status-mini-pill zone">${liveStatus.zoneLabel}</span>`
+      const zoneBadgeHtml = (liveStatus && liveStatus.zoneLabel && liveStatus.state !== 'meal')
+        ? `<span class="status-mini-pill zone">📍${liveStatus.zoneLabel}</span>`
         : '';
-      const hasSubRow = Boolean(statusBadgeHtml || coveringDutyBadgeHtml || reliefBadgeHtml || zoneBadgeHtml);
+
+      const hasSubPills = Boolean(puSubBadgeHtml || swappedBadgeHtml || coveringDutyBadgeHtml || statusBadgeHtml || reliefBadgeHtml || zoneBadgeHtml);
+      const waNameHtml = renderWhatsAppStaffLinkHtml(name, { extraClass: 'chip-staff-name' });
 
       return `
-        <div onclick="highlightStaff('${name}')" class="person-chip ${liveStatus.cssClass || ''} ${isHighlighted ? 'hl' : ''}">
+        <div onclick="toggleHighlightStaff('${name}')" class="person-chip ${liveStatus.cssClass || ''} ${isHighlighted ? 'hl' : ''}">
           <div class="chip-top-row">
             <div class="chip-name-wrap">
-              <span class="chip-row-num">${rowNum}</span>
-              <span class="chip-staff-name">${name}</span>
+              <span class="chip-row-num">${rowNum}.</span>
+              ${waNameHtml}
             </div>
             <div class="chip-badges-wrap">
-              ${swappedBadgeHtml}
               <span class="duty-font code-badge ${theme}">${code}</span>
             </div>
           </div>
-          ${hasSubRow ? `<div class="chip-sub-row">${statusBadgeHtml}${coveringDutyBadgeHtml}${reliefBadgeHtml}${zoneBadgeHtml}</div>` : ''}
+          ${hasSubPills ? `<div class="chip-sub-row">${puSubBadgeHtml}${swappedBadgeHtml}${coveringDutyBadgeHtml}${statusBadgeHtml}${reliefBadgeHtml}${zoneBadgeHtml}</div>` : ''}
         </div>
       `;
     }
 
-    function highlightStaff(name) {
+    function toggleHighlightStaff(name) {
       appState.highlightedStaff = (appState.highlightedStaff === name) ? '' : name;
       renderTodayView();
     }
@@ -3420,74 +3651,98 @@
       renderTodayView();
     }
 
+    function toggleNext7MatrixView() {
+      appState.showNext7AsMatrix = !appState.showNext7AsMatrix;
+      renderTodayView();
+    }
+
+    function toggleNext7ShowAllStaff() {
+      appState.next7ShowAllStaff = !appState.next7ShowAllStaff;
+      renderTodayView();
+    }
+
+    // 需求 1：未來 7 日更期在 DutyList 未有該週資料時，不顯示亦不放入預測更期（顯示 '-'）
+    function getNext7DaysForStaff(staffName, startDateStr) {
+      const result = [];
+      for (let i = 1; i <= 7; i++) {
+        const dStr = addDaysToDateStr(startDateStr, i);
+        const eff = getEffectiveDutyWithPuSlSub(dStr, staffName);
+        const code = eff.code;
+        result.push({
+          dateLabel: dStr.slice(5),
+          code: code || '-',
+          hasUploaded: Boolean(code)
+        });
+      }
+      return result;
+    }
+
     let activeMealSwapContext = null;
 
-    function openMealSwapModal(dateStr, staffName, staffCode) {
-      const dayPool = [];
+    // 需求 4：11-8 調食飯只會同 P duty 的調食飯（Pa, Pe, Pu, Ec, Ed）
+    function isPDutyFor118MealSwap(normCode) {
+      return ['Pa', 'Pe', 'Pu', 'Ec', 'Ed'].includes(normCode);
+    }
+
+    function openMealSwapModal(staffName, code, dateStr) {
       const mondayStr = getMondayOfDate(dateStr);
       const weekObj = appState.weeks[mondayStr];
       if (!weekObj || !Array.isArray(weekObj.rows)) return;
 
+      const myNorm = normalizeDutyCode(code);
+      const myMeal = getEffectiveMealInfo(staffName, code, dateStr);
+      const isMe118 = (myNorm === '11/8' || myNorm === '11-8');
+      const isMeP = isPDutyFor118MealSwap(myNorm);
+
+      const candidates = [];
       weekObj.rows.forEach(r => {
-        const n = (r.name || '').trim();
-        if (!n) return;
-        const c = getDutyByStaffNameOnDate(dateStr, n);
-        if (isMorningACode(c) || isMidCode(c) || isAfternoonPECode(c)) {
-          dayPool.push({ row: r.row, name: n, code: c });
-        }
+        const otherName = (r.name || '').trim();
+        if (!otherName || otherName === staffName) return;
+        const otherEff = getEffectiveDutyWithPuSlSub(dateStr, otherName);
+        const otherCode = otherEff.code;
+        if (!otherCode || isLeaveOrOffCode(otherCode) || isNightNCode(otherCode)) return;
+        const otherNorm = normalizeDutyCode(otherCode);
+
+        // 需求 4：若其中一方是 11-8，另一方必須是 P duty (Pa, Pe, Pu, Ec, Ed)
+        if (isMe118 && !isPDutyFor118MealSwap(otherNorm)) return;
+        if (isPDutyFor118MealSwap(otherNorm) && !isMe118 && !isMeP) return;
+        if ((otherNorm === '11/8' || otherNorm === '11-8') && !isMeP) return;
+
+        const otherMeal = getEffectiveMealInfo(otherName, otherCode, dateStr);
+        candidates.push({
+          row: r.row,
+          name: otherName,
+          code: otherCode,
+          mealText: otherMeal.mealText,
+          mealStart: otherMeal.mealStart,
+          mealStartMin: otherMeal.mealStartMin,
+          mealEndMin: otherMeal.mealEndMin
+        });
       });
 
-      const isSelfA = isMorningACode(staffCode);
-      const isSelfP = isAfternoonPECode(staffCode);
-      const isSelf118 = is118Code(staffCode);
-      const isSelfMid = isMidCode(staffCode);
+      activeMealSwapContext = { staffName, code, dateStr, myMeal };
 
-      const candidates = dayPool.filter(p => {
-        if (p.name === staffName) return false;
-        if (isSelf118) return isAfternoonPECode(p.code);
-        if (isSelfA) return isMorningACode(p.code) || isMidCode(p.code);
-        if (isSelfP) return isAfternoonPECode(p.code) || isMidCode(p.code);
-        if (isSelfMid) return isMorningACode(p.code) || isAfternoonPECode(p.code) || isMidCode(p.code);
-        return false;
-      });
-
-      activeMealSwapContext = { dateStr, staffName, staffCode, candidates };
-
-      const selfMeal = getEffectiveMealInfo(staffName, staffCode, dateStr);
-      document.getElementById('meal-swap-modal-title').textContent = `互調食飯：${staffName} (${staffCode})`;
-      document.getElementById('meal-swap-modal-desc').textContent = `${dateStr} ｜ ${staffName} 目前食飯時段：${selfMeal.mealText}${isSelf118 ? '（11-8 僅限與 P Duty 互調）' : ''}`;
+      document.getElementById('meal-swap-modal-title').textContent = `⇄ 互調食飯時間（${staffName} · ${code}）`;
+      document.getElementById('meal-swap-modal-desc').textContent = isMe118
+        ? `目前食飯時段：${myMeal.mealText} ｜ 11-8 僅可與 P Duty 同事互調食飯：`
+        : `目前食飯時段：${myMeal.mealText} ｜ 請選擇要互調食飯的當值同事：`;
 
       const listEl = document.getElementById('meal-swap-candidates-list');
-      let html = '';
-
-      if (selfMeal.isSwapped) {
-        html += `
-          <div class="toolbar sub-box" style="background:#fff1f2;border-color:#fda4af;padding:6px 8px;">
-            <span style="font-size:11px;font-weight:700;color:#be123c;">目前已與「${selfMeal.swapPartner}」對調食飯兩時段</span>
-            <button type="button" onclick="cancelMealSwap('${dateStr}', '${staffName}')" class="btn-sm btn-rose" style="font-size:11px;padding:3px 8px;">恢復原食飯時間</button>
-          </div>
-        `;
-      }
-
       if (!candidates.length) {
-        html += `<div style="text-align:center;color:#94a3b8;padding:12px;">${isSelf118 ? '當日暫無 P Duty 同事可互調食飯' : '當日暫無其他同更或中更同事可互調食飯'}</div>`;
+        listEl.innerHTML = `<div style="text-align:center;color:#94a3b8;padding:12px;">${isMe118 ? '當日未有可互調之 P Duty 同事' : '當日未有其他可互調食飯的同事'}</div>`;
       } else {
-        html += candidates.map(cand => {
-          const candMeal = getEffectiveMealInfo(cand.name, cand.code, dateStr);
-          return `
-            <div class="toolbar sub-box" style="padding:7px 9px;background:#f8fafc;">
-              <div>
-                <strong>${cand.name}</strong>
-                <span class="duty-font code-badge teal" style="margin-left:4px;">${cand.code}</span>
-                <div style="font-size:11px;color:#475569;margin-top:2px;">食飯時間：${candMeal.mealText}</div>
-              </div>
-              <button type="button" onclick="confirmSwapMealWith('${cand.name}', '${cand.code}')" class="btn-sm btn-amber" style="font-size:11px;">與他互調</button>
+        listEl.innerHTML = candidates.map(c => `
+          <div class="toolbar sub-box" style="padding:7px 9px;background:#f8fafc;">
+            <div>
+              <strong>${c.row}. ${c.name}</strong>
+              <span class="duty-font code-badge" style="margin-left:4px;">${c.code}</span>
+              <div style="font-size:11px;color:#b45309;font-weight:700;margin-top:2px;">🍽️ 食飯時段：${c.mealText}</div>
             </div>
-          `;
-        }).join('');
+            <button type="button" onclick="confirmMealSwapWithPartner('${c.name}')" class="btn-sm btn-amber">與他互調</button>
+          </div>
+        `).join('');
       }
 
-      listEl.innerHTML = html;
       document.getElementById('meal-swap-modal').classList.remove('hidden');
     }
 
@@ -3496,53 +3751,38 @@
       activeMealSwapContext = null;
     }
 
-    function confirmSwapMealWith(partnerName, partnerCode) {
+    function confirmMealSwapWithPartner(partnerName) {
       if (!activeMealSwapContext) return;
-      const { dateStr, staffName, staffCode } = activeMealSwapContext;
+      const { staffName, code, dateStr } = activeMealSwapContext;
 
-      const selfMeal = getEffectiveMealInfo(staffName, staffCode, dateStr);
+      const partnerCode = getEffectiveDutyWithPuSlSub(dateStr, partnerName).code;
+      if (!partnerCode) return;
+
+      const myMeal = getEffectiveMealInfo(staffName, code, dateStr);
       const partnerMeal = getEffectiveMealInfo(partnerName, partnerCode, dateStr);
 
       if (!appState.mealSwapsByDate[dateStr]) appState.mealSwapsByDate[dateStr] = {};
 
-      if (selfMeal.isSwapped && selfMeal.swapPartner && appState.mealSwapsByDate[dateStr][selfMeal.swapPartner]) {
-        delete appState.mealSwapsByDate[dateStr][selfMeal.swapPartner];
-      }
-      if (partnerMeal.isSwapped && partnerMeal.swapPartner && appState.mealSwapsByDate[dateStr][partnerMeal.swapPartner]) {
-        delete appState.mealSwapsByDate[dateStr][partnerMeal.swapPartner];
-      }
-
-      const selfBaseSpec = DUTY_SPEC_MAP[normalizeDutyCode(staffCode)] || { mealStart: '12:00', mealStartMin: 720, mealEndMin: 780 };
-      const partnerBaseSpec = DUTY_SPEC_MAP[normalizeDutyCode(partnerCode)] || { mealStart: '13:00', mealStartMin: 780, mealEndMin: 840 };
-
-      const fmtRange = (sMin, eMin) => {
-        const sh = String(Math.floor(sMin / 60)).padStart(2, '0');
-        const sm = String(sMin % 60).padStart(2, '0');
-        const eh = String(Math.floor(eMin / 60)).padStart(2, '0');
-        const em = String(eMin % 60).padStart(2, '0');
-        return `${sh}${sm}-${eh}${em}`;
-      };
-
       appState.mealSwapsByDate[dateStr][staffName] = {
         partner: partnerName,
         partnerCode: partnerCode,
-        origMealStartMin: selfBaseSpec.mealStartMin,
-        origMealEndMin: selfBaseSpec.mealEndMin,
-        mealStart: partnerBaseSpec.mealStart,
-        mealStartMin: partnerBaseSpec.mealStartMin,
-        mealEndMin: partnerBaseSpec.mealEndMin,
-        mealText: `${fmtRange(partnerBaseSpec.mealStartMin, partnerBaseSpec.mealEndMin)} (與${partnerName}調食飯)`
+        mealStart: partnerMeal.mealStart,
+        mealStartMin: partnerMeal.mealStartMin,
+        mealEndMin: partnerMeal.mealEndMin,
+        mealText: `${partnerMeal.mealText} (與${partnerName}對調)`,
+        origMealStartMin: myMeal.origMealStartMin,
+        origMealEndMin: myMeal.origMealEndMin
       };
 
       appState.mealSwapsByDate[dateStr][partnerName] = {
         partner: staffName,
-        partnerCode: staffCode,
-        origMealStartMin: partnerBaseSpec.mealStartMin,
-        origMealEndMin: partnerBaseSpec.mealEndMin,
-        mealStart: selfBaseSpec.mealStart,
-        mealStartMin: selfBaseSpec.mealStartMin,
-        mealEndMin: selfBaseSpec.mealEndMin,
-        mealText: `${fmtRange(selfBaseSpec.mealStartMin, selfBaseSpec.mealEndMin)} (與${staffName}調食飯)`
+        partnerCode: code,
+        mealStart: myMeal.mealStart,
+        mealStartMin: myMeal.mealStartMin,
+        mealEndMin: myMeal.mealEndMin,
+        mealText: `${myMeal.mealText} (與${staffName}對調)`,
+        origMealStartMin: partnerMeal.origMealStartMin,
+        origMealEndMin: partnerMeal.origMealEndMin
       };
 
       saveMealSwaps();
@@ -3550,177 +3790,121 @@
       renderTodayView();
     }
 
-    function cancelMealSwap(dateStr, staffName) {
+    function resetMealSwapForStaff(staffName, dateStr) {
       const daySwaps = appState.mealSwapsByDate[dateStr];
-      if (daySwaps && daySwaps[staffName]) {
-        const partner = daySwaps[staffName].partner;
-        delete daySwaps[staffName];
-        if (partner && daySwaps[partner]) delete daySwaps[partner];
+      if (!daySwaps || !daySwaps[staffName]) return;
+      const partnerName = daySwaps[staffName].partner;
+      delete daySwaps[staffName];
+      if (partnerName && daySwaps[partnerName]) {
+        delete daySwaps[partnerName];
+      }
+      if (Object.keys(daySwaps).length === 0) {
+        delete appState.mealSwapsByDate[dateStr];
       }
       saveMealSwaps();
-      closeMealSwapModal();
       renderTodayView();
     }
 
-    function toggleNext7MatrixView() {
-      appState.showNext7AsMatrix = !appState.showNext7AsMatrix;
-      const btn = document.getElementById('btn-toggle-next7-matrix');
-      if (btn) {
-        if (appState.showNext7AsMatrix) {
-          btn.textContent = '🗂 卡片顯示';
-          btn.classList.add('btn-teal');
-        } else {
-          btn.textContent = '📋 列表顯示';
-          btn.classList.remove('btn-teal');
-        }
-      }
-      renderTodayView();
-    }
-
-    function toggleNext7StaffScope() {
-      appState.next7ShowAllStaff = !appState.next7ShowAllStaff;
-      renderTodayView();
-    }
-
-    function isNext7DateDraft(selectedDateStr, futureDateStr) {
-      const selectedWeekMon = getMondayOfDate(selectedDateStr);
-      const futureWeekMon = getMondayOfDate(futureDateStr);
-      if (futureWeekMon === selectedWeekMon) return false;
-
-      const todayStr = getTodayLocalStr();
-      const now = new Date();
-      if (selectedDateStr === todayStr) {
-        const dow = now.getDay();
-        const mins = now.getHours() * 60 + now.getMinutes();
-        if (dow >= 1 && dow <= 4) return true;
-        if (dow === 5 && mins <= 1020) return true;
-        return false;
-      }
-
-      const selDow = parseLocalDate(selectedDateStr).getDay();
-      return selDow >= 1 && selDow <= 5;
-    }
-
-    function isDateInFiveAlWeekForStaff(dateStr, staffName) {
-      const mon = getMondayOfDate(dateStr);
-      const weekDuties = Array.from({ length: 7 }, (_, i) => getDutyByStaffNameOnDate(addDaysToDateStr(mon, i), staffName));
-      return weekHasFiveAl(weekDuties);
-    }
-
-    function renderDutyScheduleDetails(staffList, allDayStaffPool, dateStr, fullRosterList = []) {
+    function renderDutyScheduleDetails(activeWorkingStaff, allDayStaffPool, dateStr, staffRosterList) {
       const container = document.getElementById('duty-schedule-detail-list');
-      const sectionTitleEl = document.getElementById('duty-detail-section-title');
+      const titleEl = document.getElementById('duty-detail-section-title');
       const clearFilterBtn = document.getElementById('btn-clear-staff-filter');
+      const toggleMatrixBtn = document.getElementById('btn-toggle-next7-matrix');
 
-      const selectedStaffName = (appState.highlightedStaff || '').trim();
-      if (sectionTitleEl) {
-        sectionTitleEl.textContent = selectedStaffName
-          ? `已選同事「${selectedStaffName}」當日返放工、食飯、交接與未來 7 日更期`
-          : '當日返放工、食飯、交接與未來 7 日更期';
-      }
       if (clearFilterBtn) {
-        clearFilterBtn.classList.toggle('hidden', !selectedStaffName);
+        clearFilterBtn.classList.toggle('hidden', !appState.highlightedStaff);
       }
 
-      if (!staffList.length && !selectedStaffName && !appState.showNext7AsMatrix) {
-        container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:10px;">此時段無當值人員</div>';
-        return;
-      }
-
-      const dayNamesShort = ['日', '一', '二', '三', '四', '五', '六'];
-      let sortedStaff = [...staffList].sort((a, b) => a.row - b.row);
-
-      if (selectedStaffName) {
-        const matchedInActive = sortedStaff.filter(st => st.name === selectedStaffName);
-        if (matchedInActive.length > 0) {
-          sortedStaff = matchedInActive;
+      if (toggleMatrixBtn) {
+        if (appState.showNext7AsMatrix) {
+          toggleMatrixBtn.textContent = '📇 卡片明細';
+          toggleMatrixBtn.classList.add('btn-teal');
         } else {
-          const matchedInPool = allDayStaffPool.filter(p => p.name === selectedStaffName);
-          if (matchedInPool.length > 0) {
-            sortedStaff = matchedInPool.map(p => ({ row: p.row, name: p.name, code: p.code, dayTag: p.dayTag }));
-          } else {
-            const rosterRec = fullRosterList.find(r => r.name === selectedStaffName);
-            const fallbackCode = getDutyByStaffNameOnDate(dateStr, selectedStaffName) || '休假';
-            sortedStaff = [{
-              row: rosterRec ? rosterRec.row : '-',
-              name: selectedStaffName,
-              code: fallbackCode,
-              dayTag: '當日休假/非本更'
-            }];
-          }
+          toggleMatrixBtn.textContent = '📋 列表顯示';
+          toggleMatrixBtn.classList.remove('btn-teal');
         }
       }
 
       if (appState.showNext7AsMatrix) {
-        const futureDates = Array.from({ length: 7 }, (_, i) => {
-          const fDate = addDaysToDateStr(dateStr, i + 1);
-          const fObj = parseLocalDate(fDate);
-          const isDraft = isNext7DateDraft(dateStr, fDate);
-          return {
-            dateStr: fDate,
-            ddmm: `${fDate.slice(8, 10)}/${fDate.slice(5, 7)}`,
-            wDay: dayNamesShort[fObj.getDay()],
-            isDraft
-          };
-        });
-
-        let matrixRows = [];
-        if (selectedStaffName) {
-          matrixRows = sortedStaff;
-        } else if (appState.next7ShowAllStaff && fullRosterList.length > 0) {
-          matrixRows = [...fullRosterList].sort((a, b) => a.row - b.row).map(r => ({
-            row: r.row,
-            name: r.name,
-            code: getDutyByStaffNameOnDate(dateStr, r.name) || '-'
-          }));
-        } else {
-          matrixRows = sortedStaff;
+        if (titleEl) {
+          titleEl.textContent = appState.highlightedStaff
+            ? `未來 7 日更期列表（已篩選：${appState.highlightedStaff}）`
+            : '未來 7 日更期列表（僅顯示 DutyList 已上載週次）';
         }
 
-        const headerColsHtml = futureDates.map(fd => `
-          <th class="${fd.isDraft ? 'draft-col-head' : ''}">
-            <div>${fd.ddmm}</div>
-            <div style="font-size:10px;color:${fd.wDay === '日' ? '#be123c' : '#475569'};">(${fd.wDay})</div>
-            ${fd.isDraft ? `<div style="margin-top:2px;"><span class="draft-badge">Draft</span></div>` : ''}
+        const next7Dates = [];
+        const dayNamesShort = ['日', '一', '二', '三', '四', '五', '六'];
+        for (let i = 1; i <= 7; i++) {
+          const dStr = addDaysToDateStr(dateStr, i);
+          const dObj = parseLocalDate(dStr);
+          const isUploadedWeek = Boolean(appState.weeks[getMondayOfDate(dStr)]);
+          next7Dates.push({
+            dateStr: dStr,
+            label: dStr.slice(5),
+            wDay: dayNamesShort[dObj.getDay()],
+            isSun: dObj.getDay() === 0,
+            isHol: Boolean(HK_STATUTORY_HOLIDAYS[dStr]),
+            isUploadedWeek
+          });
+        }
+
+        const hasAnyUploadedNext7 = next7Dates.some(d => d.isUploadedWeek);
+
+        let targetStaffList = [];
+        if (appState.highlightedStaff) {
+          const found = staffRosterList.find(s => s.name === appState.highlightedStaff);
+          targetStaffList = found ? [found] : [{ row: '-', name: appState.highlightedStaff }];
+        } else if (appState.next7ShowAllStaff) {
+          targetStaffList = staffRosterList;
+        } else {
+          const activeNamesSet = new Set(activeWorkingStaff.map(w => w.name));
+          targetStaffList = staffRosterList.filter(s => activeNamesSet.has(s.name));
+          if (!targetStaffList.length) targetStaffList = staffRosterList;
+        }
+
+        const headerColsHtml = next7Dates.map(nd => `
+          <th style="${nd.isSun || nd.isHol ? 'color:#be123c;' : ''}">
+            <div>${nd.label}</div>
+            <div style="font-size:9px;font-weight:600;">(${nd.wDay})</div>
           </th>
         `).join('');
 
-        const bodyRowsHtml = matrixRows.map(st => {
-          const cellsHtml = futureDates.map(fd => {
-            const rawCode = getDutyByStaffNameOnDate(fd.dateStr, st.name) || '-';
-            const inFiveAl = isDateInFiveAlWeekForStaff(fd.dateStr, st.name);
-            const pillCls = getRosterCellStyle(rawCode, inFiveAl);
+        const bodyRowsHtml = targetStaffList.map(st => {
+          const waNameHtml = renderWhatsAppStaffLinkHtml(st.name);
+          const cellsHtml = next7Dates.map(nd => {
+            const eff = getEffectiveDutyWithPuSlSub(nd.dateStr, st.name);
+            const code = eff.code || '-';
+            const styleCls = code === '-' ? 'st-leave' : getCellColorClass(code);
             return `
-              <td class="${fd.isDraft ? 'draft-col-cell' : ''}">
-                <span class="duty-font cell-pill ${pillCls}">${rawCode}</span>
+              <td>
+                <span class="duty-font cell-pill ${styleCls}" style="font-size:10.5px;">${code}</span>
               </td>
             `;
           }).join('');
 
           return `
             <tr>
-              <td style="font-size:10px;color:#64748b;">${st.row}</td>
-              <td style="font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${st.name}</td>
+              <td style="color:#64748b;font-size:10px;">${st.row}</td>
+              <td style="font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${waNameHtml}</td>
               ${cellsHtml}
             </tr>
           `;
         }).join('');
 
-        const hasAnyDraft = futureDates.some(fd => fd.isDraft);
-        const scopeToggleHtml = !selectedStaffName ? `
-          <button type="button" onclick="toggleNext7StaffScope()" class="btn-sm" style="font-size:10.5px;padding:2px 7px;background:#fff;color:#0f766e;border-color:#5eead4;">
-            ${appState.next7ShowAllStaff ? '僅顯示本更人員' : '顯示全體21人'}
-          </button>
+        const scopeToggleHtml = !appState.highlightedStaff ? `
+          <div class="toolbar" style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:6px;padding:5px 8px;">
+            <span style="font-size:11px;font-weight:700;color:#115e59;">
+              目前顯示：${appState.next7ShowAllStaff ? '全體 21 位同事' : `本時段當值人員 (${targetStaffList.length}人)`}
+              ${!hasAnyUploadedNext7 ? '（未來 7 日均未上載更期）' : ''}
+            </span>
+            <button type="button" onclick="toggleNext7ShowAllStaff()" class="btn-sm" style="font-size:11px;padding:2px 8px;background:#fff;color:#0f766e;border-color:#5eead4;">
+              ${appState.next7ShowAllStaff ? '只看當值人員' : '顯示全體 21 人'}
+            </button>
+          </div>
         ` : '';
 
         container.innerHTML = `
-          <div class="toolbar" style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:8px;padding:5px 8px;">
-            <span style="font-size:11px;font-weight:700;color:#115e59;">
-              📅 未來 7 日更期列表（${futureDates[0].ddmm} – ${futureDates[6].ddmm}）
-              ${hasAnyDraft ? ' · <span class="draft-badge">Draft</span> 星期五 17:00 前下週更期標示為 Draft' : ''}
-            </span>
-            ${scopeToggleHtml}
-          </div>
+          ${scopeToggleHtml}
           <div class="table-wrap" style="border:1px solid #cbd5e1;border-radius:8px;">
             <table class="next7-matrix-tbl">
               <thead>
@@ -3739,167 +3923,240 @@
         return;
       }
 
-      container.innerHTML = sortedStaff.map(st => {
-        const norm = normalizeDutyCode(st.code);
-        const spec = DUTY_SPEC_MAP[norm] || { work: '依更表時間', workStart: '07:00', mealStart: '12:00', mealText: '依崗位安排', takeOverFromCodes: [], handoverToCodes: [] };
-        const effectiveMeal = getEffectiveMealInfo(st.name, st.code, dateStr);
-        const canSwapMeal = (isMorningACode(st.code) || isMidCode(st.code) || isAfternoonPECode(st.code));
+      if (titleEl) {
+        titleEl.textContent = appState.highlightedStaff
+          ? `當日返放工、食飯、交接與未來 7 日更期（已篩選：${appState.highlightedStaff}）`
+          : '當日返放工、食飯、交接與未來 7 日更期';
+      }
 
-        const takeOverNames = spec.takeOverFromCodes.length
-          ? allDayStaffPool.filter(p => spec.takeOverFromCodes.includes(p.normCode)).map(p => `${p.name}(${p.code})`).join('、') || spec.takeOverFromCodes.join('/')
-          : '無需接更';
+      const uniqueList = [];
+      const seen = new Set();
 
-        const handoverNames = spec.handoverToCodes.length
-          ? allDayStaffPool.filter(p => spec.handoverToCodes.includes(p.normCode)).map(p => `${p.name}(${p.code})`).join('、') || spec.handoverToCodes.join('/')
-          : '無需交更';
-
-        let swapMealQuickCardsHtml = '';
-        if (is118Code(st.code)) {
-          const pDutyPeers = allDayStaffPool.filter(p => isAfternoonPECode(p.code) && p.name !== st.name);
-          if (pDutyPeers.length > 0) {
-            const waMsg = build118SwapWhatsAppMessage(dateStr);
-            const cardsItems = pDutyPeers.map(peer => {
-              const peerMeal = getEffectiveMealInfo(peer.name, peer.code, dateStr);
-              const nameLinkHtml = renderWhatsAppStaffLinkHtml(peer.name, {
-                messageText: waMsg,
-                extraStyle: 'font-size:12px;',
-                title: `WhatsApp ${peer.name}：${waMsg}`
-              });
-              return `
-                <div class="swap-meal-card">
-                  <div style="display:flex;align-items:center;gap:4px;min-width:0;">
-                    ${nameLinkHtml}
-                    <span class="duty-font code-badge teal" style="font-size:10px;padding:0 5px;">${peer.code}</span>
-                  </div>
-                  <span style="font-size:10.5px;color:#92400e;font-weight:700;white-space:nowrap;">${peerMeal.mealStart}</span>
-                </div>
-              `;
-            }).join('');
-
-            swapMealQuickCardsHtml = `
-              <div style="margin-top:2px;">
-                <div style="font-size:10.5px;font-weight:700;color:#b45309;margin-bottom:3px;">💬 點擊名字直接 WhatsApp 詢問 P Duty 同事調食飯：</div>
-                <div class="swap-meal-cards">${cardsItems}</div>
-              </div>
-            `;
-          }
+      if (appState.highlightedStaff) {
+        const matchingEntries = allDayStaffPool.filter(item => item.name === appState.highlightedStaff);
+        if (matchingEntries.length > 0) {
+          matchingEntries.forEach(item => {
+            const key = `${item.name}_${item.code}_${item.dayTag}`;
+            if (!seen.has(key)) { seen.add(key); uniqueList.push(item); }
+          });
+        } else {
+          const effDuty = getEffectiveDutyWithPuSlSub(dateStr, appState.highlightedStaff);
+          const offDutyCode = effDuty.code || '休假/未排班';
+          uniqueList.push({
+            row: '-',
+            name: appState.highlightedStaff,
+            code: offDutyCode,
+            normCode: normalizeDutyCode(offDutyCode),
+            dayTag: '今日休假 / 非當值',
+            puSubNote: effDuty.puSubFromStaff ? `Pu代SL(${effDuty.puSubFromStaff})` : ''
+          });
         }
+      } else {
+        activeWorkingStaff.forEach(item => {
+          const key = `${item.name}_${item.code}_${item.dayTag}`;
+          if (!seen.has(key)) { seen.add(key); uniqueList.push(item); }
+        });
+      }
 
-        const next7Html = Array.from({ length: 7 }, (_, i) => {
-          const fDate = addDaysToDateStr(dateStr, i + 1);
-          const fObj = parseLocalDate(fDate);
-          const fCode = getDutyByStaffNameOnDate(fDate, st.name) || '-';
-          const isDraft = isNext7DateDraft(dateStr, fDate);
-          const inFiveAl = isDateInFiveAlWeekForStaff(fDate, st.name);
-          const pillCls = getRosterCellStyle(fCode, inFiveAl);
+      if (!uniqueList.length) {
+        container.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:10px;">此時段無當值人員明細</div>';
+        return;
+      }
+
+      const isAlarmHidden = appState.hideAllAlarms;
+
+      container.innerHTML = uniqueList.map(person => {
+        const norm = normalizeDutyCode(person.code);
+        const spec = DUTY_SPEC_MAP[norm];
+        const isHighlighted = appState.highlightedStaff === person.name;
+        const next7 = getNext7DaysForStaff(person.name, dateStr);
+        const next7Html = next7.map(n => `
+          <div class="next7-pill">
+            <div style="font-size:9px;color:#64748b;">${n.dateLabel}</div>
+            <div class="duty-font" style="font-size:11px;color:${n.code === '-' ? '#94a3b8' : '#0f172a'};">${n.code}</div>
+          </div>
+        `).join('');
+
+        const waNameHtml = renderWhatsAppStaffLinkHtml(person.name, { extraStyle: 'font-size:13px;' });
+        const puSubTag = person.puSubNote ? `<span class="status-mini-pill pu-sub-sl">${person.puSubNote}</span>` : '';
+
+        if (!spec) {
           return `
-            <div class="next7-pill" style="${isDraft ? 'background:#fffbeb;border-color:#fcd34d;' : ''}">
-              <div style="font-size:9px;color:#64748b;">${fDate.slice(8, 10)}/${fDate.slice(5, 7)}(${dayNamesShort[fObj.getDay()]})</div>
-              <div class="duty-font cell-pill ${pillCls}" style="font-size:11px;margin-top:1px;">${fCode}</div>
-              ${isDraft ? `<div style="margin-top:2px;"><span class="draft-badge">Draft</span></div>` : ''}
+            <div class="detail-item" style="${isHighlighted ? 'border:2px solid #f59e0b;background:#fffbeb;' : ''}">
+              <div class="detail-top">
+                <div class="flex-row">
+                  <strong>${person.row !== '-' ? person.row + '. ' : ''}${waNameHtml}</strong>
+                  <span class="duty-font code-badge">${person.code}</span>
+                  ${puSubTag}
+                  <span style="font-size:11px;color:#64748b;">(${person.dayTag})</span>
+                </div>
+              </div>
+              <div class="next7-strip">${next7Html}</div>
             </div>
           `;
-        }).join('');
+        }
+
+        const effectiveMeal = getEffectiveMealInfo(person.name, person.code, dateStr);
+
+        let takeOverNames = [];
+        let handoverNames = [];
+        spec.takeOverFromCodes.forEach(tc => {
+          allDayStaffPool.filter(p => p.normCode === tc).forEach(p => {
+            if (!takeOverNames.includes(`${p.name}(${p.code})`)) takeOverNames.push(`${p.name}(${p.code})`);
+          });
+        });
+        spec.handoverToCodes.forEach(hc => {
+          allDayStaffPool.filter(p => p.normCode === hc).forEach(p => {
+            if (!handoverNames.includes(`${p.name}(${p.code})`)) handoverNames.push(`${p.name}(${p.code})`);
+          });
+        });
+
+        const is118 = (norm === '11/8' || norm === '11-8');
+        let swapMealCardsHtml = '';
+        if (is118) {
+          // 需求 4：11-8 調食飯係只顯示 Ec, Pa，而且只會同 P duty 的調食飯
+          const swapTargets = [
+            { targetCode: 'Ec', label: '1900 食飯 (Ec)' },
+            { targetCode: 'Pa', label: '1900 食飯 (Pa)' }
+          ];
+          const swapMsg = build118SwapWhatsAppMessage(dateStr);
+          const cards = swapTargets.map(st => {
+            const matched = allDayStaffPool.filter(p => p.normCode === st.targetCode && p.dayTag === '今日');
+            const namesHtml = matched.length
+              ? matched.map(m => renderWhatsAppStaffLinkHtml(m.name, {
+                  messageText: swapMsg,
+                  title: `一鍵 WhatsApp ${m.name}：「${swapMsg}」`
+                })).join('、')
+              : '暫無該更人員';
+            return `
+              <div class="swap-meal-card">
+                <div>
+                  <div style="font-size:10px;color:#92400e;font-weight:700;">調食飯 · ${st.label}</div>
+                  <div style="font-size:12px;font-weight:800;color:#0f172a;">${namesHtml}</div>
+                </div>
+                <span style="font-size:14px;">💬</span>
+              </div>
+            `;
+          }).join('');
+          swapMealCardsHtml = `<div class="swap-meal-cards">${cards}</div>`;
+        }
+
+        const canSwapMeal = !isNightNCode(person.code) && (is118 || isPDutyFor118MealSwap(norm));
 
         return `
-          <div class="detail-item">
+          <div class="detail-item" style="${isHighlighted ? 'border:2px solid #f59e0b;background:#fffbeb;' : ''}">
             <div class="detail-top">
               <div class="flex-row">
-                <span style="color:#64748b;font-size:11px;">#${st.row}</span>
-                <strong style="font-size:13px;">${st.name}</strong>
-                <span class="duty-font code-badge teal">${st.code}</span>
-                <span style="font-size:10px;color:#0f766e;">${st.dayTag}</span>
-                ${effectiveMeal.isSwapped ? `<span class="status-mini-pill swapped-meal">已調食飯</span>` : ''}
+                <strong>${person.row !== '-' ? person.row + '. ' : ''}${waNameHtml}</strong>
+                <span class="duty-font code-badge teal">${person.code}</span>
+                ${puSubTag}
+                <span style="font-size:11px;color:#64748b;">(${person.dayTag})</span>
               </div>
               <div class="flex-row">
-                ${canSwapMeal ? `<button type="button" onclick="openMealSwapModal('${dateStr}', '${st.name}', '${st.code}')" class="btn-sm" style="background:#fce7f3;color:#be185d;border-color:#f9a8d4;font-size:11px;padding:3px 7px;">🔄 互調食飯</button>` : ''}
-                ${!appState.hideAllAlarms ? `<button onclick="addQuickAlarm('${spec.workStart}', '${st.name} ${st.code} 返工', '${dateStr}')" class="btn-sm" style="background:#fef3c7;color:#92400e;border-color:#fcd34d;font-size:11px;padding:3px 7px;">⏰ 返工 ${spec.workStart}</button>` : ''}
-                ${!appState.hideAllAlarms ? `<button onclick="addQuickAlarm('${effectiveMeal.mealStart}', '${st.name} ${st.code} 食飯', '${dateStr}')" class="btn-sm" style="background:#e0f2fe;color:#075985;border-color:#bae6fd;font-size:11px;padding:3px 7px;">⏰ 食飯 ${effectiveMeal.mealStart}</button>` : ''}
+                ${canSwapMeal ? `
+                  <button type="button" onclick="openMealSwapModal('${person.name}', '${person.code}', '${dateStr}')" class="btn-sm" style="background:#fce7f3;color:#be185d;border-color:#f9a8d4;font-size:11px;padding:3px 7px;">⇄ 調食飯</button>
+                ` : ''}
+                ${effectiveMeal.isSwapped ? `
+                  <button type="button" onclick="resetMealSwapForStaff('${person.name}', '${dateStr}')" class="btn-sm" style="background:#f1f5f9;color:#475569;font-size:10px;padding:3px 6px;">↩ 還原食飯</button>
+                ` : ''}
+                ${!isAlarmHidden ? `
+                  <button onclick="addQuickAlarm('${spec.workStart}', '${person.name} ${person.code} 返工', '${dateStr}')" class="btn-sm" style="background:#f0fdfa;color:#115e59;border-color:#99f6e4;font-size:11px;padding:3px 7px;">⏰ 返工 ${spec.workStart}</button>
+                  <button onclick="addQuickAlarm('${effectiveMeal.mealStart}', '${person.name} ${person.code} 食飯', '${dateStr}')" class="btn-sm" style="background:#fffbeb;color:#92400e;border-color:#fde68a;font-size:11px;padding:3px 7px;">🍽️ 食飯 ${effectiveMeal.mealStart}</button>
+                ` : ''}
               </div>
             </div>
             <div class="detail-subgrid">
-              <div class="sub-box">返放工：<strong>${spec.work}</strong> ｜ 食飯：<strong style="${effectiveMeal.isSwapped ? 'color:#be185d;' : ''}">${effectiveMeal.mealText}</strong></div>
-              <div class="sub-box">接更：<strong>${takeOverNames}</strong> ｜ 交更：<strong>${handoverNames}</strong></div>
+              <div class="sub-box">
+                <div><strong>返放工：</strong><span class="duty-font" style="color:#0f766e;">${spec.work}</span></div>
+                <div style="${effectiveMeal.isSwapped ? 'color:#be185d;font-weight:700;' : ''}"><strong>食飯時間：</strong>${effectiveMeal.mealText}</div>
+              </div>
+              <div class="sub-box">
+                <div><strong>接手前一更：</strong>${takeOverNames.length ? takeOverNames.join('、') : '直接開崗'}</div>
+                <div><strong>交接下一更：</strong>${handoverNames.length ? handoverNames.join('、') : '正常收更'}</div>
+              </div>
             </div>
-            ${swapMealQuickCardsHtml}
+            ${swapMealCardsHtml}
             <div class="next7-strip">${next7Html}</div>
           </div>
         `;
       }).join('');
     }
 
+    // ==================== 分頁 2：DutyList ====================
     function renderWeekSelector() {
       const sel = document.getElementById('week-selector');
-      const keys = Object.keys(appState.weeks).sort();
-      if (!keys.length) {
-        sel.innerHTML = '<option value="">暫無週次</option>';
-        return;
-      }
-      if (!appState.weeks[appState.currentWeekMonday]) appState.currentWeekMonday = keys[0];
-      sel.innerHTML = keys.map(k => {
-        const sun = addDaysToDateStr(k, 6);
-        return `<option value="${k}" ${k === appState.currentWeekMonday ? 'selected' : ''}>${k} 至 ${sun}</option>`;
+      const mondays = Object.keys(appState.weeks).sort();
+      sel.innerHTML = mondays.map(m => {
+        const sun = addDaysToDateStr(m, 6);
+        return `<option value="${m}" ${m === appState.currentWeekMonday ? 'selected' : ''}>${m} 至 ${sun}</option>`;
       }).join('');
     }
 
     function selectWeek(mondayStr) {
-      if (!mondayStr) return;
+      if (appState.pendingRosterChanges.length > 0) {
+        const ok = confirm(`本週尚有 ${appState.pendingRosterChanges.length} 項未確認儲存的修改！\n按「確定」放棄修改並切換週次，或按「取消」留在目前週次確認儲存。`);
+        if (!ok) {
+          renderWeekSelector();
+          return;
+        }
+        discardPendingRosterChanges(true);
+      }
       appState.currentWeekMonday = mondayStr;
-      resetDeleteWeekBtn();
+      resetDeleteWeekConfirmState();
       renderRosterTable();
     }
 
-    // 新增下週更表（基於 2026-11-16 基準週 + 21 行規律樣本表 + 2026/2027 大假）
-    function createNextWeekFromPattern() {
-      const keys = Object.keys(appState.weeks).sort();
-      const baseMon = keys.length ? keys[keys.length - 1] : ANCHOR_BASE_MONDAY;
-      const nextMon = addDaysToDateStr(baseMon, 7);
-      if (appState.weeks[nextMon]) {
-        appState.currentWeekMonday = nextMon;
-        renderWeekSelector();
-        renderRosterTable();
-        alert(`已切換至 ${nextMon} 週次（該週已存在於 DutyList）。`);
-        return;
+    let deleteWeekArmed = false;
+    let deleteWeekTimer = null;
+
+    function resetDeleteWeekConfirmState() {
+      deleteWeekArmed = false;
+      if (deleteWeekTimer) { clearTimeout(deleteWeekTimer); deleteWeekTimer = null; }
+      const btn = document.getElementById('btn-delete-week');
+      if (btn) {
+        btn.textContent = '刪除本週';
+        btn.classList.remove('btn-rose-armed');
+        btn.classList.add('btn-rose');
       }
-      const generated = generatePredictedWeekTable(nextMon);
-      appState.weeks[nextMon] = {
-        monday: nextMon,
-        rows: generated.rows.map(r => ({
-          row: r.row,
-          name: r.name,
-          duties: [...r.duties]
-        }))
-      };
-      appState.currentWeekMonday = nextMon;
-      saveState(false);
-      renderAll();
-      alert(`已根據基準週規律與大假表建立 ${nextMon} 至 ${addDaysToDateStr(nextMon, 6)} 更表，並即時套用至更期預測！`);
     }
 
-    let deleteWeekArmed = false, deleteWeekTimer = null;
-    function resetDeleteWeekBtn() {
-      deleteWeekArmed = false;
-      clearTimeout(deleteWeekTimer);
-      const btn = document.getElementById('btn-delete-week');
-      if (btn) { btn.textContent = '刪除本週'; btn.className = 'btn-sm btn-rose'; }
-    }
     function handleDeleteWeekClick() {
-      const targetMon = appState.currentWeekMonday;
-      if (!targetMon || !appState.weeks[targetMon]) return;
+      const mondays = Object.keys(appState.weeks).sort();
+      if (mondays.length <= 1) {
+        alert('至少需保留一週更期資料，無法刪除最後一週！');
+        return;
+      }
       const btn = document.getElementById('btn-delete-week');
       if (!deleteWeekArmed) {
         deleteWeekArmed = true;
-        btn.textContent = '確認刪除？';
-        btn.className = 'btn-sm btn-rose-armed';
-        deleteWeekTimer = setTimeout(resetDeleteWeekBtn, 4000);
+        if (btn) {
+          btn.textContent = '⚠️ 再按確認刪除';
+          btn.classList.remove('btn-rose');
+          btn.classList.add('btn-rose-armed');
+        }
+        deleteWeekTimer = setTimeout(resetDeleteWeekConfirmState, 4000);
         return;
       }
-      resetDeleteWeekBtn();
+      resetDeleteWeekConfirmState();
+      appState.pendingRosterChanges = [];
+      const targetMon = appState.currentWeekMonday;
       delete appState.weeks[targetMon];
-      const rem = Object.keys(appState.weeks).sort();
-      appState.currentWeekMonday = rem.length ? rem[rem.length - 1] : '';
-      saveState(false);
+      const remaining = Object.keys(appState.weeks).sort();
+      appState.currentWeekMonday = remaining[remaining.length - 1];
+      saveState(true);
       renderAll();
+    }
+
+    // 需求 1：DutyList 僅在已上載的星期之間左右滑動切換，不自動預測或新增未上載的星期
+    function shiftRosterWeek(deltaWeeks) {
+      const mondays = Object.keys(appState.weeks).sort();
+      const curIdx = mondays.indexOf(appState.currentWeekMonday);
+      if (curIdx === -1) return;
+      const nextIdx = curIdx + deltaWeeks;
+      if (nextIdx >= 0 && nextIdx < mondays.length) {
+        selectWeek(mondays[nextIdx]);
+        renderWeekSelector();
+      }
     }
 
     function initSwipeGestureOnRosterTable() {
@@ -3911,162 +4168,208 @@
         const dx = e.changedTouches[0].clientX - startX;
         const dy = e.changedTouches[0].clientY - startY;
         startX = 0;
-        if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.4) {
-          const keys = Object.keys(appState.weeks).sort();
-          const idx = keys.indexOf(appState.currentWeekMonday);
-          if (dx < 0 && idx < keys.length - 1) { selectWeek(keys[idx + 1]); renderWeekSelector(); }
-          else if (dx > 0 && idx > 0) { selectWeek(keys[idx - 1]); renderWeekSelector(); }
-        }
+        if (Math.abs(dx) > 65 && Math.abs(dx) > Math.abs(dy) * 1.4) shiftRosterWeek(dx < 0 ? 1 : -1);
       }, { passive: true });
     }
 
-    function getRosterCellStyle(code, forceWholeWeekAl = false) {
-      const c = unwrapBracketDuty(sanitizeTwoLetterDutyCode(code));
-      if (!c || c === '-') return '';
-      if (isIncompleteSingleLetter(c)) return 'st-single-warn';
+    function getCellColorClass(code) {
+      const c = unwrapBracketDuty(code);
+      const u = c.toUpperCase();
+      if (isIncompleteSingleLetter(code)) return 'st-single-warn';
+      if (!u) return 'st-leave';
+      if (u === 'AL') return 'st-al';
+      if (u === 'SH' || u.startsWith('SH/') || u === 'PH') return 'st-sh';
+      if (['O', 'WO', 'OW', 'SL', 'CL'].includes(u) || u.startsWith('SL/') || u.includes('OWING') || u.includes('替')) return 'st-leave';
+      if (c.startsWith('11-8') || c.startsWith('11/8') || c.startsWith('9-6') || c.startsWith('9/5')) return 'st-mid';
+      if (['Aa', 'Ac', 'Ad', 'Ae'].includes(c)) return 'st-a';
+      if (['Pa', 'Pe', 'Pu', 'Ec', 'Ed'].includes(c)) return 'st-p';
+      if (['Na', 'Ne'].includes(c)) return 'st-n';
+      return 'st-leave';
+    }
 
-      if (forceWholeWeekAl) return 'st-al';
+    function updatePendingConfirmBannerUI() {
+      const bannerEl = document.getElementById('roster-pending-confirm-bar');
+      const countTextEl = document.getElementById('roster-pending-count-text');
+      if (!bannerEl || !countTextEl) return;
 
-      const upper = c.toUpperCase();
-      if (upper === 'AL' || upper.startsWith('AL/')) return 'st-al';
-      if (['SH', 'PH'].some(k => upper === k || upper.startsWith(k + '/'))) return 'st-sh';
-      if (['WO', 'OW', 'SL', 'CL', 'O'].includes(upper) || upper.includes('替') || upper.includes('OWING')) return 'st-leave';
-      if (isMidCode(c)) return 'st-mid';
-      if (isMorningACode(c)) return 'st-a';
-      if (isAfternoonPECode(c)) return 'st-p';
-      if (isNightNCode(c)) return 'st-n';
-      return '';
+      const count = appState.pendingRosterChanges.length;
+      if (count > 0) {
+        bannerEl.classList.remove('hidden');
+        countTextEl.textContent = `有 ${count} 項未確認修改`;
+      } else {
+        bannerEl.classList.add('hidden');
+      }
+    }
+
+    // 需求 3：在 DutyList 中加入更改後確認功能，只要有修改就要先確認再儲存
+    function confirmAndSavePendingRosterChanges() {
+      if (!appState.pendingRosterChanges.length) return;
+      appState.pendingRosterChanges = [];
+      saveState(true);
+      updatePendingConfirmBannerUI();
+      renderRosterTable();
+      renderTodayView();
+      runRowCyclePrediction(false);
+    }
+
+    function discardPendingRosterChanges(silent = false) {
+      if (!appState.pendingRosterChanges.length) return;
+      // 從最晚修改往回還原
+      for (let i = appState.pendingRosterChanges.length - 1; i >= 0; i--) {
+        const ch = appState.pendingRosterChanges[i];
+        const w = appState.weeks[ch.mondayStr];
+        if (w && w.rows[ch.rowIdx]) {
+          w.rows[ch.rowIdx].duties[ch.dayIdx] = ch.oldVal;
+        }
+      }
+      appState.pendingRosterChanges = [];
+      updatePendingConfirmBannerUI();
+      if (!silent) {
+        renderRosterTable();
+        renderTodayView();
+        runRowCyclePrediction(false);
+      }
     }
 
     function renderRosterTable() {
-      const tbody = document.getElementById('roster-table-body');
-      const tfoot = document.getElementById('roster-table-foot');
-      const week = appState.weeks[appState.currentWeekMonday];
-      if (!week) {
-        tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:#94a3b8;">暫無更期資料，請按「＋ 新增下週更表」</td></tr>';
-        if (tfoot) tfoot.innerHTML = '';
-        return;
-      }
-
+      updatePendingConfirmBannerUI();
+      const weekObj = appState.weeks[appState.currentWeekMonday];
+      if (!weekObj) return;
       const todayStr = getTodayLocalStr();
-      const dayLabels = ['一', '二', '三', '四', '五', '六', '日'];
-      const prevSunDateStr = addDaysToDateStr(week.monday, -1);
-      const nextMonDateStr = addDaysToDateStr(week.monday, 7);
+
+      const prevSunStr = addDaysToDateStr(weekObj.monday, -1);
+      const prevMonStr = getMondayOfDate(prevSunStr);
+      const prevWeekObj = appState.weeks[prevMonStr];
+      const nextMonStr = addDaysToDateStr(weekObj.monday, 7);
+      const nextWeekObj = appState.weeks[nextMonStr];
 
       const thPrevSun = document.getElementById('th-prev-sun');
-      if (thPrevSun) {
-        thPrevSun.innerHTML = `上日<br><span style="font-size:9px;font-weight:500;">${prevSunDateStr.slice(8, 10)}/${prevSunDateStr.slice(5, 7)}</span>`;
-      }
+      thPrevSun.innerHTML = `<div style="font-size:9px;color:#92400e;">上日</div><div>${prevSunStr.slice(5)}</div>`;
+      thPrevSun.classList.toggle('col-today', prevSunStr === todayStr);
+
       const thNextMon = document.getElementById('th-next-mon');
-      if (thNextMon) {
-        thNextMon.innerHTML = `下一<br><span style="font-size:9px;font-weight:500;">${nextMonDateStr.slice(8, 10)}/${nextMonDateStr.slice(5, 7)}</span>`;
-      }
+      thNextMon.innerHTML = `<div style="font-size:9px;color:#92400e;">下一</div><div>${nextMonStr.slice(5)}</div>`;
+      thNextMon.classList.toggle('col-today', nextMonStr === todayStr);
 
+      const dayNames = ['一', '二', '三', '四', '五', '六', '日'];
+      const weekDates = [];
       for (let i = 0; i < 7; i++) {
-        const dStr = addDaysToDateStr(week.monday, i);
+        const dStr = addDaysToDateStr(weekObj.monday, i);
+        weekDates.push(dStr);
         const th = document.getElementById('th-day-' + i);
-        const isToday = (dStr === todayStr);
-        th.classList.toggle('col-today', isToday);
-        const holTag = HK_STATUTORY_HOLIDAYS[dStr] ? ' 🇭🇰' : '';
-        th.innerHTML = `${dayLabels[i]}${holTag}<br><span style="font-size:9px;font-weight:500;">${dStr.slice(8, 10)}/${dStr.slice(5, 7)}</span>`;
+        th.innerHTML = `<div>${dayNames[i]}</div><div style="font-size:9px;font-weight:400;">${dStr.slice(5)}</div>`;
+        th.classList.toggle('col-today', dStr === todayStr);
       }
 
-      const prevWeek = appState.weeks[addDaysToDateStr(week.monday, -7)];
-      const nextWeek = appState.weeks[addDaysToDateStr(week.monday, 7)];
+      const dayWorkingCounts = [0, 0, 0, 0, 0, 0, 0];
+      const dayNightNCounts = [0, 0, 0, 0, 0, 0, 0];
 
-      const dailyWorkingCounts = [0, 0, 0, 0, 0, 0, 0];
+      const pendingSet = new Set(
+        appState.pendingRosterChanges
+          .filter(c => c.mondayStr === weekObj.monday)
+          .map(c => `${c.rowIdx}_${c.dayIdx}`)
+      );
 
-      tbody.innerHTML = week.rows.map((r, rIdx) => {
-        const cleanName = (r.name || '').trim();
-        const isEmptyRow = !cleanName;
-        const prevSun = (!isEmptyRow && prevWeek) ? (prevWeek.rows.find(x => x.name === cleanName)?.duties[6] || '-') : '-';
-        const nextMon = (!isEmptyRow && nextWeek) ? (nextWeek.rows.find(x => x.name === cleanName)?.duties[0] || '-') : '-';
-
-        const rowHasFiveAl = !isEmptyRow && weekHasFiveAl(r.duties);
-
-        const prevSunInFiveAl = !isEmptyRow && isDateInFiveAlWeekForStaff(prevSunDateStr, cleanName);
-        const nextMonInFiveAl = !isEmptyRow && isDateInFiveAlWeekForStaff(nextMonDateStr, cleanName);
-
-        if (!isEmptyRow) {
-          for (let dIdx = 0; dIdx < 7; dIdx++) {
-            const cVal = r.duties[dIdx] || '';
-            if (cVal && !isLeaveOrOffCode(cVal)) {
-              dailyWorkingCounts[dIdx]++;
-            }
-          }
+      const tbody = document.getElementById('roster-table-body');
+      tbody.innerHTML = weekObj.rows.map((r, rIdx) => {
+        const cleanStaffName = normalizeStaffNameForMatch(r.name);
+        let prevSunCode = '';
+        if (prevWeekObj) {
+          const foundPrev = prevWeekObj.rows.find(pr => normalizeStaffNameForMatch(pr.name) === cleanStaffName);
+          if (foundPrev) prevSunCode = foundPrev.duties[6] || '';
+        }
+        let nextMonCode = '';
+        if (nextWeekObj) {
+          const foundNext = nextWeekObj.rows.find(nr => normalizeStaffNameForMatch(nr.name) === cleanStaffName);
+          if (foundNext) nextMonCode = foundNext.duties[0] || '';
         }
 
-        const daysCells = r.duties.map((code, dIdx) => {
-          const dStr = addDaysToDateStr(week.monday, dIdx);
-          const isToday = (dStr === todayStr);
-          const pillCls = getRosterCellStyle(code, rowHasFiveAl);
-          return `<td onclick="editRosterCell(${rIdx}, ${dIdx})" class="col-day ${isToday ? 'col-today' : ''}"><span class="duty-font cell-pill ${pillCls}">${code || (isEmptyRow ? '' : '-')}</span></td>`;
+        const cellsHtml = r.duties.map((code, dIdx) => {
+          const dStr = weekDates[dIdx];
+          const isTodayCol = dStr === todayStr;
+          const isDirty = pendingSet.has(`${rIdx}_${dIdx}`);
+          const eff = getEffectiveDutyWithPuSlSub(dStr, cleanStaffName);
+          const isPuSub = Boolean(eff.puSubFromStaff);
+          const dispText = isPuSub ? `Pu→${eff.puSubSlot}` : (code || '-');
+          const colorCls = isPuSub ? getCellColorClass(eff.puSubSlot) : getCellColorClass(code);
+
+          if (code && !isLeaveOrOffCode(code)) {
+            dayWorkingCounts[dIdx]++;
+          }
+          if (isNightNCode(code)) {
+            dayNightNCounts[dIdx]++;
+          }
+
+          return `<td onclick="openDutyPickerModal(${rIdx}, ${dIdx})" class="col-day ${isTodayCol ? 'col-today' : ''} ${isDirty ? 'pending-dirty-cell' : ''}" title="${isPuSub ? `Pu 自動接替 ${eff.puSubFromStaff} 之 ${eff.puSubSlot} 崗位` : '點擊選擇更改更期'}"><span class="duty-font cell-pill ${colorCls}">${dispText}</span></td>`;
         }).join('');
 
-        const nameCellHtml = isEmptyRow
-          ? `<td class="sticky-col-2" style="color:#cbd5e1;font-weight:400;">—</td>`
-          : `<td class="sticky-col-2">${renderWhatsAppStaffLinkHtml(cleanName, { title: `點擊開啟 ${cleanName} 的 WhatsApp` })}</td>`;
+        const waNameHtml = renderWhatsAppStaffLinkHtml(r.name);
 
         return `
-          <tr style="${isEmptyRow ? 'background:#f8fafc;' : ''}">
+          <tr>
             <td class="sticky-col-1">${r.row}</td>
-            ${nameCellHtml}
-            <td class="col-edge"><span class="duty-font cell-pill ${getRosterCellStyle(prevSun, prevSunInFiveAl)}">${prevSun}</span></td>
-            ${daysCells}
-            <td class="col-edge"><span class="duty-font cell-pill ${getRosterCellStyle(nextMon, nextMonInFiveAl)}">${nextMon}</span></td>
+            <td class="sticky-col-2" title="點擊開啟 ${r.name} WhatsApp">${waNameHtml}</td>
+            <td class="col-edge ${prevSunStr === todayStr ? 'col-today' : ''}"><span class="duty-font cell-pill ${getCellColorClass(prevSunCode)}">${prevSunCode || '-'}</span></td>
+            ${cellsHtml}
+            <td class="col-edge ${nextMonStr === todayStr ? 'col-today' : ''}"><span class="duty-font cell-pill ${getCellColorClass(nextMonCode)}">${nextMonCode || '-'}</span></td>
           </tr>
         `;
       }).join('');
 
+      const tfoot = document.getElementById('roster-table-foot');
       if (tfoot) {
-        const footerDayTds = dailyWorkingCounts.map((cnt, dIdx) => {
-          const dStr = addDaysToDateStr(week.monday, dIdx);
-          const isToday = (dStr === todayStr);
-          return `<td class="${isToday ? 'col-today' : ''}" title="當日返工總人數（已扣除放假及大假）">${cnt}人</td>`;
+        const countCellsHtml = dayWorkingCounts.map((cnt, dIdx) => {
+          const isTodayCol = weekDates[dIdx] === todayStr;
+          return `<td class="${isTodayCol ? 'col-today' : ''}">${cnt}人</td>`;
+        }).join('');
+
+        const nCountCellsHtml = dayNightNCounts.map((nCnt, dIdx) => {
+          const isTodayCol = weekDates[dIdx] === todayStr;
+          const warnStyle = nCnt !== 2 ? 'color:#be123c;background:#ffe4e6;' : '';
+          return `<td class="${isTodayCol ? 'col-today' : ''}" style="${warnStyle}">${nCnt}N</td>`;
         }).join('');
 
         tfoot.innerHTML = `
           <tr>
-            <td class="sticky-col-1">計</td>
+            <td class="sticky-col-1">∑</td>
             <td class="sticky-col-2">返工人數</td>
-            <td class="col-edge" style="color:#64748b;font-weight:600;">—</td>
-            ${footerDayTds}
-            <td class="col-edge" style="color:#64748b;font-weight:600;">—</td>
+            <td class="col-edge">-</td>
+            ${countCellsHtml}
+            <td class="col-edge">-</td>
+          </tr>
+          <tr class="n-count-row">
+            <td class="sticky-col-1">N</td>
+            <td class="sticky-col-2">夜更人數</td>
+            <td class="col-edge">-</td>
+            ${nCountCellsHtml}
+            <td class="col-edge">-</td>
           </tr>
         `;
       }
     }
 
-    let activePickerTarget = null;
+    let activeDutyPickerTarget = null;
 
-    function editRosterCell(rowIdx, dayIdx) {
-      const week = appState.weeks[appState.currentWeekMonday];
-      if (!week) return;
-      const rowObj = week.rows[rowIdx];
-      if (!rowObj) return;
-      if (!(rowObj.name || '').trim()) {
-        const newName = prompt(`第 ${rowObj.row} 行為空白行，請輸入同事姓名（留空取消）：`, '');
-        if (!newName || !newName.trim()) return;
-        rowObj.name = newName.trim();
-        rowObj.duties = ['', '', '', '', '', '', ''];
-      }
-
+    function openDutyPickerModal(rowIdx, dayIdx) {
+      const weekObj = appState.weeks[appState.currentWeekMonday];
+      if (!weekObj || !weekObj.rows[rowIdx]) return;
+      const rowObj = weekObj.rows[rowIdx];
+      const curRaw = rowObj.duties[dayIdx] || '';
+      const hasBrackets = curRaw.startsWith('[') && curRaw.endsWith(']') && curRaw.length >= 3;
+      const innerCode = unwrapBracketDuty(curRaw);
       const dayNames = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
-      const dStr = addDaysToDateStr(week.monday, dayIdx);
-      const curVal = (rowObj.duties[dayIdx] || '').trim();
-      const hasBrackets = curVal.startsWith('[') && curVal.endsWith(']') && curVal.length >= 3;
-      const cleanInner = unwrapBracketDuty(curVal);
+      const targetDate = addDaysToDateStr(weekObj.monday, dayIdx);
 
-      activePickerTarget = { monday: appState.currentWeekMonday, rowIdx, dayIdx, staffName: rowObj.name };
+      activeDutyPickerTarget = { rowIdx, dayIdx, mondayStr: weekObj.monday };
 
-      document.getElementById('duty-picker-title').textContent = `更改更期：${rowObj.name}（第 ${rowObj.row} 行）`;
-      document.getElementById('duty-picker-subtitle').textContent = `${dStr}（${dayNames[dayIdx]}）｜ 目前更期：${curVal || '無'}`;
+      document.getElementById('duty-picker-title').textContent = `更改更期 · ${rowObj.name}`;
+      document.getElementById('duty-picker-subtitle').textContent = `第 ${rowObj.row} 行 ｜ ${targetDate}（${dayNames[dayIdx]}）｜ 目前：${curRaw || '空白'}`;
       document.getElementById('duty-picker-bracket-chk').checked = hasBrackets;
-      document.getElementById('duty-picker-custom-input').value = cleanInner;
+      document.getElementById('duty-picker-custom-input').value = innerCode;
 
-      document.querySelectorAll('#duty-picker-modal .duty-opt-btn').forEach(btn => {
+      document.querySelectorAll('.duty-opt-btn').forEach(btn => {
         const btnCode = btn.childNodes[0]?.nodeValue?.trim() || '';
-        btn.classList.toggle('current-opt', btnCode === cleanInner);
+        btn.classList.toggle('current-opt', btnCode === innerCode);
       });
 
       document.getElementById('duty-picker-modal').classList.remove('hidden');
@@ -4074,62 +4377,71 @@
 
     function closeDutyPickerModal() {
       document.getElementById('duty-picker-modal').classList.add('hidden');
-      activePickerTarget = null;
+      activeDutyPickerTarget = null;
     }
 
-    function applySelectedDutyFromPicker(rawCode) {
-      if (!activePickerTarget) return;
-      const { monday, rowIdx, dayIdx } = activePickerTarget;
-      const week = appState.weeks[monday];
-      if (!week || !week.rows[rowIdx]) {
-        closeDutyPickerModal();
-        return;
+    function recordPendingCellChange(mondayStr, rowIdx, dayIdx, oldVal, newVal) {
+      if (oldVal === newVal) return;
+      const existingIdx = appState.pendingRosterChanges.findIndex(
+        c => c.mondayStr === mondayStr && c.rowIdx === rowIdx && c.dayIdx === dayIdx
+      );
+      if (existingIdx >= 0) {
+        const origOldVal = appState.pendingRosterChanges[existingIdx].oldVal;
+        if (origOldVal === newVal) {
+          appState.pendingRosterChanges.splice(existingIdx, 1);
+        } else {
+          appState.pendingRosterChanges[existingIdx].newVal = newVal;
+        }
+      } else {
+        appState.pendingRosterChanges.push({ mondayStr, rowIdx, dayIdx, oldVal, newVal });
       }
+    }
+
+    // 需求 3：修改後先暫存至待確認清單，按「確認並儲存」才正式寫入與同步
+    function applySelectedDutyFromPicker(rawChosenCode) {
+      if (!activeDutyPickerTarget) return;
+      const { rowIdx, dayIdx, mondayStr } = activeDutyPickerTarget;
+      const weekObj = appState.weeks[mondayStr];
+      if (!weekObj || !weekObj.rows[rowIdx]) return;
 
       const useBrackets = document.getElementById('duty-picker-bracket-chk').checked;
-      let formattedNewVal = '';
-      if (rawCode && rawCode.trim()) {
-        const sanitized = sanitizeTwoLetterDutyCode(unwrapBracketDuty(rawCode.trim()));
-        formattedNewVal = useBrackets ? `[${sanitized}]` : sanitized;
+      let cleanBase = sanitizeTwoLetterDutyCode(rawChosenCode);
+      let finalCode = cleanBase;
+      if (cleanBase && useBrackets && !(cleanBase.startsWith('[') && cleanBase.endsWith(']'))) {
+        finalCode = `[${cleanBase}]`;
       }
 
-      const targetRow = week.rows[rowIdx];
-      const oldVal = (targetRow.duties[dayIdx] || '').trim();
+      const oldVal = weekObj.rows[rowIdx].duties[dayIdx] || '';
 
-      if (formattedNewVal === oldVal) {
-        closeDutyPickerModal();
-        return;
-      }
+      const coreSwapSet = new Set(['Aa', 'Ac', 'Ad', 'Ae', '11-8', '9-6', 'Pa', 'Pe', 'Pu', 'Ec', 'Ed', 'Na', 'Ne']);
+      const targetCore = unwrapBracketDuty(finalCode);
 
-      const newCoreUpper = unwrapBracketDuty(formattedNewVal).toUpperCase();
-      const isSwappableWorkShift = formattedNewVal !== '' && !isLeaveOrOffCode(formattedNewVal);
-
-      if (isSwappableWorkShift) {
-        const conflictRowIdx = week.rows.findIndex((r, idx) => {
+      if (targetCore && coreSwapSet.has(targetCore)) {
+        const conflictRowIdx = weekObj.rows.findIndex((r, idx) => {
           if (idx === rowIdx) return false;
-          if (!(r.name || '').trim()) return false;
-          const peerVal = (r.duties[dayIdx] || '').trim();
-          const peerCoreUpper = unwrapBracketDuty(peerVal).toUpperCase();
-          return peerCoreUpper === newCoreUpper;
+          const otherCore = unwrapBracketDuty(r.duties[dayIdx] || '');
+          return otherCore === targetCore;
         });
 
         if (conflictRowIdx !== -1) {
-          const conflictRow = week.rows[conflictRowIdx];
-          const conflictOrigVal = conflictRow.duties[dayIdx] || '';
-          targetRow.duties[dayIdx] = formattedNewVal;
-          conflictRow.duties[dayIdx] = oldVal;
-          saveState(false);
-          renderAll();
-          closeDutyPickerModal();
-          alert(`已自動與「${conflictRow.name}」互換當日更期：\n• ${targetRow.name}：${oldVal || '無'} ➔ ${formattedNewVal}\n• ${conflictRow.name}：${conflictOrigVal} ➔ ${oldVal || '無'}`);
-          return;
+          const conflictOldVal = weekObj.rows[conflictRowIdx].duties[dayIdx] || '';
+          const conflictHasBrackets = conflictOldVal.startsWith('[') && conflictOldVal.endsWith(']') && conflictOldVal.length >= 3;
+          const myOldCore = unwrapBracketDuty(oldVal);
+
+          let swappedForOther = myOldCore;
+          if (myOldCore && conflictHasBrackets) {
+            swappedForOther = `[${myOldCore}]`;
+          }
+          weekObj.rows[conflictRowIdx].duties[dayIdx] = swappedForOther;
+          recordPendingCellChange(mondayStr, conflictRowIdx, dayIdx, conflictOldVal, swappedForOther);
         }
       }
 
-      targetRow.duties[dayIdx] = formattedNewVal;
-      saveState(false);
-      renderAll();
+      weekObj.rows[rowIdx].duties[dayIdx] = finalCode;
+      recordPendingCellChange(mondayStr, rowIdx, dayIdx, oldVal, finalCode);
+
       closeDutyPickerModal();
+      renderRosterTable();
     }
 
     function applyCustomDutyFromPicker() {
@@ -4137,13 +4449,14 @@
       applySelectedDutyFromPicker(customVal);
     }
 
+    // ==================== 分頁 3：更期預測 ====================
     function renderSamplePatternTable() {
       const tbody = document.getElementById('sample-pattern-tbody');
       if (!tbody) return;
-      tbody.innerHTML = appState.patternSample.slice(0, 21).map((r) => `
+      tbody.innerHTML = appState.patternSample.slice(0, 21).map((p, idx) => `
         <tr>
-          <td style="font-weight:700;color:#64748b;background:#f8fafc;">${r.row}</td>
-          ${r.days.map((d) => `<td class="duty-font" style="padding:3px 1px;color:#0f172a;">${d}</td>`).join('')}
+          <td style="font-weight:700;background:#f8fafc;">${idx + 1}</td>
+          ${p.days.map(d => `<td><span class="duty-font cell-pill ${getCellColorClass(d)}">${d || '-'}</span></td>`).join('')}
         </tr>
       `).join('');
     }
@@ -4152,35 +4465,32 @@
       renderSamplePatternTable();
       document.getElementById('sample-viewer-modal').classList.remove('hidden');
     }
+
     function closeSamplePatternViewerModal() {
       document.getElementById('sample-viewer-modal').classList.add('hidden');
     }
 
     function getStaffListSortedBySurnameStrokes() {
-      const list = [...ALL_KNOWN_STAFF];
-      list.sort((a, b) => {
+      return [...ALL_KNOWN_STAFF].sort((a, b) => {
         const sA = SURNAME_STROKES_MAP[a.name.charAt(0)] || 99;
         const sB = SURNAME_STROKES_MAP[b.name.charAt(0)] || 99;
         if (sA !== sB) return sA - sB;
-        return a.name.localeCompare(b.name, 'zh-Hant-HK');
+        return a.name.localeCompare(b.name, 'zh-Hant');
       });
-      return list;
     }
 
-    function renderPredictStaffCards() {
+    function renderPredictStaffCardsGrid() {
       const gridEl = document.getElementById('predict-staff-cards-grid');
       if (!gridEl) return;
       const sortedStaff = getStaffListSortedBySurnameStrokes();
-      if (!appState.predictSelectedStaffName && sortedStaff.length > 0) {
-        appState.predictSelectedStaffName = sortedStaff[0].name;
-      }
 
       gridEl.innerHTML = sortedStaff.map(st => {
-        const isActive = (st.name === appState.predictSelectedStaffName);
+        const isSelected = (st.name === appState.predictSelectedStaffName);
         return `
           <button type="button"
                   onclick="selectPredictStaffCard('${st.name}')"
-                  class="staff-stroke-chip ${isActive ? 'active' : ''}">
+                  class="staff-stroke-chip ${isSelected ? 'active' : ''}"
+                  title="${st.name}">
             ${st.name}
           </button>
         `;
@@ -4189,34 +4499,31 @@
 
     function selectPredictStaffCard(staffName) {
       appState.predictSelectedStaffName = staffName;
-      renderPredictStaffCards();
-      runRowCyclePrediction(true);
+      renderPredictStaffCardsGrid();
+      runRowCyclePrediction(false);
     }
 
     function collapsePredictQueryPanel() {
       appState.predictPanelCollapsed = true;
-      updatePredictPanelCollapseUI();
+      updatePredictCollapsibleUI();
     }
 
     function expandPredictQueryPanel() {
       appState.predictPanelCollapsed = false;
-      updatePredictPanelCollapseUI();
+      updatePredictCollapsibleUI();
     }
 
-    function updatePredictPanelCollapseUI() {
+    function updatePredictCollapsibleUI() {
       const panelEl = document.getElementById('predict-top-collapsible-panel');
       const barEl = document.getElementById('predict-query-collapsed-bar');
-      const sumEl = document.getElementById('predict-collapsed-summary');
+      const summaryEl = document.getElementById('predict-collapsed-summary');
       if (!panelEl || !barEl) return;
 
       if (appState.predictPanelCollapsed) {
         panelEl.classList.add('hidden');
         barEl.classList.remove('hidden');
-        if (sumEl) {
-          const dStr = appState.predictTargetDate || '';
-          const wNames = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-          const wLabel = dStr ? wNames[parseLocalDate(dStr).getDay()] : '';
-          sumEl.textContent = `👤 ${appState.predictSelectedStaffName}（第 ${appState.predictSelectedBaseRow} 行）｜ 📅 ${dStr} ${wLabel}`;
+        if (summaryEl) {
+          summaryEl.textContent = `👤 ${appState.predictSelectedStaffName} ｜ 📅 ${appState.predictTargetDate}（點擊展開重選）`;
         }
       } else {
         panelEl.classList.remove('hidden');
@@ -4224,56 +4531,26 @@
       }
     }
 
-    // 嚴格鎖定 2026-11-16 為基準週
-    function getLatestAnchorWeekMonday() {
-      return ANCHOR_BASE_MONDAY;
-    }
-
     function initPredictControls() {
-      const baseMon = getLatestAnchorWeekMonday();
-      const baseWeek = appState.weeks[baseMon];
-      document.getElementById('locked-current-week-label').textContent = `錨定基準週：${baseMon} 至 ${addDaysToDateStr(baseMon, 6)}（21人行數基準）`;
-
-      const sortedStaff = getStaffListSortedBySurnameStrokes();
-      if (!appState.predictSelectedStaffName && sortedStaff.length > 0) {
-        appState.predictSelectedStaffName = sortedStaff[0].name;
+      if (!appState.predictSelectedStaffName || !ALL_KNOWN_STAFF.some(s => s.name === appState.predictSelectedStaffName)) {
+        appState.predictSelectedStaffName = '陳曦彥';
       }
-
-      if (baseWeek && Array.isArray(baseWeek.rows)) {
-        const found = baseWeek.rows.find(r => (r.name || '').trim() === appState.predictSelectedStaffName);
-        if (found) appState.predictSelectedBaseRow = found.row;
-      }
-
-      renderPredictStaffCards();
-
-      if (!appState.predictTargetDate) {
-        appState.predictTargetDate = '2026-12-17';
-      }
-      const d = parseLocalDate(appState.predictTargetDate);
-      appState.predictCalYear = d.getFullYear();
-      appState.predictCalMonth = d.getMonth();
+      renderPredictStaffCardsGrid();
       renderPredictCalendar();
-      updatePredictPanelCollapseUI();
+      updatePredictCollapsibleUI();
     }
 
     function initSwipeGestureOnPredictCalendar() {
-      const box = document.getElementById('predict-cal-swipe-box');
-      if (!box) return;
+      const el = document.getElementById('predict-cal-swipe-box');
+      if (!el) return;
       let startX = 0, startY = 0;
-      box.addEventListener('touchstart', e => {
-        if (e.touches.length === 1) {
-          startX = e.touches[0].clientX;
-          startY = e.touches[0].clientY;
-        }
-      }, { passive: true });
-      box.addEventListener('touchend', e => {
+      el.addEventListener('touchstart', e => { if (e.touches.length === 1) { startX = e.touches[0].clientX; startY = e.touches[0].clientY; } }, { passive: true });
+      el.addEventListener('touchend', e => {
         if (!startX) return;
         const dx = e.changedTouches[0].clientX - startX;
         const dy = e.changedTouches[0].clientY - startY;
         startX = 0;
-        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.3) {
-          changePredictCalendarMonth(dx < 0 ? 1 : -1);
-        }
+        if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.3) changePredictCalendarMonth(dx < 0 ? 1 : -1);
       }, { passive: true });
     }
 
@@ -4284,277 +4561,315 @@
       renderPredictCalendar();
     }
 
-    function renderPredictCalendar() {
-      const y = appState.predictCalYear, m = appState.predictCalMonth;
-      document.getElementById('predict-cal-month-title').textContent = `${y}年${m + 1}月`;
-      const grid = document.getElementById('predict-cal-days-grid');
-      const firstDay = new Date(y, m, 1), startOffset = (firstDay.getDay() + 6) % 7, daysInMonth = new Date(y, m + 1, 0).getDate();
-      let html = '';
-      for (let i = 0; i < startOffset; i++) html += '<div></div>';
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-        const isSel = dateStr === appState.predictTargetDate;
-        const isHol = Boolean(HK_STATUTORY_HOLIDAYS[dateStr]);
-        html += `<div onclick="selectPredictDate('${dateStr}', true)" class="cal-cell ${isSel ? 'sel' : ''} ${isHol && !isSel ? 'hol' : ''}">${day}</div>`;
-      }
-      grid.innerHTML = html;
-    }
-
-    function selectPredictDate(dateStr, autoCollapse = false) {
+    function selectPredictCalendarDate(dateStr, autoCollapse = false) {
       appState.predictTargetDate = dateStr;
       const d = parseLocalDate(dateStr);
       appState.predictCalYear = d.getFullYear();
       appState.predictCalMonth = d.getMonth();
-      renderPredictCalendar();
-      runRowCyclePrediction(autoCollapse);
-    }
-
-    // 嚴格遵守 21 行樣本表規律，並允許 DutyList 規則覆蓋
-    function getSampleDutyForStaffOnDate(dateStr, staffName) {
-      const cleanName = normalizeStaffNameForMatch(staffName);
-
-      // 1. 規則覆蓋機制：若 DutyList 已有該週實際設定（非空），則直接覆蓋原本預估的星期更表
-      const dutyListOverride = getDutyByStaffNameOnDate(dateStr, cleanName);
-      if (dutyListOverride) {
-        return dutyListOverride;
-      }
-
-      // 2. 若在 2026 / 2027 大假表內，則套用大假表規則（一至五 AL、六 WO、日 O）
-      const alOverride = getAnnualLeaveOverrideDutyForStaff(cleanName, dateStr);
-      if (alOverride) return alOverride;
-
-      // 3. 嚴格以 2026-11-16 為基準週，向下循環推算該週所在行數（1-21行），並對照圖 3 樣本表
-      const targetMonStr = getMondayOfDate(dateStr);
-      const expectedRoster = getExpectedRosterForWeek(targetMonStr);
-      const staffEntry = expectedRoster.find(x => normalizeStaffNameForMatch(x.name) === cleanName);
-      if (!staffEntry) return '-';
-
-      const rowNum = staffEntry.row; // 1 ~ 21
-      const targetDayIdx = (parseLocalDate(dateStr).getDay() + 6) % 7;
-      const patObj = appState.patternSample[rowNum - 1];
-      return patObj && Array.isArray(patObj.days) ? (patObj.days[targetDayIdx] || '-') : '-';
-    }
-
-    function generatePredictedWeekTable(targetMondayStr) {
-      const expectedRoster = getExpectedRosterForWeek(targetMondayStr);
-      const existingWeek = appState.weeks[targetMondayStr];
-
-      const rows = expectedRoster.map(st => {
-        const cleanName = normalizeStaffNameForMatch(st.name);
-        const existingStaffRow = (existingWeek && Array.isArray(existingWeek.rows))
-          ? existingWeek.rows.find(r => normalizeStaffNameForMatch(r.name) === cleanName)
-          : null;
-
-        const duties = Array.from({ length: 7 }, (_, dIdx) => {
-          const dStr = addDaysToDateStr(targetMondayStr, dIdx);
-
-          // 規則覆蓋：如果 DutyList 該週該日已有明確資料，直接覆蓋
-          if (existingStaffRow && Array.isArray(existingStaffRow.duties)) {
-            const actualCell = sanitizeTwoLetterDutyCode(existingStaffRow.duties[dIdx] || '');
-            if (actualCell) return actualCell;
-          }
-
-          // 大假表覆蓋
-          const alOverride = getAnnualLeaveOverrideDutyForStaff(cleanName, dStr);
-          if (alOverride) return alOverride;
-
-          // 嚴格按圖 3 21行樣本表推算
-          const patObj = appState.patternSample[st.row - 1];
-          return patObj && Array.isArray(patObj.days) ? (patObj.days[dIdx] || '-') : '-';
-        });
-
-        return {
-          row: st.row,
-          id: st.id,
-          name: st.name,
-          duties,
-          isReserve: (st.row >= 18),
-          isOverriddenByDutyList: Boolean(existingStaffRow)
-        };
-      });
-
-      return { monday: targetMondayStr, rows };
-    }
-
-    function runRowCyclePrediction(autoCollapse = false) {
-      const targetDateStr = appState.predictTargetDate;
-      if (!targetDateStr) return;
-
-      const selectedStaffName = appState.predictSelectedStaffName || '陳曦彥';
-      const baseMon = getLatestAnchorWeekMonday();
-      const baseWeek = appState.weeks[baseMon];
-
-      let baseRowNum = 4;
-      if (baseWeek && Array.isArray(baseWeek.rows)) {
-        const found = baseWeek.rows.find(r => (r.name || '').trim() === selectedStaffName);
-        if (found) baseRowNum = found.row;
-      }
-      appState.predictSelectedBaseRow = baseRowNum;
-
-      const rowPill = document.getElementById('predict-selected-row-pill');
-      if (rowPill) rowPill.textContent = `基準第 ${baseRowNum} 行`;
-
-      const isReserveRow = baseRowNum >= 18;
-      document.getElementById('reserve-row-notice').classList.toggle('hidden', !isReserveRow);
-
-      const targetMonStr = getMondayOfDate(targetDateStr);
-      const targetDayIdx = (parseLocalDate(targetDateStr).getDay() + 6) % 7;
-      const wNames = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-      const targetWDay = wNames[parseLocalDate(targetDateStr).getDay()];
-      const holName = HK_STATUTORY_HOLIDAYS[targetDateStr] ? `（🇭🇰 ${HK_STATUTORY_HOLIDAYS[targetDateStr]}）` : '';
-
-      const predTable = generatePredictedWeekTable(targetMonStr);
-      const targetStaffPredRow = predTable.rows.find(r => r.name === selectedStaffName) || predTable.rows[0];
-      const predictedCode = targetStaffPredRow ? targetStaffPredRow.duties[targetDayIdx] : '-';
-      const targetRowInWeek = targetStaffPredRow ? targetStaffPredRow.row : baseRowNum;
-      const sourceNote = (targetStaffPredRow && targetStaffPredRow.isOverriddenByDutyList)
-        ? '（已套用 DutyList 規則覆蓋）'
-        : `（對照 21 行樣本表第 ${targetRowInWeek} 行）`;
-
-      document.getElementById('predict-single-result').innerHTML = `
-        <div>
-          <div style="font-size:11px;color:#5eead4;">${targetDateStr} ${targetWDay} ${holName} ｜ ${selectedStaffName}（基準第 ${baseRowNum} 行 → 該週第 ${targetRowInWeek} 行）</div>
-          <div style="font-size:13px;font-weight:700;margin-top:2px;">預測更期結果 <span style="font-size:10.5px;color:#99f6e4;font-weight:500;">${sourceNote}</span></div>
-        </div>
-        <div class="flex-row" style="gap:8px;">
-          <div class="result-code duty-font">${predictedCode}</div>
-          <a href="${APPLY_SHIFT_FORM_URL}" target="_blank" rel="noopener noreferrer" class="btn-sm btn-amber" style="padding:7px 12px;font-size:12px;">📝 申請更期</a>
-        </div>
-      `;
-
-      document.getElementById('predict-colleagues-title').textContent = `${targetMonStr} 至 ${addDaysToDateStr(targetMonStr, 6)} 預測更期表（目標日：${targetDateStr.slice(5)} ${targetWDay}）`;
-      const dayLabels = ['一', '二', '三', '四', '五', '六', '日'];
-      const prevSunStr = addDaysToDateStr(targetMonStr, -1);
-      const nextMonStr = addDaysToDateStr(targetMonStr, 7);
-
-      const thPrev = document.getElementById('pred-th-prev-sun');
-      if (thPrev) thPrev.innerHTML = `上日<br><span style="font-size:8.5px;font-weight:500;">${prevSunStr.slice(8, 10)}/${prevSunStr.slice(5, 7)}</span>`;
-      const thNext = document.getElementById('pred-th-next-mon');
-      if (thNext) thNext.innerHTML = `下一<br><span style="font-size:8.5px;font-weight:500;">${nextMonStr.slice(8, 10)}/${nextMonStr.slice(5, 7)}</span>`;
-
-      for (let i = 0; i < 7; i++) {
-        const dStr = addDaysToDateStr(targetMonStr, i);
-        const th = document.getElementById('pred-th-day-' + i);
-        if (!th) continue;
-        const isTargetCol = (i === targetDayIdx);
-        th.classList.toggle('pred-col-hl', isTargetCol);
-        const holMark = HK_STATUTORY_HOLIDAYS[dStr] ? '*' : '';
-        th.innerHTML = `${dayLabels[i]}${holMark}<br><span style="font-size:8.5px;font-weight:500;">${dStr.slice(8, 10)}/${dStr.slice(5, 7)}</span>`;
-      }
-
-      const offStaffList = [];
-      predTable.rows.forEach(r => {
-        const dayCode = r.duties[targetDayIdx] || '';
-        const upper = unwrapBracketDuty(dayCode).toUpperCase();
-        const isOffTarget = ['O', 'WO', 'OW', 'SH', 'PH', 'AL'].some(k => upper === k || upper.startsWith(k + '/'));
-        if (isOffTarget) {
-          offStaffList.push({ row: r.row, name: r.name, code: dayCode });
-        }
-      });
-
-      const offTitleEl = document.getElementById('predict-off-staff-title');
-      const offCountEl = document.getElementById('predict-off-staff-count');
-      const offGridEl = document.getElementById('predict-off-staff-cards');
-      if (offTitleEl) offTitleEl.textContent = `${targetDateStr.slice(5)}（${targetWDay}）休假 / 假期同事`;
-      if (offCountEl) offCountEl.textContent = `共 ${offStaffList.length} 人`;
-      if (offGridEl) {
-        if (!offStaffList.length) {
-          offGridEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#94a3b8;font-size:11px;padding:4px;">當日暫無標示 O / WO / OW / SH / PH / AL 同事</div>`;
-        } else {
-          offGridEl.innerHTML = offStaffList.map(st => {
-            const pillCls = getRosterCellStyle(st.code, false);
-            const nameLinkHtml = renderWhatsAppStaffLinkHtml(st.name, {
-              extraClass: 'off-staff-name-slot',
-              title: `點擊開啟 ${st.name} 的 WhatsApp`
-            });
-            return `
-              <div class="off-staff-card">
-                <div class="off-staff-left">
-                  <span class="off-staff-idx">#${st.row}</span>
-                  ${nameLinkHtml}
-                </div>
-                <span class="duty-font cell-pill ${pillCls}" style="width:auto;padding:1px 6px;font-size:10px;flex-shrink:0;">${st.code}</span>
-              </div>
-            `;
-          }).join('');
-        }
-      }
-
-      const predTbody = document.getElementById('predict-21rows-tbody');
-      if (predTbody) {
-        predTbody.innerHTML = predTable.rows.map(r => {
-          const isTargetRow = (r.name === selectedStaffName);
-          const rowHasFiveAl = weekHasFiveAl(r.duties);
-          const prevSunCode = getSampleDutyForStaffOnDate(prevSunStr, r.name);
-          const nextMonCode = getSampleDutyForStaffOnDate(nextMonStr, r.name);
-
-          const prevSunInFiveAl = isDateInFiveAlWeekForStaff(prevSunStr, r.name);
-          const nextMonInFiveAl = isDateInFiveAlWeekForStaff(nextMonStr, r.name);
-
-          const daysHtml = r.duties.map((code, dIdx) => {
-            const dStr = addDaysToDateStr(targetMonStr, dIdx);
-            const isTargetCol = (dIdx === targetDayIdx);
-            const pillCls = getRosterCellStyle(code, rowHasFiveAl);
-            return `
-              <td onclick="selectPredictDate('${dStr}', false)" class="pred-col-day ${isTargetCol ? 'pred-col-hl' : ''}">
-                <span class="duty-font pred-pill ${pillCls}">${code}</span>
-              </td>
-            `;
-          }).join('');
-
-          return `
-            <tr class="${isTargetRow ? 'pred-row-hl' : ''}">
-              <td class="pred-col-idx">${r.row}</td>
-              <td class="pred-col-name">${r.name}</td>
-              <td class="pred-col-edge"><span class="duty-font pred-pill ${getRosterCellStyle(prevSunCode, prevSunInFiveAl)}">${prevSunCode}</span></td>
-              ${daysHtml}
-              <td class="pred-col-edge"><span class="duty-font pred-pill ${getRosterCellStyle(nextMonCode, nextMonInFiveAl)}">${nextMonCode}</span></td>
-            </tr>
-          `;
-        }).join('');
-      }
-
-      const week2MonStr = addDaysToDateStr(targetMonStr, 7);
-      const week1Table = predTable;
-      const week2Table = generatePredictedWeekTable(week2MonStr);
-
-      document.getElementById('predict-two-weeks-title').textContent = `${selectedStaffName} 兩星期更期月曆（${targetMonStr.slice(5)} 至 ${addDaysToDateStr(week2MonStr, 6).slice(5)}）`;
-
-      const renderOneWeekRow = (wkTable) => {
-        const staffRow = wkTable.rows.find(r => r.name === selectedStaffName) || wkTable.rows[0];
-        const rowHasFiveAl = staffRow ? weekHasFiveAl(staffRow.duties) : false;
-
-        return `<div class="grid-7">${Array.from({ length: 7 }, (_, i) => {
-          const dStr = addDaysToDateStr(wkTable.monday, i);
-          const code = staffRow ? staffRow.duties[i] : '-';
-          const isHol = Boolean(HK_STATUTORY_HOLIDAYS[dStr]);
-          const isTarget = (dStr === targetDateStr);
-          const pillCls = getRosterCellStyle(code, rowHasFiveAl);
-          return `
-            <div onclick="selectPredictDate('${dStr}', false)" class="day7-card ${isHol ? 'hol' : ''} ${isTarget ? 'target' : ''}" style="cursor:pointer;">
-              <div style="font-size:10px;color:#475569;font-weight:700;">${dStr.slice(8, 10)}/${dStr.slice(5, 7)}</div>
-              <div class="duty-font cell-pill ${pillCls}" style="font-size:12px;margin-top:3px;padding:3px 0;">${code}</div>
-            </div>
-          `;
-        }).join('')}</div>`;
-      };
-
-      document.getElementById('predict-two-weeks-calendar').innerHTML = renderOneWeekRow(week1Table) + renderOneWeekRow(week2Table);
-
       if (autoCollapse) {
         appState.predictPanelCollapsed = true;
       }
-      updatePredictPanelCollapseUI();
+      renderPredictCalendar();
+      runRowCyclePrediction(false);
     }
 
-    function openSettingsModal() {
-      updateBackupUI();
-      applyAlarmVisibilityUI();
-      document.getElementById('settings-modal').classList.remove('hidden');
+    function renderPredictCalendar() {
+      const y = appState.predictCalYear;
+      const m = appState.predictCalMonth;
+      document.getElementById('predict-cal-month-title').textContent = `${y}年${m + 1}月`;
+      const firstDay = new Date(y, m, 1);
+      const startPad = (firstDay.getDay() + 6) % 7;
+      const daysInMonth = new Date(y, m + 1, 0).getDate();
+      const grid = document.getElementById('predict-cal-days-grid');
+      let html = '';
+      for (let i = 0; i < startPad; i++) html += '<div></div>';
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isSel = dStr === appState.predictTargetDate;
+        const isSun = new Date(y, m, day).getDay() === 0;
+        const isHol = Boolean(HK_STATUTORY_HOLIDAYS[dStr]);
+        html += `<div onclick="selectPredictCalendarDate('${dStr}', true)" class="cal-cell ${isSel ? 'sel' : ''} ${(isSun || isHol) && !isSel ? 'hol' : ''}">${day}</div>`;
+      }
+      grid.innerHTML = html;
     }
-    function closeSettingsModal() {
-      document.getElementById('settings-modal').classList.add('hidden');
+
+    function compute21RowSnapshotForWeek(mondayStr) {
+      const expectedRoster = getExpectedRosterForWeek(mondayStr);
+      const actualWeekObj = appState.weeks[mondayStr];
+      const actualByName = new Map();
+      if (actualWeekObj && Array.isArray(actualWeekObj.rows)) {
+        actualWeekObj.rows.forEach(r => {
+          const cleanN = normalizeStaffNameForMatch(r.name);
+          if (cleanN) actualByName.set(cleanN, r.duties || []);
+        });
+      }
+
+      const prevSunStr = addDaysToDateStr(mondayStr, -1);
+      const nextMonStr = addDaysToDateStr(mondayStr, 7);
+
+      const snapshotRows = expectedRoster.map((st, idx) => {
+        const cleanN = normalizeStaffNameForMatch(st.name);
+        const isReserveRow = (idx >= 17);
+        const actualDuties = actualByName.get(cleanN);
+        const patternRow = appState.patternSample[idx] || appState.patternSample[0];
+
+        const days = [];
+        for (let dIdx = 0; dIdx < 7; dIdx++) {
+          const dStr = addDaysToDateStr(mondayStr, dIdx);
+          if (actualDuties && actualDuties[dIdx]) {
+            days.push(sanitizeTwoLetterDutyCode(actualDuties[dIdx]));
+          } else {
+            const alCode = getAnnualLeaveOverrideDutyForStaff(cleanN, dStr);
+            if (alCode) {
+              days.push(alCode);
+            } else {
+              days.push(sanitizeTwoLetterDutyCode(patternRow.days[dIdx] || ''));
+            }
+          }
+        }
+
+        const prevSunDuty = getSingleDayDutyForStaffPure(cleanN, prevSunStr);
+        const nextMonDuty = getSingleDayDutyForStaffPure(cleanN, nextMonStr);
+
+        return {
+          rowNum: idx + 1,
+          name: st.name,
+          isReserveRow,
+          isFromDutyList: Boolean(actualDuties),
+          prevSun: prevSunDuty,
+          days,
+          nextMon: nextMonDuty
+        };
+      });
+
+      return snapshotRows;
     }
+
+    function getSingleDayDutyForStaffPure(staffName, dateStr) {
+      const cleanN = normalizeStaffNameForMatch(staffName);
+      if (!cleanN) return '';
+      const monStr = getMondayOfDate(dateStr);
+      const dayIdx = (parseLocalDate(dateStr).getDay() + 6) % 7;
+
+      const actualWeekObj = appState.weeks[monStr];
+      if (actualWeekObj && Array.isArray(actualWeekObj.rows)) {
+        const found = actualWeekObj.rows.find(r => normalizeStaffNameForMatch(r.name) === cleanN);
+        if (found && found.duties && found.duties[dayIdx]) {
+          return sanitizeTwoLetterDutyCode(found.duties[dayIdx]);
+        }
+      }
+
+      const alCode = getAnnualLeaveOverrideDutyForStaff(cleanN, dateStr);
+      if (alCode) return alCode;
+
+      const expectedRoster = getExpectedRosterForWeek(monStr);
+      const rowIdx = expectedRoster.findIndex(st => normalizeStaffNameForMatch(st.name) === cleanN);
+      const validIdx = rowIdx >= 0 ? rowIdx : 0;
+      const patternRow = appState.patternSample[validIdx] || appState.patternSample[0];
+      return sanitizeTwoLetterDutyCode(patternRow.days[dayIdx] || '');
+    }
+
+    function runRowCyclePrediction(showToast = false) {
+      const staffName = appState.predictSelectedStaffName || '陳曦彥';
+      const targetDateStr = appState.predictTargetDate || '2026-12-17';
+
+      const baseRoster = getExpectedRosterForWeek(ANCHOR_BASE_MONDAY);
+      const baseFound = baseRoster.find(s => s.name === staffName);
+      const baseRowNum = baseFound ? baseFound.row : 4;
+      appState.predictSelectedBaseRow = baseRowNum;
+
+      const baseRowPill = document.getElementById('predict-selected-row-pill');
+      if (baseRowPill) baseRowPill.textContent = `2026-11-16 基準第 ${baseRowNum} 行`;
+
+      const targetDateObj = parseLocalDate(targetDateStr);
+      const targetMondayStr = getMondayOfDate(targetDateStr);
+      const targetDayIdx = (targetDateObj.getDay() + 6) % 7;
+      const dayNames = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
+
+      const baseMonObj = parseLocalDate(ANCHOR_BASE_MONDAY);
+      const targetMonObj = parseLocalDate(targetMondayStr);
+      const weeksDiff = Math.round((targetMonObj - baseMonObj) / (7 * 24 * 60 * 60 * 1000));
+
+      const snapshot21 = compute21RowSnapshotForWeek(targetMondayStr);
+      const selectedStaffRowObj = snapshot21.find(r => r.name === staffName) || snapshot21[0];
+      const predictedRowNum = selectedStaffRowObj.rowNum;
+      const predictedDuty = selectedStaffRowObj.days[targetDayIdx] || '-';
+
+      document.getElementById('locked-current-week-label').textContent =
+        `基準週：2026-11-16（${staffName} 基準第 ${baseRowNum} 行） ｜ 目標週：${targetMondayStr}（順延 ${weeksDiff >= 0 ? '+' + weeksDiff : weeksDiff} 週 → 第 ${predictedRowNum} 行）`;
+
+      const reserveNotice = document.getElementById('reserve-row-notice');
+      if (reserveNotice) reserveNotice.classList.toggle('hidden', predictedRowNum <= 17);
+
+      const isFromDutyList = selectedStaffRowObj.isFromDutyList;
+      const normPred = normalizeDutyCode(predictedDuty);
+      const spec = DUTY_SPEC_MAP[normPred];
+      const holName = HK_STATUTORY_HOLIDAYS[targetDateStr] || '';
+      const isOffDutyForApply = isLeaveOrOffCode(predictedDuty);
+      const applyBtnText = isOffDutyForApply ? '📝 申請大假 / 補假' : '📝 申請指定更期';
+
+      let sourceBadge = '';
+      if (isFromDutyList) {
+        sourceBadge = '<span style="background:#0f766e;color:#fff;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:4px;">已套用 DutyList 實際更期</span>';
+      } else if (getAnnualLeaveOverrideDutyForStaff(staffName, targetDateStr)) {
+        sourceBadge = '<span style="background:#be123c;color:#fff;font-size:10px;padding:1px 6px;border-radius:4px;margin-left:4px;">已套用大假表 AL</span>';
+      }
+
+      document.getElementById('predict-single-result').innerHTML = `
+        <div>
+          <div style="font-size:11px;color:#5eead4;font-weight:700;">
+            ${targetDateStr}（${dayNames[targetDayIdx]}）${holName ? ' · 🇭🇰 ' + holName : ''}
+            ${sourceBadge}
+          </div>
+          <div style="font-size:15px;font-weight:700;margin-top:2px;">
+            ${staffName} <span style="font-size:12px;color:#cbd5e1;">(當週第 ${predictedRowNum} 行)</span>
+          </div>
+          <div style="font-size:11px;color:#94a3b8;margin-top:2px;">
+            ${spec ? `時間：${spec.work} ｜ 食飯：${spec.mealText}` : '休假 / 假期 / 替更'}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <a href="${APPLY_SHIFT_FORM_URL}" target="_blank" rel="noopener noreferrer" class="btn-sm btn-emerald" style="padding:7px 11px;font-size:12px;box-shadow:0 2px 5px rgba(0,0,0,0.25);">${applyBtnText}</a>
+          <div class="duty-font result-code">${predictedDuty}</div>
+        </div>
+      `;
+
+      document.getElementById('predict-colleagues-title').textContent =
+        `21 行預測更期表（${targetMondayStr} 至 ${addDaysToDateStr(targetMondayStr, 6)} · 十字鎖定 ${staffName} & ${targetDateStr.slice(5)}）`;
+
+      renderPredictOffStaffCards(snapshot21, targetDayIdx, targetDateStr, dayNames[targetDayIdx]);
+      renderPredict21RowsTable(snapshot21, targetMondayStr, targetDayIdx, staffName);
+      renderPredictTwoWeeksCalendar(staffName, targetDateStr);
+      updatePredictCollapsibleUI();
+    }
+
+    function renderPredictOffStaffCards(snapshot21, targetDayIdx, targetDateStr, weekdayText) {
+      const titleEl = document.getElementById('predict-off-staff-title');
+      const countEl = document.getElementById('predict-off-staff-count');
+      const gridEl = document.getElementById('predict-off-staff-cards');
+      if (!gridEl) return;
+
+      const offList = snapshot21.filter(r => isLeaveOrOffCode(r.days[targetDayIdx] || ''));
+
+      if (titleEl) {
+        titleEl.textContent = `${targetDateStr.slice(5)}（${weekdayText}）休假 / 假期同事`;
+      }
+      if (countEl) {
+        countEl.textContent = `共 ${offList.length} 人`;
+      }
+
+      if (!offList.length) {
+        gridEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#94a3b8;font-size:11px;padding:4px;">當日無休假同事</div>`;
+        return;
+      }
+
+      gridEl.innerHTML = offList.map(item => {
+        const dutyCode = item.days[targetDayIdx] || '-';
+        const waNameHtml = renderWhatsAppStaffLinkHtml(item.name, { extraClass: 'off-staff-name-slot' });
+        return `
+          <div class="off-staff-card">
+            <div class="off-staff-left">
+              <span class="off-staff-idx">${item.rowNum}.</span>
+              ${waNameHtml}
+            </div>
+            <span class="duty-font code-badge ${dutyCode === 'AL' ? 'warn' : ''}" style="font-size:10px;padding:1px 5px;">${dutyCode}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderPredict21RowsTable(snapshot21, targetMondayStr, targetDayIdx, selectedStaffName) {
+      const prevSunStr = addDaysToDateStr(targetMondayStr, -1);
+      const nextMonStr = addDaysToDateStr(targetMondayStr, 7);
+
+      const thPrevSun = document.getElementById('pred-th-prev-sun');
+      if (thPrevSun) thPrevSun.innerHTML = `<div style="font-size:8px;color:#92400e;">上日</div><div>${prevSunStr.slice(5)}</div>`;
+
+      const thNextMon = document.getElementById('pred-th-next-mon');
+      if (thNextMon) thNextMon.innerHTML = `<div style="font-size:8px;color:#92400e;">下一</div><div>${nextMonStr.slice(5)}</div>`;
+
+      const dayNames = ['一', '二', '三', '四', '五', '六', '日'];
+      const weekDates = [];
+      for (let i = 0; i < 7; i++) {
+        const dStr = addDaysToDateStr(targetMondayStr, i);
+        weekDates.push(dStr);
+        const th = document.getElementById('pred-th-day-' + i);
+        if (th) {
+          th.innerHTML = `<div>${dayNames[i]}</div><div style="font-size:8px;font-weight:400;">${dStr.slice(5)}</div>`;
+          th.classList.toggle('pred-col-hl', i === targetDayIdx);
+        }
+      }
+
+      const tbody = document.getElementById('predict-21rows-tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = snapshot21.map(r => {
+        const isSelectedRow = (r.name === selectedStaffName);
+        const waNameHtml = renderWhatsAppStaffLinkHtml(r.name);
+
+        const daysHtml = r.days.map((code, dIdx) => {
+          const isTargetCol = (dIdx === targetDayIdx);
+          const dStr = weekDates[dIdx];
+          return `
+            <td onclick="selectPredictCalendarDate('${dStr}', false)"
+                class="pred-col-day ${isTargetCol ? 'pred-col-hl' : ''}"
+                title="點擊切換至 ${dStr}">
+              <span class="duty-font pred-pill ${getCellColorClass(code)}">${code || '-'}</span>
+            </td>
+          `;
+        }).join('');
+
+        return `
+          <tr class="${isSelectedRow ? 'pred-row-hl' : ''}">
+            <td class="pred-col-idx">${r.rowNum}</td>
+            <td class="pred-col-name" onclick="selectPredictStaffCard('${r.name}')" style="cursor:pointer;" title="點擊切換查詢 ${r.name}">${waNameHtml}</td>
+            <td class="pred-col-edge"><span class="duty-font pred-pill ${getCellColorClass(r.prevSun)}">${r.prevSun || '-'}</span></td>
+            ${daysHtml}
+            <td class="pred-col-edge"><span class="duty-font pred-pill ${getCellColorClass(r.nextMon)}">${r.nextMon || '-'}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderPredictTwoWeeksCalendar(staffName, targetDateStr) {
+      const targetMondayStr = getMondayOfDate(targetDateStr);
+      const nextMondayStr = addDaysToDateStr(targetMondayStr, 7);
+
+      const titleEl = document.getElementById('predict-two-weeks-title');
+      if (titleEl) {
+        titleEl.textContent = `兩星期更期月曆（${staffName} · ${targetMondayStr} 至 ${addDaysToDateStr(nextMondayStr, 6)}）`;
+      }
+
+      const renderOneWeekRow = (mondayStr) => {
+        const daysHtml = [];
+        for (let i = 0; i < 7; i++) {
+          const dStr = addDaysToDateStr(mondayStr, i);
+          const dObj = parseLocalDate(dStr);
+          const isSun = dObj.getDay() === 0;
+          const isHol = Boolean(HK_STATUTORY_HOLIDAYS[dStr]);
+          const isTarget = dStr === targetDateStr;
+          const dutyCode = getSingleDayDutyForStaffPure(staffName, dStr) || '-';
+
+          daysHtml.push(`
+            <div onclick="selectPredictCalendarDate('${dStr}', false)"
+                 style="cursor:pointer;"
+                 class="day7-card ${isTarget ? 'target' : ''} ${(isSun || isHol) && !isTarget ? 'hol' : ''}">
+              <div style="font-size:10px;font-weight:700;color:${isTarget ? '#0f766e' : (isSun || isHol ? '#be123c' : '#475569')};">${dStr.slice(5)}</div>
+              <div class="duty-font" style="font-size:12px;margin-top:2px;color:#0f172a;">${dutyCode}</div>
+            </div>
+          `);
+        }
+        return `<div class="grid-7">${daysHtml.join('')}</div>`;
+      };
+
+      const container = document.getElementById('predict-two-weeks-calendar');
+      if (container) {
+        container.innerHTML = renderOneWeekRow(targetMondayStr) + renderOneWeekRow(nextMondayStr);
+      }
+    }
+
+    function openSettingsModal() { updateBackupUI(); applyAlarmVisibilityUI(); document.getElementById('settings-modal').classList.remove('hidden'); }
+    function closeSettingsModal() { document.getElementById('settings-modal').classList.add('hidden'); }
 
     window.addEventListener('DOMContentLoaded', initApp);
   </script>
