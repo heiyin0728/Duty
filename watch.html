@@ -27,20 +27,23 @@
     .app-shell {
       display: flex;
       flex-direction: column;
+      width: 100%;
       min-height: 100vh;
       min-height: 100dvh;
-      padding: 2px 4px 12px;
+      padding: 2px 2px 10px;
       gap: 4px;
     }
 
-    /* 合併頂部標題與狀態列（極致省位） */
+    /* 頂部標題與切換列：撐滿左右寬度 */
     .top-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      width: 100%;
       background: #0f766e;
       border-radius: 10px;
-      padding: 5px 8px;
+      padding: 6px 8px;
+      gap: 4px;
       flex-shrink: 0;
     }
     .top-bar.night { background: #3730a3; }
@@ -49,13 +52,14 @@
     .top-left {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       min-width: 0;
+      flex: 1;
       cursor: pointer;
     }
     .sync-dot {
-      width: 8px;
-      height: 8px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
       background: #34d399;
       flex-shrink: 0;
@@ -63,22 +67,24 @@
     .sync-dot.warn { background: #fbbf24; }
 
     .shift-title {
-      font-size: 19px;
+      font-size: clamp(22px, 10vw, 30px);
       font-weight: 900;
-      letter-spacing: 0.2px;
-      line-height: 1.1;
+      line-height: 1;
+      flex-shrink: 0;
     }
     .date-pill {
-      font-size: 13px;
+      font-size: clamp(14px, 6.4vw, 20px);
       font-weight: 800;
-      color: #e2e8f0;
-      background: rgba(0, 0, 0, 0.32);
-      padding: 2px 6px;
-      border-radius: 6px;
+      color: #ffffff;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 3px 7px;
+      border-radius: 7px;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .date-pill.offset {
-      background: #d97706;
+      background: #f59e0b;
       color: #000000;
     }
 
@@ -88,50 +94,52 @@
       flex-shrink: 0;
     }
     .arrow-btn {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.22);
       color: #fff;
       border: none;
-      border-radius: 7px;
-      width: 28px;
-      height: 28px;
-      font-size: 17px;
+      border-radius: 8px;
+      width: clamp(30px, 13vw, 38px);
+      height: clamp(30px, 13vw, 38px);
+      font-size: clamp(18px, 8vw, 24px);
       font-weight: 900;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
     }
-    .arrow-btn:active { background: rgba(255, 255, 255, 0.4); }
+    .arrow-btn:active { background: rgba(255, 255, 255, 0.45); }
 
-    /* 人員名單區：填滿剩餘空間、大字體緊湊排列 */
+    /* 人員名單容器 */
     .swipe-viewport {
       flex: 1;
+      width: 100%;
       display: flex;
       flex-direction: column;
       gap: 5px;
     }
 
     @keyframes slideFromRight {
-      from { opacity: 0.35; transform: translateX(20px); }
+      from { opacity: 0.35; transform: translateX(18px); }
       to { opacity: 1; transform: translateX(0); }
     }
     @keyframes slideFromLeft {
-      from { opacity: 0.35; transform: translateX(-20px); }
+      from { opacity: 0.35; transform: translateX(-18px); }
       to { opacity: 1; transform: translateX(0); }
     }
     .anim-next { animation: slideFromRight 0.16s ease-out; }
     .anim-prev { animation: slideFromLeft 0.16s ease-out; }
 
-    /* 特大字體人員卡片 */
+    /* 全幅特大字體人員卡片（填滿紅框空間） */
     .staff-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      width: 100%;
       background: #111827;
-      border: 1px solid #1f2937;
-      border-radius: 10px;
-      padding: 6px 8px;
-      min-height: 42px;
+      border: 1px solid #263244;
+      border-radius: 11px;
+      padding: 7px 8px;
+      gap: 6px;
     }
     .staff-row.st-meal {
       background: #291a03;
@@ -148,23 +156,25 @@
     .staff-left {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       min-width: 0;
+      flex: 1;
     }
     .staff-name {
-      font-size: 21px;
+      font-size: clamp(24px, 11.5vw, 34px);
       font-weight: 900;
       color: #ffffff;
-      line-height: 1.15;
+      line-height: 1.1;
+      letter-spacing: -0.3px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .status-tag {
-      font-size: 11px;
+      font-size: clamp(12px, 5.2vw, 16px);
       font-weight: 800;
-      padding: 2px 5px;
-      border-radius: 5px;
+      padding: 2px 6px;
+      border-radius: 6px;
       white-space: nowrap;
       flex-shrink: 0;
     }
@@ -175,13 +185,14 @@
 
     .duty-pill {
       font-family: Arial, sans-serif;
-      font-size: 16px;
+      font-size: clamp(19px, 8.8vw, 26px);
       font-weight: 900;
-      padding: 3px 8px;
-      border-radius: 7px;
+      padding: 4px 9px;
+      border-radius: 8px;
       background: #134e4a;
       color: #5eead4;
       border: 1px solid #0d9488;
+      line-height: 1.05;
       flex-shrink: 0;
     }
     .duty-pill.night {
@@ -196,10 +207,10 @@
     }
 
     .mid-divider {
-      font-size: 12px;
+      font-size: clamp(13px, 5.8vw, 18px);
       font-weight: 800;
       color: #22d3ee;
-      padding: 2px 4px 0;
+      padding: 3px 4px 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -208,9 +219,9 @@
     .empty-msg {
       text-align: center;
       color: #94a3b8;
-      font-size: 16px;
-      font-weight: 700;
-      padding: 20px 0;
+      font-size: clamp(18px, 8vw, 24px);
+      font-weight: 800;
+      padding: 24px 0;
     }
   </style>
 </head>
@@ -220,7 +231,7 @@
     <div id="shift-banner" class="top-bar">
       <div class="top-left" onclick="resetToLiveShift()" title="點擊回到實時當更">
         <span id="sync-dot" class="sync-dot"></span>
-        <span id="shift-title" class="shift-title">A Duty</span>
+        <span id="shift-title" class="shift-title">A</span>
         <span id="header-date" class="date-pill">--/--</span>
       </div>
       <div class="nav-arrows">
@@ -625,7 +636,6 @@
       renderWatchView();
       syncFromCloud(false);
 
-      // 載入後自動微幅向下捲動 1px 觸發隱藏網址列
       setTimeout(() => window.scrollTo(0, 1), 150);
 
       setInterval(() => renderWatchView(), 15000);
