@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="QEH OnDuty" />
   <title>QEH Watch OnDuty</title>
   <style>
@@ -17,148 +17,112 @@
     }
     html, body {
       width: 100%;
-      height: 100%;
+      min-height: 105vh;
       background-color: #000000;
       color: #ffffff;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang HK", sans-serif;
-      overflow: hidden;
+      overflow-x: hidden;
       touch-action: pan-y;
     }
     .app-shell {
       display: flex;
       flex-direction: column;
-      height: 100vh;
-      height: 100dvh;
-      padding: 4px 6px 6px;
-      justify-content: space-between;
-    }
-
-    /* 頂部狀態列：時間 + 雲端點 + 點擊回實時當更 */
-    .watch-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 2px 4px 4px;
-      border-bottom: 1px solid #1e293b;
-      flex-shrink: 0;
-    }
-    .header-left {
-      display: flex;
-      align-items: center;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: 2px 4px 12px;
       gap: 4px;
-      min-width: 0;
-    }
-    .sync-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #10b981;
-      flex-shrink: 0;
-    }
-    .sync-dot.warn { background: #f59e0b; }
-    .date-tag {
-      font-size: 12px;
-      font-weight: 700;
-      color: #94a3b8;
-      white-space: nowrap;
-    }
-    .live-badge {
-      font-size: 10px;
-      font-weight: 800;
-      padding: 1px 5px;
-      border-radius: 99px;
-      background: #064e3b;
-      color: #34d399;
-      border: 1px solid #059669;
-    }
-    .live-badge.offset {
-      background: #451a03;
-      color: #fbbf24;
-      border-color: #d97706;
-      cursor: pointer;
-    }
-    .clock-text {
-      font-size: 13px;
-      font-weight: 800;
-      color: #5eead4;
-      font-variant-numeric: tabular-nums;
     }
 
-    /* 更期主標題列（支援點擊左右箭頭輔助切換） */
-    .shift-banner {
+    /* 合併頂部標題與狀態列（極致省位） */
+    .top-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       background: #0f766e;
       border-radius: 10px;
       padding: 5px 8px;
-      margin-top: 4px;
       flex-shrink: 0;
     }
-    .shift-banner.night { background: #3730a3; }
-    .shift-banner.past-future { background: #1e293b; border: 1px solid #334155; }
-    .shift-title-wrap {
+    .top-bar.night { background: #3730a3; }
+    .top-bar.past-future { background: #1e293b; border: 1px solid #475569; }
+
+    .top-left {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       gap: 5px;
+      min-width: 0;
+      cursor: pointer;
     }
+    .sync-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #34d399;
+      flex-shrink: 0;
+    }
+    .sync-dot.warn { background: #fbbf24; }
+
     .shift-title {
-      font-size: 16px;
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 0.2px;
+      line-height: 1.1;
+    }
+    .date-pill {
+      font-size: 13px;
       font-weight: 800;
-      letter-spacing: 0.3px;
+      color: #e2e8f0;
+      background: rgba(0, 0, 0, 0.32);
+      padding: 2px 6px;
+      border-radius: 6px;
+      white-space: nowrap;
     }
-    .shift-count {
-      font-size: 11px;
-      font-weight: 700;
-      color: #ccfbf1;
-      background: rgba(0, 0, 0, 0.28);
-      padding: 1px 6px;
-      border-radius: 99px;
+    .date-pill.offset {
+      background: #d97706;
+      color: #000000;
     }
+
     .nav-arrows {
       display: flex;
       gap: 4px;
+      flex-shrink: 0;
     }
     .arrow-btn {
-      background: rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.2);
       color: #fff;
       border: none;
-      border-radius: 6px;
-      width: 24px;
-      height: 22px;
-      font-size: 13px;
-      font-weight: 800;
+      border-radius: 7px;
+      width: 28px;
+      height: 28px;
+      font-size: 17px;
+      font-weight: 900;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
     }
-    .arrow-btn:active { background: rgba(255, 255, 255, 0.35); }
+    .arrow-btn:active { background: rgba(255, 255, 255, 0.4); }
 
-    /* 滑動內容區 */
+    /* 人員名單區：填滿剩餘空間、大字體緊湊排列 */
     .swipe-viewport {
       flex: 1;
-      overflow-y: auto;
-      padding: 5px 0 2px;
       display: flex;
       flex-direction: column;
       gap: 5px;
-      -webkit-overflow-scrolling: touch;
     }
-    .swipe-viewport::-webkit-scrollbar { display: none; }
 
     @keyframes slideFromRight {
-      from { opacity: 0.35; transform: translateX(22px); }
+      from { opacity: 0.35; transform: translateX(20px); }
       to { opacity: 1; transform: translateX(0); }
     }
     @keyframes slideFromLeft {
-      from { opacity: 0.35; transform: translateX(-22px); }
+      from { opacity: 0.35; transform: translateX(-20px); }
       to { opacity: 1; transform: translateX(0); }
     }
-    .anim-next { animation: slideFromRight 0.18s ease-out; }
-    .anim-prev { animation: slideFromLeft 0.18s ease-out; }
+    .anim-next { animation: slideFromRight 0.16s ease-out; }
+    .anim-prev { animation: slideFromLeft 0.16s ease-out; }
 
-    /* 人員卡片（大字體適合 Watch 一眼看清） */
+    /* 特大字體人員卡片 */
     .staff-row {
       display: flex;
       align-items: center;
@@ -166,20 +130,21 @@
       background: #111827;
       border: 1px solid #1f2937;
       border-radius: 10px;
-      padding: 6px 9px;
-      min-height: 36px;
+      padding: 6px 8px;
+      min-height: 42px;
     }
     .staff-row.st-meal {
-      background: #271a03;
-      border-color: #b45309;
+      background: #291a03;
+      border-color: #d97706;
     }
     .staff-row.st-not-started {
-      background: #0c192e;
-      border-color: #1d4ed8;
+      background: #0c1d36;
+      border-color: #2563eb;
     }
     .staff-row.st-off-work {
-      opacity: 0.55;
+      opacity: 0.5;
     }
+
     .staff-left {
       display: flex;
       align-items: center;
@@ -187,19 +152,21 @@
       min-width: 0;
     }
     .staff-name {
-      font-size: 16px;
-      font-weight: 800;
-      color: #f8fafc;
+      font-size: 21px;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.15;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .status-tag {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 800;
-      padding: 1px 4px;
-      border-radius: 4px;
+      padding: 2px 5px;
+      border-radius: 5px;
       white-space: nowrap;
+      flex-shrink: 0;
     }
     .status-tag.meal { background: #f59e0b; color: #000; }
     .status-tag.not-started { background: #3b82f6; color: #fff; }
@@ -208,10 +175,10 @@
 
     .duty-pill {
       font-family: Arial, sans-serif;
-      font-size: 13px;
-      font-weight: 800;
-      padding: 2px 7px;
-      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 900;
+      padding: 3px 8px;
+      border-radius: 7px;
       background: #134e4a;
       color: #5eead4;
       border: 1px solid #0d9488;
@@ -228,9 +195,8 @@
       border-color: #06b6d4;
     }
 
-    /* 中更分隔小標 */
     .mid-divider {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 800;
       color: #22d3ee;
       padding: 2px 4px 0;
@@ -241,40 +207,21 @@
 
     .empty-msg {
       text-align: center;
-      color: #64748b;
-      font-size: 13px;
-      padding: 18px 0;
-    }
-
-    /* 底部滑動提示點 */
-    .watch-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-top: 3px;
-      font-size: 10px;
-      color: #64748b;
-      flex-shrink: 0;
+      color: #94a3b8;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 20px 0;
     }
   </style>
 </head>
 <body>
   <div class="app-shell" id="watch-root">
-    <!-- 頂部狀態列 -->
-    <div class="watch-header" onclick="resetToLiveShift()" title="點擊回到實時當更">
-      <div class="header-left">
+    <!-- 單行合併標題與日期控制列 -->
+    <div id="shift-banner" class="top-bar">
+      <div class="top-left" onclick="resetToLiveShift()" title="點擊回到實時當更">
         <span id="sync-dot" class="sync-dot"></span>
-        <span id="header-date" class="date-tag">--/-- (--)</span>
-        <span id="live-status-pill" class="live-badge">實時當更</span>
-      </div>
-      <span id="header-clock" class="clock-text">--:--</span>
-    </div>
-
-    <!-- 更期標題列 -->
-    <div id="shift-banner" class="shift-banner">
-      <div class="shift-title-wrap">
         <span id="shift-title" class="shift-title">A Duty</span>
-        <span id="shift-count" class="shift-count">0人</span>
+        <span id="header-date" class="date-pill">--/--</span>
       </div>
       <div class="nav-arrows">
         <button class="arrow-btn" onclick="stepShift(-1)" aria-label="上一更">‹</button>
@@ -284,13 +231,6 @@
 
     <!-- 人員名單滑動區 -->
     <div id="staff-list-viewport" class="swipe-viewport"></div>
-
-    <!-- 底部手勢提示 -->
-    <div class="watch-footer">
-      <span>→ 右滑上更</span>
-      <span id="sync-label">☁ 同步中</span>
-      <span>左滑下更 ←</span>
-    </div>
   </div>
 
   <script>
@@ -353,10 +293,9 @@
       al2027Rows: [],
       puSubNotes: {},
       mealSwapsByDate: {},
-      shiftOffset: 0 // 0 = 實時當更, +1 = 下更, -1 = 上更
+      shiftOffset: 0
     };
 
-    // --- 日期工具 ---
     function parseLocalDate(str) {
       const [y, m, d] = str.split('-').map(Number);
       return new Date(y, m - 1, d);
@@ -376,7 +315,6 @@
       return formatLocalDate(d);
     }
 
-    // --- 實時更期計算（與主系統一致） ---
     function getLiveShiftBase(now = new Date()) {
       const mins = now.getHours() * 60 + now.getMinutes();
       const todayStr = formatLocalDate(now);
@@ -399,7 +337,6 @@
       };
     }
 
-    // --- 更期代碼標準化與推算 ---
     function unwrapBracket(c) {
       const s = (c || '').trim();
       return (s.startsWith('[') && s.endsWith(']') && s.length >= 3) ? s.slice(1, -1).trim() : s;
@@ -442,7 +379,6 @@
       const weekObj = state.weeks[monday];
 
       if (weekObj && Array.isArray(weekObj.rows)) {
-        // 偵測當日 SL 與 Pu 替更
         let slSlot = '';
         let slStaff = '';
         const presentP = new Set();
@@ -477,7 +413,6 @@
         }).filter(Boolean);
       }
 
-      // 無實際更表時依 21 人輪轉推算
       const weeksDiff = Math.round((parseLocalDate(monday) - parseLocalDate(ANCHOR_BASE_MONDAY)) / (7 * 86400000));
       return MASTER_21_ROTATION.map((name, idx) => {
         if (!name) return null;
@@ -525,29 +460,23 @@
       return { cls: '', html: '' };
     }
 
-    // --- 畫面渲染 ---
     function renderWatchView(animDir = '') {
-      const now = new Date();
-      document.getElementById('header-clock').textContent =
-        `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
       const target = getTargetShiftByOffset(state.shiftOffset);
       const dObj = parseLocalDate(target.dateStr);
       const wDays = ['日', '一', '二', '三', '四', '五', '六'];
-      document.getElementById('header-date').textContent =
-        `${dObj.getMonth() + 1}/${dObj.getDate()} (${wDays[dObj.getDay()]})`;
+      const dateStrShort = `${dObj.getMonth() + 1}/${dObj.getDate()}(${wDays[dObj.getDay()]})`;
 
-      const livePill = document.getElementById('live-status-pill');
+      const datePill = document.getElementById('header-date');
       if (state.shiftOffset === 0) {
-        livePill.textContent = '實時當更';
-        livePill.className = 'live-badge';
+        datePill.textContent = dateStrShort;
+        datePill.className = 'date-pill';
       } else {
-        livePill.textContent = state.shiftOffset > 0 ? `+${state.shiftOffset}更 · 回實時` : `${state.shiftOffset}更 · 回實時`;
-        livePill.className = 'live-badge offset';
+        datePill.textContent = `${dateStrShort} ↺`;
+        datePill.className = 'date-pill offset';
       }
 
       const banner = document.getElementById('shift-banner');
-      banner.className = 'shift-banner' +
+      banner.className = 'top-bar' +
         (target.slot === 'N' ? ' night' : '') +
         (state.shiftOffset !== 0 ? ' past-future' : '');
 
@@ -559,24 +488,22 @@
       let isNight = false;
 
       if (target.slot === 'A') {
-        document.getElementById('shift-title').textContent = 'A Duty';
+        document.getElementById('shift-title').textContent = 'A';
         const dayRoster = getRosterForDate(target.dateStr);
         mainList = dayRoster.filter(p => ['Aa', 'Ac', 'Ad', 'Ae'].includes(p.code)).sort(sortFn);
         midList = dayRoster.filter(p => ['11-8', '11/8', '9-6', '9/5'].includes(p.code)).sort(sortFn);
       } else if (target.slot === 'P') {
-        document.getElementById('shift-title').textContent = 'P Duty';
+        document.getElementById('shift-title').textContent = 'P';
         const dayRoster = getRosterForDate(target.dateStr);
         mainList = dayRoster.filter(p => ['Pa', 'Pe', 'Pu', 'Ec', 'Ed'].includes(p.code)).sort(sortFn);
         midList = dayRoster.filter(p => ['11-8', '11/8', '9-6', '9/5'].includes(p.code)).sort(sortFn);
       } else {
         isNight = true;
-        document.getElementById('shift-title').textContent = 'N Duty';
+        document.getElementById('shift-title').textContent = 'N';
         const nextMorningStr = addDays(target.dateStr, 1);
         const nextRoster = getRosterForDate(nextMorningStr);
         mainList = nextRoster.filter(p => ['Na', 'Ne'].includes(p.code)).sort(sortFn);
       }
-
-      document.getElementById('shift-count').textContent = `${mainList.length}人`;
 
       const renderRow = (p, pillExtraCls = '') => {
         const st = getLiveStatusBadge(p.name, p.code, target.dateStr, isNight);
@@ -609,10 +536,8 @@
         viewport.classList.add(animDir === 'next' ? 'anim-next' : 'anim-prev');
       }
       viewport.innerHTML = html;
-      viewport.scrollTop = 0;
     }
 
-    // --- 左右滑動切換上下更 ---
     function stepShift(delta) {
       state.shiftOffset += delta;
       renderWatchView(delta > 0 ? 'next' : 'prev');
@@ -644,14 +569,12 @@
         tracking = false;
         const dx = e.changedTouches[0].clientX - startX;
         const dy = e.changedTouches[0].clientY - startY;
-        // 水平滑動超過 32px 即切換更期（適合 Watch 窄螢幕）
         if (Math.abs(dx) > 32 && Math.abs(dx) > Math.abs(dy) * 1.2) {
-          stepShift(dx < 0 ? 1 : -1); // 向左滑(-dx) -> 下一更(+1); 向右滑(+dx) -> 上一更(-1)
+          stepShift(dx < 0 ? 1 : -1);
         }
       }, { passive: true });
     }
 
-    // --- 與主系統 OnDuty 雲端資料庫同步 ---
     function loadLocalCache() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(WATCH_CACHE_KEY);
@@ -667,9 +590,6 @@
 
     async function syncFromCloud(manual = false) {
       const dot = document.getElementById('sync-dot');
-      const label = document.getElementById('sync-label');
-      if (manual) label.textContent = '☁ 同步中...';
-
       try {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 6000);
@@ -693,12 +613,9 @@
           }));
         }
         dot.classList.remove('warn');
-        const now = new Date();
-        label.textContent = `☁ ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}已同步`;
         renderWatchView();
       } catch (e) {
         dot.classList.add('warn');
-        label.textContent = '⚠ 離線快取';
       }
     }
 
@@ -708,12 +625,14 @@
       renderWatchView();
       syncFromCloud(false);
 
-      // 每 15 秒更新時間與食飯/返放工狀態，每 30 秒與雲端同步最新調更
+      // 載入後自動微幅向下捲動 1px 觸發隱藏網址列
+      setTimeout(() => window.scrollTo(0, 1), 150);
+
       setInterval(() => renderWatchView(), 15000);
       setInterval(() => syncFromCloud(false), 30000);
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') {
-          state.shiftOffset = 0; // 每次抬腕喚醒 Watch 自動回到實時當更
+          state.shiftOffset = 0;
           renderWatchView();
           syncFromCloud(false);
         }
